@@ -1,32 +1,35 @@
 /****** scanner.h ******/
 
+#ifndef MAIN_LIBS
+#define MAIN_LIBS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdbool.h>
+#endif
 
+#define SCANNER 1 
 
 #define N_KEYWORDS 35
 #define N_OPERATOR_CHARS 8
 #define N_OPERATORS 12
 #define N_DELIMITERS 7
-#define IFJ17_STANDARD_LINE_LEN 60
-#define WORD_MAX_LEN 30
-#define MEM_ALLOC_CONST 10
+#define MEM_ALLOC_CONST 32
 
-typedef enum {
-    integer,
-    string
-} tokenType;
-
-typedef struct {
-    int id;
+typedef struct token {
+    int position;
     int line;
-    char word[WORD_MAX_LEN];
-} token;
+    int capacity;
+    int length;
+    char *content;
+} Token;
 
-//buffer for identifiers
-char *buffer;
+typedef Token Data;
 
 //function declarations
 // Read file until EOF and return 0 on success
-int start_scanner(char *file_name, token *lines);
+int start_scanner(char *file_name, Token *lines);
 int stop_scanner();
 int get_token();
 void error_exit(int value);
