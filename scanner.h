@@ -32,3 +32,4 @@ typedef Token Data;
 int start_scanner(char *file_name, Token *lines);
 int stop_scanner();
 int get_token();
+void error_exit(int value);
