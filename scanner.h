@@ -9,6 +9,7 @@
 
 typedef enum{
 
+	integer
 } tokenType;
 
 struct{
