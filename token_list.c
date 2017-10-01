@@ -3,27 +3,37 @@ Two_way_list main file
 Author: Danil Grigorev
 */
 
-#include "list.h"
+#include "token_list.h"
 
-void token_list_init(List *l)
+List *token_list_init()
 {
+    List *l;
+    l = malloc(sizeof(List));
+    if (l == NULL) {
+        fprintf(stderr, "List malloc failed\n");
+        return NULL;
+    }
     l->active = NULL;
     l->first = NULL;
     l->last = NULL;
+    return l;
 } 
 
-Item* token_init(int position, int line) {
+Item *token_init(int position, int line) {
     Item *itm;
     itm = (Item *) malloc(sizeof(Item));
     if (itm == NULL) {
+        fprintf(stderr, "List item malloc failed\n");
         return NULL;
     }
     itm->data = (Data *) malloc(sizeof(Data));
     if (itm->data == NULL) {
+        fprintf(stderr, "Data malloc failed\n");
         return NULL;
     }
-    itm->data->content = malloc(MEM_ALLOC_CONST * sizeof(char));
+    itm->data->content = (char *) malloc(MEM_ALLOC_CONST * sizeof(char));
     if (itm->data->content == NULL) {
+        fprintf(stderr, "Content malloc failed\n");
         return NULL;
     }
     itm->next = NULL;
@@ -35,37 +45,70 @@ Item* token_init(int position, int line) {
     return itm;
 }
 
-Data* feed_word(Item *i, char* str) { // TODO: List *l
+int feed_word(Item *i, char* str) { // TODO: List *l
+    assert(i != NULL);
+    assert(i->data != NULL);
     if (strlen(str) + i->data->length > i->data->capacity) {
         printf("Reallocation from %d to %d\n", i->data->capacity, \
             i->data->capacity+i->data->capacity + MEM_ALLOC_CONST);
-        void *mem;
-        if ((mem = realloc(i, i->data->capacity + MEM_ALLOC_CONST)) == NULL) {
-            return NULL;
+        realloc(i->data->content, i->data->capacity + MEM_ALLOC_CONST);
+        if ( i->data->content == NULL) {
+            fprintf(stderr, "Content realloc failed\n");
+            return INTERNAL_ERR;
         }
     }
-    strcpy(i->data->content, str);
+    strcat(i->data->content, str);
     printf("Now inside itm->data->content: |%s|\n", i->data->content);
-    return i->data;
+    return SUCCESS;
 }
 
-Item *insert_first(List *l, Item *itm)
+void insert_first(List *l, Item *itm)
 {
-    printf("%d %d\n", l, itm);
     itm->next = l->first;
-    printf("first is ok\n");
     l->first = itm;
-    printf("second is ok\n");
+}
 
-    return itm;
+void insert_last(List *l, Item *itm)
+{
+    itm->prev = l->last;
+    l->last = itm;
+}
+
+void first(List *l)
+{
+    l->active = l->first;
+}
+
+void last(List *l)
+{
+    l->active = l->last;
+}
+
+void insert_after(List *l, Item *itm)
+{
+
+}
+
+bool active()
+{
 }
 
 void data_free(List *l) {
-    for (Item *i = l->first; i != NULL; i = i->next) {
-        free(i->data->content);
-        free(i->data);
-        free(i);
+    Item *i = l->first;
+    Item *to_del;
+    while (i != NULL) {
+        to_del = i;
+        i = to_del->next;
+        if (to_del->data->content != NULL) {
+            free(to_del->data->content);
+        }
+        if (to_del->data != NULL) {
+            free(to_del->data);
+        }
+        free(to_del);
     }
-    free(l);
+    if (l != NULL) {
+        free(l);
+    }
     return;
 }
