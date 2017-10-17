@@ -7,13 +7,19 @@
 #define N_OPERATORS 12
 #define N_DELIMITERS 7
 
-typedef enum{
+//enumerator for token types
+//TODO Martin fill out token types
+typedef enum {
 
 	integer
-} tokenType;
+} T_token_type;
 
-struct{
-
+//structure for token
+struct {
+	tTokenType type;
+	int value_int;
+	double value_double;
+	char *value_string;
 } token;
 
 //buffer for identifiers
