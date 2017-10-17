@@ -16,7 +16,7 @@ typedef enum {
 
 //structure for token
 struct {
-	tTokenType type;
+	T_token_type type;
 	int value_int;
 	double value_double;
 	char *value_string;
