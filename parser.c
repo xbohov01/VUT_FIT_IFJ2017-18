@@ -19,6 +19,10 @@
   } \
 }
 
+int end_of_lines(){
+
+}
+
 //<deklaracie> ->	<deklaracia>	<endline>	<deklaracie>
 int var_declr(){
 
@@ -46,6 +50,20 @@ int functions(){
   //expecting argument declarations or right parenthesis
   //<paramlist>	-> <fncarg>	,	<paramlist>
   //<fncarg> ->	<id>	as 	<type>
+  if (currentToken.type == TT_RIGHTPAR){
+    //expecting EOL(s) before next statement
+    return end_of_lines();
+  } else if (currentToken.type == TT_ID){
+    //expecting argument declaration
+    if (fnc_arglist() != SUCCESS){
+      return SYNT_ERR;
+    } else {
+      CHECKT(TT_RIGHTPAR);
+      return SUCCESS;
+    }
+  } else {
+    return SYNT_ERR;
+  }
 
   }
 }
