@@ -20,6 +20,7 @@ int addchar(char n_char, tBuffer *str) //funkcia pridava znak do bufferu
 }
 
 
+
 void delstr(tBuffer *str) //funkcia uvolnuje tBuffer
 {
 	if (str->len >= 1)
