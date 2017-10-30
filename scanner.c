@@ -1,4 +1,4 @@
-#include "ifj2017lex.h"
+#include "scanner.h"
 #include "errors.h"
 
 int addchar(char n_char, buffer *str) //funkcia pridava znak do bufferu
@@ -216,7 +216,7 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 				token_state = POS_INT;
 			}
 
-	
+
 			else if (n_char == '!')
 			{
 				token_state = POS_BEG_STRING;
