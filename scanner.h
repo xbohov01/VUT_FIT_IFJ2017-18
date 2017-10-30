@@ -116,12 +116,12 @@ typedef struct {
 	char *content;
 	int len;
 	int size;
-} buffer;
+} tBuffer;
 
 FILE* input;
 
 //buffer for identifiers
-buffer *bufferPtr;
+tBuffer buffer;
 #define BUFFERSIZE 32
 
 //function declarations

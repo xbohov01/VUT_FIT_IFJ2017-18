@@ -1,7 +1,7 @@
 #include "scanner.h"
 #include "errors.h"
 
-int addchar(char n_char, buffer *str) //funkcia pridava znak do bufferu
+int addchar(char n_char, tBuffer *str) //funkcia pridava znak do bufferu
 {
 	if (str->len+1 > str->size)
 	{
@@ -19,7 +19,7 @@ int addchar(char n_char, buffer *str) //funkcia pridava znak do bufferu
 }
 
 
-void delstr(buffer *str) //funkcia uvolnuje buffer
+void delstr(tBuffer *str) //funkcia uvolnuje tBuffer
 {
 	if (str->len >= 1)
 	{
@@ -28,7 +28,7 @@ void delstr(buffer *str) //funkcia uvolnuje buffer
 	}
 }
 
-int str_init(buffer *str) //funkcia inicializuje buffer
+int str_init(tBuffer *str) //funkcia inicializuje tBuffer
 {
 
 	str->content = malloc(sizeof(char)*BUFFERSIZE); //alokovanie pamate
@@ -45,100 +45,99 @@ int str_init(buffer *str) //funkcia inicializuje buffer
 	return SUCCESS;
 }
 
-void free_sources(FILE *file, buffer *str) //funkcia uvolnuje pouzite zdroje
+void free_sources(FILE *file, tBuffer *str) //funkcia uvolnuje pouzite zdroje
 {
 	free(str->content);
-	free(str);
 	fclose(file);
 }
 
 T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je klucove slovo
 {
-	if (strcmp(str, "as") == 0)
+	if (strcmp(&(buffer->content), "as") == 0)
 	{
 		return AS_KEY;
 	}
-	else if (strcmp(str, "asc") == 0)
+	else if (strcmp(&(buffer->content), "asc") == 0)
 	{
 		return ASC_KEY;
 	}
-	else if (strcmp(str, "declare") == 0)
+	else if (strcmp(&(buffer->content), "declare") == 0)
 	{
 		return DECLARE_KEY;
 	}
-	else if (strcmp(str, "dim") == 0)
+	else if (strcmp(&(buffer->content), "dim") == 0)
 	{
 		return DIM_KEY;
 	}
-	else if (strcmp(str, "do") == 0)
+	else if (strcmp(&(buffer->content), "do") == 0)
 	{
 		return DO_KEY;
 	}
-	else if (strcmp(str, "double") == 0)
+	else if (strcmp(&(buffer->content), "double") == 0)
 	{
 		return DOUBLE_KEY;
 	}
-	else if (strcmp(str, "else") == 0)
+	else if (strcmp(&(buffer->content), "else") == 0)
 	{
 		return ELSE_KEY;
 	}
-	else if (strcmp(str, "end") == 0)
+	else if (strcmp(&(buffer->content), "end") == 0)
 	{
 		return END_KEY;
 	}
-	else if (strcmp(str, "chr") == 0)
+	else if (strcmp(&(buffer->content), "chr") == 0)
 	{
 		return CHR_KEY;
 	}
-	else if (strcmp(str, "function") == 0)
+	else if (strcmp(&(buffer->content), "function") == 0)
 	{
 		return FUNCTION_KEY;
 	}
-	else if (strcmp(str, "if") == 0)
+	else if (strcmp(&(buffer->content), "if") == 0)
 	{
 		return IF_KEY;
 	}
-	else if (strcmp(str, "input") == 0)
+	else if (strcmp(&(buffer->content), "input") == 0)
 	{
 		return INPUT_KEY;
 	}
-	else if (strcmp(str, "integer") == 0)
+	else if (strcmp(&(buffer->content), "integer") == 0)
 	{
 		return INTEGER_KEY;
 	}
-	else if (strcmp(str, "length") == 0)
+	else if (strcmp(&(buffer->content), "length") == 0)
 	{
 		return LENGTH_KEY;
 	}
-	else if (strcmp(str, "loop") == 0)
+	else if (strcmp(&(buffer->content), "loop") == 0)
 	{
 		return LOOP_KEY;
 	}
-	else if (strcmp(str, "print") == 0)
+	else if (strcmp(&(buffer->content), "print") == 0)
 	{
 		return PRINT_KEY;
 	}
-	else if (strcmp(str, "return") == 0)
+	else if (strcmp(&(buffer->content), "return") == 0)
 	{
 		return RETURN_KEY;
 	}
-	else if (strcmp(str, "scope") == 0)
+	else if (strcmp(&(buffer->content), "scope") == 0)
 	{
 		return SCOPE_KEY;
 	}
-	else if (strcmp(str, "string") == 0)
+	else if (strcmp(&(buffer->content), "string") == 0)
 	{
 		return STRING_KEY;
 	}
-	else if (strcmp(str, "substr") == 0)
+	else if (strcmp(&(buffer->content), "substr") == 0)
 	{
 		return SUBSTR_KEY;
 	}
-	else if (strcmp(str, "then") == 0)
+	else if (strcmp(&(buffer->content), "then") == 0)
 	{
 		return THEN_KEY;
 	}
-	else if (strcmp(str, "while") == 0)
+	else if (strcmp(&(buffer->content), "while") == 0)
 	{
 		return WHILE_KEY;
 	}
@@ -211,8 +210,8 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			//cislo
 			else if (isdigit(n_char))
 			{
-				delstr(str);
-				addchar(n_char, str);
+				delstr(&buffer);
+				addchar(n_char, &buffer);
 				token_state = POS_INT;
 			}
 
@@ -230,8 +229,8 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else if (isalpha(n_char))
 			{
 				n_char = tolower(n_char);
-				delstr(str);
-				addchar(n_char, str);
+				delstr(&buffer);
+				addchar(n_char, &buffer);
 				token_state = ID_OR_KEY;
 			}
 			break;
@@ -269,7 +268,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			case COM_OR_DIV:
 			if (n_char == '\'')
 			{
-				delstr(str);
+				delstr(&buffer);
 				token_state = POS_BL_COMMENT;
 			}
 			else
@@ -285,7 +284,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 			}
 			break;
 
@@ -296,7 +295,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 			}
 			break;
 
@@ -307,7 +306,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 			}
 
 			case POS_BEG_STRING:
@@ -328,7 +327,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else if (n_char > 31)
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 			}
 			else
 			{
@@ -339,16 +338,16 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			case POS_INT:
 			if (isdigit(n_char))
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 			}
 			if ((n_char == 'E')||(n_char == 'e'))
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 				token_state = POS_EXP;
 			}
 			else if (n_char == '.')
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 				token_state = POS_FL;
 			}
 			else
@@ -359,14 +358,14 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					row--;
 				}
 				currentToken.token_type = INTEGER;
-				currentToken.value_int = atoi(str->content);
+				currentToken.value_int = atoi(&buffer->content);
 			}
 			break;
 
 			case POS_EXP:
 			if (isdigit(n_char)||((n_char == '+')||(n_char == '-')))
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 				token_state = POS_EXP_S;
 			}
 			else
@@ -383,7 +382,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			case POS_EXP_S:
 			if (isdigit(n_char))
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 			}
 			else
 			{
@@ -393,14 +392,14 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					row--;
 				}
 				currentToken.token_type = DOUBLE;
-				currentToken.value_double = atoi(str->content);
+				currentToken.value_double = atoi(&buffer->content);
 			}
 			break;
 
 			case POS_FL:
 			if (isdigit(n_char))
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 				token_state = POS_DOUBLE;
 			}
 			else
@@ -417,11 +416,11 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			case POS_DOUBLE:
 			if (isdigit(n_char))
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 			}
 			if ((n_char == 'E')||(n_char == 'e'))
 			{
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 				token_state = POS_EXP;
 			}
 			else
@@ -432,7 +431,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					row--;
 				}
 				currentToken.token_type = DOUBLE;
-				currentToken.value_double = atoi(str->content);
+				currentToken.value_double = atoi(&buffer->content);
 			}
 			break;
 
@@ -444,16 +443,16 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				{
 					row--;
 				}
-				currentToken.token_type = get_key(str->content);
+				currentToken.token_type = get_key(&buffer->content);
 				if (currentToken.token_type == IDENTIFICATOR)
 				{
-					currentToken.id = str->content;
+					currentToken.id = &buffer->content;
 				}
 			}
 			else
 			{
 				n_char = tolower(n_char);
-				addchar(n_char, str);
+				addchar(n_char, &buffer);
 			}
 			break;
 
@@ -473,8 +472,9 @@ int start_scanner(char *filename)
 		}
 	}
 
-	if (str_init(bufferPtr) != SUCCESS)
+	if (str_init(buffer) != SUCCESS)
 	{
+		fclose(file);
 		return LEX_ERR;
 	}
 }
