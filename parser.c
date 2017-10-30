@@ -1,7 +1,8 @@
 /****parser.c****/
 
 #include "parser.h"
-#include "ifj2017lex.h"
+#include "scanner.h"
+#include "errors.h"
 
 
 //some macros
