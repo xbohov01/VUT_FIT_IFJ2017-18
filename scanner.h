@@ -118,7 +118,7 @@ typedef struct {
 	int size;
 } tBuffer;
 
-FILE* input;
+FILE* file;
 
 //buffer for identifiers
 tBuffer buffer;
@@ -128,4 +128,6 @@ tBuffer buffer;
 int start_scanner(char *filename);
 int stop_scanner();
 int get_token();
-int str_init(buffer *str);
+int str_init(tBuffer *str);
+
+tToken currentToken;

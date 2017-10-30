@@ -1,5 +1,6 @@
 #include "scanner.h"
 #include "errors.h"
+#include "ifj2017.h"
 
 int addchar(char n_char, tBuffer *str) //funkcia pridava znak do bufferu
 {
@@ -53,91 +54,91 @@ void free_sources(FILE *file, tBuffer *str) //funkcia uvolnuje pouzite zdroje
 
 T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je klucove slovo
 {
-	if (strcmp(&(buffer->content), "as") == 0)
+	if (strcmp(buffer.content, "as") == 0)
 	{
 		return AS_KEY;
 	}
-	else if (strcmp(&(buffer->content), "asc") == 0)
+	else if (strcmp(buffer.content, "asc") == 0)
 	{
 		return ASC_KEY;
 	}
-	else if (strcmp(&(buffer->content), "declare") == 0)
+	else if (strcmp(buffer.content, "declare") == 0)
 	{
 		return DECLARE_KEY;
 	}
-	else if (strcmp(&(buffer->content), "dim") == 0)
+	else if (strcmp(buffer.content, "dim") == 0)
 	{
 		return DIM_KEY;
 	}
-	else if (strcmp(&(buffer->content), "do") == 0)
+	else if (strcmp(buffer.content, "do") == 0)
 	{
 		return DO_KEY;
 	}
-	else if (strcmp(&(buffer->content), "double") == 0)
+	else if (strcmp(buffer.content, "double") == 0)
 	{
 		return DOUBLE_KEY;
 	}
-	else if (strcmp(&(buffer->content), "else") == 0)
+	else if (strcmp(buffer.content, "else") == 0)
 	{
 		return ELSE_KEY;
 	}
-	else if (strcmp(&(buffer->content), "end") == 0)
+	else if (strcmp(buffer.content, "end") == 0)
 	{
 		return END_KEY;
 	}
-	else if (strcmp(&(buffer->content), "chr") == 0)
+	else if (strcmp(buffer.content, "chr") == 0)
 	{
 		return CHR_KEY;
 	}
-	else if (strcmp(&(buffer->content), "function") == 0)
+	else if (strcmp(buffer.content, "function") == 0)
 	{
 		return FUNCTION_KEY;
 	}
-	else if (strcmp(&(buffer->content), "if") == 0)
+	else if (strcmp(buffer.content, "if") == 0)
 	{
 		return IF_KEY;
 	}
-	else if (strcmp(&(buffer->content), "input") == 0)
+	else if (strcmp(buffer.content, "input") == 0)
 	{
 		return INPUT_KEY;
 	}
-	else if (strcmp(&(buffer->content), "integer") == 0)
+	else if (strcmp(buffer.content, "integer") == 0)
 	{
 		return INTEGER_KEY;
 	}
-	else if (strcmp(&(buffer->content), "length") == 0)
+	else if (strcmp(buffer.content, "length") == 0)
 	{
 		return LENGTH_KEY;
 	}
-	else if (strcmp(&(buffer->content), "loop") == 0)
+	else if (strcmp(buffer.content, "loop") == 0)
 	{
 		return LOOP_KEY;
 	}
-	else if (strcmp(&(buffer->content), "print") == 0)
+	else if (strcmp(buffer.content, "print") == 0)
 	{
 		return PRINT_KEY;
 	}
-	else if (strcmp(&(buffer->content), "return") == 0)
+	else if (strcmp(buffer.content, "return") == 0)
 	{
 		return RETURN_KEY;
 	}
-	else if (strcmp(&(buffer->content), "scope") == 0)
+	else if (strcmp(buffer.content, "scope") == 0)
 	{
 		return SCOPE_KEY;
 	}
-	else if (strcmp(&(buffer->content), "string") == 0)
+	else if (strcmp(buffer.content, "string") == 0)
 	{
 		return STRING_KEY;
 	}
-	else if (strcmp(&(buffer->content), "substr") == 0)
+	else if (strcmp(buffer.content, "substr") == 0)
 	{
 		return SUBSTR_KEY;
 	}
-	else if (strcmp(&(buffer->content), "then") == 0)
+	else if (strcmp(buffer.content, "then") == 0)
 	{
 		return THEN_KEY;
 	}
-	else if (strcmp(&(buffer->content), "while") == 0)
+	else if (strcmp(buffer.content, "while") == 0)
 	{
 		return WHILE_KEY;
 	}
@@ -358,7 +359,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					row--;
 				}
 				currentToken.token_type = INTEGER;
-				currentToken.value_int = atoi(&buffer->content);
+				currentToken.value_int = atoi(buffer.content);
 			}
 			break;
 
@@ -392,7 +393,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					row--;
 				}
 				currentToken.token_type = DOUBLE;
-				currentToken.value_double = atoi(&buffer->content);
+				currentToken.value_double = atoi(buffer.content);
 			}
 			break;
 
@@ -431,7 +432,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					row--;
 				}
 				currentToken.token_type = DOUBLE;
-				currentToken.value_double = atoi(&buffer->content);
+				currentToken.value_double = atoi(buffer.content);
 			}
 			break;
 
@@ -443,10 +444,10 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				{
 					row--;
 				}
-				currentToken.token_type = get_key(&buffer->content);
+				currentToken.token_type = get_key(buffer.content);
 				if (currentToken.token_type == IDENTIFICATOR)
 				{
-					currentToken.id = &buffer->content;
+					currentToken.id = buffer.content;
 				}
 			}
 			else
@@ -464,15 +465,15 @@ int start_scanner(char *filename)
 {
 	if (filename != NULL)
 	{
-		input = fopen(filename, "r");
-		if (input == NULL)
+		file = fopen(filename, "r");
+		if (file == NULL)
 		{
 			fprintf(stderr, "File %s cannot be opened.\n", filename);
 			return LEX_ERR;
 		}
 	}
 
-	if (str_init(buffer) != SUCCESS)
+	if (str_init(&buffer) != SUCCESS)
 	{
 		fclose(file);
 		return LEX_ERR;
