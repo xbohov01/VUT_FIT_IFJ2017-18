@@ -110,7 +110,7 @@ typedef struct {
 	char *value_string;
 	T_token_type token_type;
 	char *id;
-} token;
+} tToken;
 
 typedef struct {
 	char *content;

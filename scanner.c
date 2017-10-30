@@ -148,14 +148,14 @@ T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je
 	}
 }
 
-int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na ziskanie tokenu
+int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 {
 	int row = 0;
 	int n_char;
-	tok.token_type = UNDEFINED;
+	currentToken.token_type = UNDEFINED;
 	T_token_state token_state = BEGIN;
 
-	while (tok.token_type == UNDEFINED)
+	while (currentToken.token_type == UNDEFINED)
 	{
 		n_char = fgetc(file); //nacitanie znaku
 
@@ -173,19 +173,19 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			//operatory a specialne znaky
 			else if (n_char == EOF)
 			{
-			  tok.token_type = ENDF;
+			  currentToken.token_type = ENDF;
 			}
 			else if (n_char == '+')
 			{
-			  tok.token_type = ADD_O;
+			  currentToken.token_type = ADD_O;
 			}
 			else if (n_char == '-')
 			{
-			  tok.token_type = SUB_O;
+			  currentToken.token_type = SUB_O;
 			}
 			else if (n_char == '*')
 			{
-			  tok.token_type = MUL_O;
+			  currentToken.token_type = MUL_O;
 			}
 			else if (n_char == '/')
 			{
@@ -193,19 +193,19 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			}
 			else if (n_char == '\\')
 			{
-				tok.token_type = MOD_O;
+				currentToken.token_type = MOD_O;
 			}
 			else if (n_char == '<')
 			{
-			  tok.token_type = POS_LT;
+			  currentToken.token_type = POS_LT;
 			}
 			else if (n_char == '>')
 			{
-			  tok.token_type = POS_GT;
+			  currentToken.token_type = POS_GT;
 			}
 			else if (n_char == '=')
 			{
-			  tok.token_type = EQ_O;
+			  currentToken.token_type = EQ_O;
 			}
 
 			//cislo
@@ -240,15 +240,15 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			{
 				if (n_char == '=')
 				{
-					tok.token_type = LTE_O;
+					currentToken.token_type = LTE_O;
 				}
 				else if (n_char == '>')
 				{
-					tok.token_type = NE_O;
+					currentToken.token_type = NE_O;
 				}
 				else
 				{
-					tok.token_type = LT_O;
+					currentToken.token_type = LT_O;
 				}
 			}
 			break;
@@ -257,11 +257,11 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			{
 				if (n_char == '=')
 				{
-					tok.token_type = GTE_O;
+					currentToken.token_type = GTE_O;
 				}
 				else
 				{
-					tok.token_type = GT_O;
+					currentToken.token_type = GT_O;
 				}
 			}
 			break;
@@ -274,7 +274,7 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			}
 			else
 			{
-				tok.token_type = DIV_O;
+				currentToken.token_type = DIV_O;
 			}
 			break;
 
@@ -292,7 +292,7 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			case POS_BL_END_COMMENT:
 			if (n_char == '/')
 			{
-				tok.token_type = BLOCK_COMMENT;
+				currentToken.token_type = BLOCK_COMMENT;
 			}
 			else
 			{
@@ -303,7 +303,7 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			case POS_LIN_COMMENT:
 			if (n_char == '\n')
 			{
-				tok.token_type = LINE_COMMENT;
+				currentToken.token_type = LINE_COMMENT;
 			}
 			else
 			{
@@ -317,14 +317,14 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			}
 			else
 			{
-				tok.token_type = ERROR;
+				currentToken.token_type = ERROR;
 			}
 			break;
 
 			case POS_STRING:
 			if (n_char == '\"')
 			{
-				tok.token_type = STRING;
+				currentToken.token_type = STRING;
 			}
 			else if (n_char > 31)
 			{
@@ -332,7 +332,7 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 			}
 			else
 			{
-				tok.token_type = ERROR;
+				currentToken.token_type = ERROR;
 			}
 			break;
 
@@ -358,8 +358,8 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 				{
 					row--;
 				}
-				tok.token_type = INTEGER;
-				tok.value_int = atoi(str->content);
+				currentToken.token_type = INTEGER;
+				currentToken.value_int = atoi(str->content);
 			}
 			break;
 
@@ -376,7 +376,7 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 				{
 					row--;
 				}
-				tok.token_type = ERROR;
+				currentToken.token_type = ERROR;
 			}
 			break;
 
@@ -392,8 +392,8 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 				{
 					row--;
 				}
-				tok.token_type = DOUBLE;
-				tok.value_double = atoi(str->content);
+				currentToken.token_type = DOUBLE;
+				currentToken.value_double = atoi(str->content);
 			}
 			break;
 
@@ -410,7 +410,7 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 				{
 					row--;
 				}
-				tok.token_type = ERROR;
+				currentToken.token_type = ERROR;
 			}
 			break;
 
@@ -431,8 +431,8 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 				{
 					row--;
 				}
-				tok.token_type = DOUBLE;
-				tok.value_double = atoi(str->content);
+				currentToken.token_type = DOUBLE;
+				currentToken.value_double = atoi(str->content);
 			}
 			break;
 
@@ -444,10 +444,10 @@ int get_token(buffer *str, token tok, FILE *file) //hlavna funkcia sluziaca na z
 				{
 					row--;
 				}
-				tok.token_type = get_key(str->content);
-				if (tok.token_type == IDENTIFICATOR)
+				currentToken.token_type = get_key(str->content);
+				if (currentToken.token_type == IDENTIFICATOR)
 				{
-					tok.id = str->content;
+					currentToken.id = str->content;
 				}
 			}
 			else
