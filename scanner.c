@@ -19,7 +19,6 @@ int addchar(char n_char, tBuffer *str) //funkcia pridava znak do bufferu
 		str->len++;
 }
 
-
 void delstr(tBuffer *str) //funkcia uvolnuje tBuffer
 {
 	if (str->len >= 1)

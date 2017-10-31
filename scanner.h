@@ -125,8 +125,10 @@ tBuffer buffer;
 #define BUFFERSIZE 32
 
 //function declarations
+int addchar(char n_char, tBuffer *str);
+void delstr(tBuffer *str);
+void free_sources(FILE *file, tBuffer *str);
 int start_scanner(char *filename);
-int stop_scanner();
 int get_token();
 int str_init(tBuffer *str);
 
