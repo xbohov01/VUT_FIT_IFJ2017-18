@@ -274,6 +274,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
+				//ungetc
 				currentToken.token_type = DIV_O;
 			}
 			break;
@@ -285,7 +286,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				addchar(n_char, &buffer);
+				addchar(n_char, &buffer); //nic nerob
 			}
 			break;
 
@@ -335,6 +336,8 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				currentToken.token_type = ERROR;
 			}
 			break;
+
+			//escape!!!
 
 			case POS_INT:
 			if (isdigit(n_char))
