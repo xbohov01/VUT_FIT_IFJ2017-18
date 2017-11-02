@@ -43,7 +43,7 @@ int functions(){
   NEXTT();
 
   //expecting identifier
-  CHECKT(TT_ID);
+  CHECKT(IDENTIFICATOR);
   NEXTT();
   //expecting (
   CHECKT(TT_LEFTPAR);
@@ -54,7 +54,7 @@ int functions(){
   if (currentToken.type == TT_RIGHTPAR){
     //expecting EOL(s) before next statement
     return end_of_lines();
-  } else if (currentToken.type == TT_ID){
+  } else if (currentToken.type == IDENTIFICATOR){
     //expecting argument declaration
     if (fnc_arglist() != SUCCESS){
       return SYNT_ERR;
@@ -79,13 +79,13 @@ int start(){
   int result;
 
   switch (currentToken.type) {
-    case TT_FUNC:
+    case FUNCTION_KEY:
       //'function' keyword
       result = functions();
-    case TT_SCOPE:
+    case SCOPE_KEY:
       //'scope' keyword
       result = scope();
-    case TT_EOF:
+    case ENDF:
       //<s> -> EOF
       return SUCCESS;
     default:
