@@ -4,6 +4,7 @@
 * By Samuel Bohovic, xbohov01
 *
 */
+#include "scanner.h"
 
 tToken currentToken;
 

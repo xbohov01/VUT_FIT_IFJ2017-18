@@ -1,7 +1,7 @@
 /****parser.c****/
 
 #include "parser.h"
-#include "scanner.h"
+//#include "scanner.h"
 #include "errors.h"
 
 
@@ -9,19 +9,23 @@
 //getting next token with error check
 #define NEXTT()  {  \
   if (get_token() != SUCCESS){  \
+    printf("%d\n", currentToken.token_type); //TESTING OUTPUT TODO REMOVE \
     return LEX_ERR; \
   } \
 }
 
 //check if token is correct
 #define CHECKT(expected){ \
-  if (currentToken.type != expected){ \
+  if (currentToken.token_type != expected){ \
+    fprintf(stderr, "Syntax Error: %d was expected but %d was given.\n", expected, currentToken.token_type);  \
     return SYNT_ERR; \
   } \
 }
 
 int end_of_lines(){
-  while (currentToken.type == EOL){
+  NEXTT();
+  CHECKT(EOL);
+  while (currentToken.token_type == EOL){
     NEXTT();
   }
   return SUCCESS;
@@ -44,7 +48,7 @@ int fnc_arg(){
   NEXTT();
 
   //expecting type
-  if (currentToken.type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
+  if (currentToken.token_type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
     return SYNT_ERR;
   } else {
     //gets next for condition in fnc_arglist
@@ -57,13 +61,13 @@ int fnc_arg(){
 //<paramlist> ->	<fncarg>	,	<paramlist>
 int fnc_arglist(){
 
-  while (currentToken.type != TT_RIGHTPAR){
+  while (currentToken.token_type != TT_RIGHTPAR){
     //has identifier or comma
-    if (currentToken.type == IDENTIFICATOR){
+    if (currentToken.token_type == IDENTIFICATOR){
       if (fnc_arg() != SUCCESS){
         return SYNT_ERR;
       }
-    } else if (currentToken.type == TT_COMMA){
+    } else if (currentToken.token_type == TT_COMMA){
       NEXTT();
     } else {
       return SYNT_ERR;
@@ -72,11 +76,64 @@ int fnc_arglist(){
 
 }
 
+//<statement>	<expr>
+//<statement>	<id>	='	<expr>
+//<statement>	input	<id>
+//<statement>	print	<id>	;	<print_list>
+//<statement>	if	<expr>	then	<endline>	<thenstats>	else	<endline>	<elsestats>	end 	if
+//<statement>	do	while	<expr>	<endline>	<teloprogramu>	loop
+//<statement>	<id>	='	<id>	(	<args>	)
+//<statement>	return	<expr>
+int statement(){
+  //expecting one of the above
+  switch (currentToken.token_type) {
+    case INTEGER :
+    case DOUBLE :
+    case STRING :
+    case IDENTIFICATOR:
+    case RETURN_KEY :
+      //resolve expression
+      //TODO add psa call
+      return end_of_lines;
+
+    case INPUT_KEY :
+      NEXTT();
+      //expecting identifier
+      CHECKT(IDENTIFICATOR);
+      return end_of_lines();
+
+  }
+
+}
+
+//<fncstats>	<statement>	<endline>	<fncstats>
+//<fncstats>	epsilon
+int fnc_stats(){
+  //expecting statements inside a function or end of function
+  NEXTT()
+  while (currentToken.token_type != END_KEY){
+    if (statement() != SUCCESS){
+      return SYNT_ERR;
+    }
+  }
+  return SUCCESS;
+}
+
 //<funkcie>	-> <fnc> <endline> <funkcie>
 //<fnc> -> <fncdeclr>
 //<fnc> -> <fncdef>
 //<fncdeclr>-> function <id> ( <paramlist> ) as	<type> <endline>
+//<fncdef>	function	<id>	(	<paramlist>	) 	as	<type>	<endline>	<fncstats>	end	function
 int functions(){
+  int definition = 0;
+
+  //if function is being declared one more NEXTT has to be called
+  if (currentToken.token_type == DECLARE_KEY){
+    NEXTT();
+    CHECKT(FUNCTION_KEY);
+    //is not definition
+    definition = 1;
+  }
   //already got 'function' keyword
   NEXTT();
 
@@ -89,23 +146,37 @@ int functions(){
   //expecting argument declarations or right parenthesis
   //<paramlist>	-> <fncarg>	,	<paramlist>
   //<fncarg> ->	<id>	as 	<type>
-  if (currentToken.type == TT_RIGHTPAR){
+  if (currentToken.token_type == TT_RIGHTPAR){
     //expecting EOL(s) before next statement
-    return end_of_lines();
-  } else if (currentToken.type == IDENTIFICATOR){
+    if (definition != 0){
+        return end_of_lines();
+    }
+  } else if (currentToken.token_type == IDENTIFICATOR){
     //expecting argument declaration
     if (fnc_arglist() != SUCCESS){
       return SYNT_ERR;
     } else {
       CHECKT(TT_RIGHTPAR);
       //expecting EOL(s) before next statement
-      return end_of_lines();
+      if (definition != 0){
+          return end_of_lines();
+      }
     }
   } else {
+    fprintf(stderr, "Syntax error in function declaration/definition. Expecting ')' or variables, %d was given.\n", currentToken.token_type);
     return SYNT_ERR;
   }
-
+  //if function is also defined
+  //expecting EOL(s) before next statement
+  if (end_of_lines() != SUCCESS){
+    return SYNT_ERR;
+  } else {
+    if (fnc_stats() != SUCCESS){
+      return SYNT_ERR;
+    }
+    return end_of_lines();
   }
+
 }
 
 int scope(){
@@ -117,9 +188,11 @@ int start(){
 
   int result;
 
-  switch (currentToken.type) {
+  switch (currentToken.token_type) {
     case FUNCTION_KEY:
       //'function' keyword
+    case DECLARE_KEY:
+      //'declare' keyword
       result = functions();
     case SCOPE_KEY:
       //'scope' keyword
