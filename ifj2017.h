@@ -27,11 +27,18 @@
 typedef struct hash_tab_symbol hash_tab_symbol_type;
 struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
-	char symbol_name[];	
-	/*union {
-		symTab_functionData_t functionData;
-		symTab_variableData_t variableData;
-	};*/
+	
+	bool is_function;  // false = variable     true = function
+
+	int value_type;  // 0 = integer     1 = float     2 = string
+
+	int integer_t;
+	float float_t;
+	char *char_t;
+
+	int num_parameters;
+	int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
+	char symbol_name[];	    // meno funkcie / premennej
 
 };
 
