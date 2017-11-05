@@ -92,7 +92,7 @@ int statement(){
     case STRING :
     case IDENTIFICATOR:
     case RETURN_KEY :
-      //resolve expression
+      //resolve expression or function call or return
       //TODO add psa call
       return end_of_lines;
 
@@ -102,6 +102,26 @@ int statement(){
       CHECKT(IDENTIFICATOR);
       return end_of_lines();
 
+    case PRINT_KEY :
+      NEXTT();
+      //expecting identifier
+      CHECKT(IDENTIFICATOR);
+      NEXTT();
+      //expecting ; or EOL
+      while (currentToken.token_type == TT_SEMICOLON){
+        NEXTT();
+        //expecting identifier
+        CHECKT(IDENTIFICATOR);
+      }
+      //EOLs
+      return end_of_lines();
+
+    case IF_KEY :
+      //if call
+    case DO_KEY :
+      //do call
+    default :
+      return SYNT_ERR;
   }
 
 }
