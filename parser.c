@@ -1,15 +1,16 @@
 /****parser.c****/
 
 #include "parser.h"
+#include "parser_test.h"
 //#include "scanner.h"
 #include "errors.h"
+#include <stdio.h>
 
 
 //some macros
 //getting next token with error check
 #define NEXTT()  {  \
   if (get_token() != SUCCESS){  \
-    printf("%d\n", currentToken.token_type); //TESTING OUTPUT TODO REMOVE \
     return LEX_ERR; \
   } \
 }
@@ -124,7 +125,7 @@ int statement(){
     case RETURN_KEY :
       //resolve expression or function call or return
       //TODO add psa call
-      return end_of_lines;
+      return end_of_lines();
 
     case INPUT_KEY :
       NEXTT();
