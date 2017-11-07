@@ -245,6 +245,10 @@ int scope(){
         //expecting end scope
         NEXTT();
         CHECKT(SCOPE_KEY);
+
+        //expecting EOF
+        NEXTT()
+        CHECKT(ENDF);
         return SUCCESS;
 
       default :
