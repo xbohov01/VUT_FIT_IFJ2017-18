@@ -33,7 +33,35 @@ int end_of_lines(){
 }
 
 //<deklaracie> ->	<deklaracia>	<endline>	<deklaracie>
+//<deklaracia> -> dim	<id>	as	<type>	<varinit>
+//<varinit> -> = <expr>
+//<varinit> -> epsilon
+//TODO add to symtable
+//TODO expr eval
 int var_declr(){
+  //already has dim keyword
+  NEXTT();
+  //expecting identifier
+  CHECKT(IDENTIFICATOR);
+  NEXTT();
+  //expecting as keyword
+  CHECKT(AS_KEY);
+  NEXTT();
+  //expecting type
+  if (currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY && currentToken.token_type != STRING_KEY){
+    fprintf(stderr, "Syntax error: expecting variable type in variable declaration.\n");
+    return SYNT_ERR;
+  }
+  NEXTT();
+  //expecting EOL or variable initialization
+  if (currentToken.token_type == EOL){
+    return end_of_lines();
+  } else if (currentToken.token_type == EQ_O){
+    //call expression evaluation;
+  } else {
+    fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
+    return SYNT_ERR;
+  }
 
 }
 
@@ -84,6 +112,8 @@ int fnc_arglist(){
 //<statement>	do	while	<expr>	<endline>	<teloprogramu>	loop
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
+//TODO if statement
+//TODO while statement
 int statement(){
   //expecting one of the above
   switch (currentToken.token_type) {
@@ -144,6 +174,7 @@ int fnc_stats(){
 //<fnc> -> <fncdef>
 //<fncdeclr>-> function <id> ( <paramlist> ) as	<type> <endline>
 //<fncdef>	function	<id>	(	<paramlist>	) 	as	<type>	<endline>	<fncstats>	end	function
+//TODO add to symtable
 int functions(){
   int definition = 0;
 
@@ -200,6 +231,26 @@ int functions(){
 }
 
 int scope(){
+  //int result = SYNT_ERR;
+  NEXTT();
+
+  while (currentToken.token_type != ENDF){
+    switch (currentToken.token_type){
+      case DIM_KEY :
+        //is variable declaration
+        return var_declr();
+
+      case END_KEY :
+        //expecting end scope
+        NEXTT();
+        CHECKT(SCOPE_KEY);
+        return SUCCESS;
+
+      default :
+        //expecting statement
+        return statement();
+    }
+  }
 
 }
 
@@ -208,24 +259,27 @@ int start(){
 
   int result;
 
-  switch (currentToken.token_type) {
-    case FUNCTION_KEY:
-      //'function' keyword
-    case DECLARE_KEY:
-      //'declare' keyword
-      result = functions();
-    case SCOPE_KEY:
-      //'scope' keyword
-      result = scope();
-    case ENDF:
-      //<s> -> EOF
-      return SUCCESS;
-    default:
-      return SYNT_ERR;
+  while (result != SYNT_ERR){
+    switch (currentToken.token_type) {
+      case FUNCTION_KEY:
+        //'function' keyword
+      case DECLARE_KEY:
+        //'declare' keyword
+        result = functions();
+      case SCOPE_KEY:
+        //'scope' keyword
+        result = scope();
+      case ENDF:
+        //<s> -> EOF
+        return SUCCESS;
+      default:
+        return SYNT_ERR;
+    }
   }
 }
 
-
+//TODO init symtable
+//TODO init scanner
 int start_parsing(){
 
   int result = SYNT_ERR;
