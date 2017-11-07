@@ -89,7 +89,7 @@ T_token_type test1[] = {
   ENDF,
 };
 
-//test with one variable
+//test just end of file
 T_token_type test2[] = {
   ENDF,
 
