@@ -27,6 +27,15 @@ typedef enum {
 	NE_O,// <>
 	//operators end
 
+	//other chars begin
+	BRA_P,// )
+	BRA_L,// (
+	PAR_R, // )
+	PAR_L,// (
+	COM,// .
+	SEM,// ;
+	//other chars end
+
 	//keywords begin
 	AS_KEY,
 	ASC_KEY,
@@ -74,7 +83,9 @@ typedef enum {
 
 	UNDEFINED,
 	ERROR,
+	ENDL,
 	ENDF
+
 } T_token_type;
 
 typedef enum {
@@ -93,6 +104,7 @@ typedef enum {
 
 	POS_BEG_STRING,
 	POS_STRING,
+	ESCAPE, //TODO
 
 	POS_BL_COMMENT,
 	POS_BL_END_COMMENT,
