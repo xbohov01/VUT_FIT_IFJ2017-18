@@ -1,3 +1,9 @@
+/**** ifj2017.h ****/
+//Global header file//
+//xbohov01
+//xgrigo02
+//xberes01
+//xkosti07
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -8,14 +14,14 @@
 #include <stdbool.h>
 
 
-
+//====SYMTABLE====
 
 /*
 
  typedef struct {
 	symTab_hashTable_t *global;
 	symTab_hashTable_t *local;
-	
+
 	//internal
 	char *typeStringBuffer;
 	size_t typeStringBufferSize;
@@ -27,7 +33,7 @@
 typedef struct hash_tab_symbol hash_tab_symbol_type;
 struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
-	
+
 	bool is_function;  // false = variable     true = function
 
 	int value_type;  // 0 = integer     1 = float     2 = string
@@ -47,3 +53,18 @@ typedef struct {
 	hash_tab_symbol_type *list_items[];
 } hash_table_type;
 
+//====PARSER====
+tToken currentToken;
+
+int start_parsing();
+int start();
+int scope();
+int end_of_lines();
+int var_declr();
+int fnc_arg();
+int fnc_arglist();
+int fnc_stats();
+int if_statements();
+int statements();
+
+//====SCANNER====
