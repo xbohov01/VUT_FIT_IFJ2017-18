@@ -87,9 +87,37 @@ int fnc_arg(){
 
 }
 
-//<paramlist> ->	<fncarg>	,	<paramlist>
+//<paramlist> ->	<fncarg>	<paramlist2>
+//<paramlist>	-> )
+//<paramlist2> ->	,	<fncarg>	<paramlist2>
+//<paramlist2> ->	)
 int fnc_arglist(){
 
+  //already has (
+  //no arguments
+  if (currentToken.token_type == TT_RIGHTPAR){
+    return SUCCESS;
+  }
+  //some arguments
+  while (currentToken.token_type != TT_RIGHTPAR){
+    //one argument
+    NEXTT();
+    //expecting identifier
+    CHECKT(IDENTIFICATOR);
+    if (fnc_arg() != SUCCESS){
+      return SYNT_ERR;
+    }
+    NEXTT()
+    //expecting TT_RIGHTPAR or a comma
+    if (currentToken.token_type == TT_RIGHTPAR){
+      return SUCCESS;
+    } else if (currentToken == TT_COMMA){
+      continue;
+    } else {
+      return SYNT_ERR;
+    }
+  }
+/*
   while (currentToken.token_type != TT_RIGHTPAR){
     //has identifier or comma
     if (currentToken.token_type == IDENTIFICATOR){
@@ -102,7 +130,18 @@ int fnc_arglist(){
       return SYNT_ERR;
     }
   }
+*/
+}
 
+//<statement> ->	if	<expr>	then	<endline>	<thenstats>	else	<endline>	<elsestats>	end 	if
+int if_statements(){
+  while (currentToken.token_type != END_KEY || currentToken.token_type != ELSE_KEY || currentToken.token_type != ELSEIF_KEY){
+    if (statements() == SYNT_ERR){
+      return SYNT_ERR;
+    } else {
+      return SUCCESS;
+    }
+  }
 }
 
 //<statement>	<expr>
@@ -115,6 +154,7 @@ int fnc_arglist(){
 //<statement>	return	<expr>
 //TODO if statement
 //TODO while statement
+//TODO return psa call
 int statement(){
   //expecting one of the above
   switch (currentToken.token_type) {
@@ -148,9 +188,67 @@ int statement(){
       return end_of_lines();
 
     case IF_KEY :
-      //if call
+
+      //has if
+      NEXTT();
+      //TODO check if expression
+
+      NEXTT();
+      CHECKT(THEN_KEY);
+      //expecting end of line
+      NEXTT();
+      CHECKT(EOL);
+      //if block
+      if (if_statements() != SUCCESS){
+        return SYNT_ERR;
+      }
+      //else if block
+      if (currentToken.token_type == ELSEIF_KEY){
+        while (currentToken.token_type == ELSEIF_KEY){
+          NEXTT();
+          //expecting then
+          CHECKT(THEN_KEY);
+          //checking statements
+          if (if_statements() != SUCCESS){
+            return SYNT_ERR;
+          }
+        }
+      }
+      //else block
+      if (currentToken.token_type == ELSE_KEY){
+        if (if_statements() != SUCCESS){
+          return SYNT_ERR;
+        }
+      }
+      //check end if
+      if (currentToken.token_type == END_KEY){
+        NEXTT();
+        //expecting if
+        CHECKT(IF_KEY);
+      } else {
+        //TODO maybe remove this? probably dead code
+        return SYNT_ERR;
+      }
+
     case DO_KEY :
-      //do call
+      //has do
+      NEXTT();
+      //expecting while
+      CHECKT(WHILE_KEY);
+      //TODO expression eval
+
+      //expecting EOL after expr TODO maybe not get next token
+      NEXTT();
+      CHECKT(EOL);
+
+      //while block
+      if (if_statements() != SUCCESS){
+        return SYNT_ERR;
+      }
+
+      //expecting loop
+      CHECKT(LOOP_KEY);
+
     default :
       return SYNT_ERR;
   }
