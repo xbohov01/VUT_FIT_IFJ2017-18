@@ -1,11 +1,9 @@
 /****parser.c****/
 
-#include "parser.h"
+#include "ifj2017.h"
 #include "parser_test.h"
-//#include "scanner.h"
 #include "errors.h"
 #include <stdio.h>
-
 
 //some macros
 //getting next token with error check
@@ -111,32 +109,19 @@ int fnc_arglist(){
     //expecting TT_RIGHTPAR or a comma
     if (currentToken.token_type == TT_RIGHTPAR){
       return SUCCESS;
-    } else if (currentToken == TT_COMMA){
+    } else if (currentToken.token_type == TT_COMMA){
       continue;
     } else {
       return SYNT_ERR;
     }
   }
-/*
-  while (currentToken.token_type != TT_RIGHTPAR){
-    //has identifier or comma
-    if (currentToken.token_type == IDENTIFICATOR){
-      if (fnc_arg() != SUCCESS){
-        return SYNT_ERR;
-      }
-    } else if (currentToken.token_type == TT_COMMA){
-      NEXTT();
-    } else {
-      return SYNT_ERR;
-    }
-  }
-*/
+
 }
 
 //<statement> ->	if	<expr>	then	<endline>	<thenstats>	else	<endline>	<elsestats>	end 	if
 int if_statements(){
   while (currentToken.token_type != END_KEY || currentToken.token_type != ELSE_KEY || currentToken.token_type != ELSEIF_KEY){
-    if (statements() == SYNT_ERR){
+    if (statement() == SYNT_ERR){
       return SYNT_ERR;
     } else {
       return SUCCESS;

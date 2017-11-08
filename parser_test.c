@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "parser.h"
+//#include "parser.h"
+#include "ifj2017.h"
 #include "errors.h"
 
 int get_token();
@@ -49,7 +50,6 @@ void print_curr_token(){
     "string",
     "substr",
     "then",
-    "then",
     "while",
     "and",
     "boolean",
@@ -72,7 +72,13 @@ void print_curr_token(){
     "line comment",
     "BLOCK_COMMENT",
     "UNDEFINED",
+    "ERROR",
     "end of file",
+    "end of line",
+    ")",
+    "(",
+    ",",
+    ";",
   };
   //token to print
   char *printToken;
@@ -95,10 +101,24 @@ T_token_type test2[] = {
 
 };
 
+//test with scope and one variable
+T_token_type test3[] = {
+  SCOPE_KEY,
+  DIM_KEY,
+  IDENTIFICATOR,
+  AS_KEY,
+  INTEGER_KEY,
+  EOL,
+  END_KEY,
+  SCOPE_KEY,
+
+};
+
 //total number of tests
-int tests = 2;
+int tests = 3;
 
 int expectedResult[] = {
+  SUCCESS,
   SUCCESS,
   SUCCESS,
 };
@@ -111,6 +131,8 @@ int get_token(){
     currentTest = test1;
   } else if (testing == 1){
     currentTest = test2;
+  } else if (testing == 2){
+    currentTest = test3;
   }
 
   currentToken.token_type = currentTest[pos];
