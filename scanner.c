@@ -302,6 +302,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
+				//ungetc
 				currentToken.token_type = DIV_O;
 			}
 			break;
@@ -313,8 +314,13 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			/*else
 			{
+<<<<<<< HEAD
 				addchar(n_char, &buffer);
 			}*/
+=======
+				addchar(n_char, &buffer); //nic nerob
+			}
+>>>>>>> f2be0ffe24fcba6cbd413babb3495c6409669c66
 			break;
 
 			case POS_BL_END_COMMENT:
@@ -370,6 +376,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			break;
 
+<<<<<<< HEAD
 			case ESCAPE;
 			{
 				if (n_char == '"')
@@ -424,6 +431,9 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 			}
 			break;
+=======
+			//escape!!!
+>>>>>>> f2be0ffe24fcba6cbd413babb3495c6409669c66
 
 			case POS_INT:
 			if (isdigit(n_char))

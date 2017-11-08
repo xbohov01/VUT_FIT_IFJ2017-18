@@ -116,7 +116,6 @@ typedef enum {
 
 //structure for token
 typedef struct {
-	T_token_type type;
 	int value_int;
 	double value_double;
 	char *value_string;
