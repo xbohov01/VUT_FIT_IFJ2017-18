@@ -1,3 +1,4 @@
+
 scope 'Hlavni telo programu
   Dim a As Integer
   DIM vysl AS INTEGER

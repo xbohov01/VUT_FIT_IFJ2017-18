@@ -15,6 +15,7 @@
 typedef enum {
 	//operators begin
 	ADD_O,// +
+	ERR,
 	SUB_O,// -
 	MUL_O,// *
 	DIV_O,// /
@@ -32,7 +33,7 @@ typedef enum {
 	BRA_L,// (
 	PAR_R, // )
 	PAR_L,// (
-	COM,// .
+	COM,// ,
 	SEM,// ;
 	//other chars end
 
@@ -78,8 +79,6 @@ typedef enum {
 	INTEGER,
 	STRING,
 	IDENTIFICATOR,
-	LINE_COMMENT,
-	BLOCK_COMMENT,
 
 	UNDEFINED,
 	ERROR,
@@ -104,7 +103,7 @@ typedef enum {
 
 	POS_BEG_STRING,
 	POS_STRING,
-	ESCAPE, //TODO
+	ESCAPE,
 
 	POS_BL_COMMENT,
 	POS_BL_END_COMMENT,
@@ -135,10 +134,12 @@ FILE* file;
 tBuffer buffer;
 #define BUFFERSIZE 32
 
+int esc;
+
 //function declarations
 int addchar(char n_char, tBuffer *str);
 void delstr(tBuffer *str);
-void free_sources(FILE *file, tBuffer *str);
+void free_sources();
 int start_scanner(char *filename);
 int get_token();
 int str_init(tBuffer *str);
