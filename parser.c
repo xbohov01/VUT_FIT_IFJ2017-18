@@ -5,6 +5,74 @@
 #include "errors.h"
 #include <stdio.h>
 
+void synt_error_print(int given, int expected){
+  //array of all tokens
+  const char *tokenList[] = {
+    "+",
+    "-",
+    "*",
+    "/",
+    "modulo",
+    "<",
+    ">",
+    "<=",
+    ">=",
+    "=",
+    "<>",
+    "as",
+    "asc",
+    "declare",
+    "dim",
+    "do",
+    "double",
+    "else",
+    "end",
+    "chr",
+    "function",
+    "input",
+    "integer",
+    "length",
+    "loop",
+    "print",
+    "return",
+    "scope",
+    "string",
+    "substr",
+    "then",
+    "while",
+    "and",
+    "boolean",
+    "continue",
+    "elseif",
+    "exit",
+    "false",
+    "for",
+    "next",
+    "not",
+    "or",
+    "shared",
+    "static",
+    "true",
+    "if",
+    "double_val",
+    "integer_val",
+    "string_val",
+    "identifier",
+    "line comment",
+    "BLOCK_COMMENT",
+    "UNDEFINED",
+    "ERROR",
+    "end of file",
+    "end of line",
+    ")",
+    "(",
+    ",",
+    ";",
+  };
+
+  printf("Syntax Error: %s was expected but %s was given.\n", tokenList[expected], tokenList[given]);
+}
+
 //some macros
 //getting next token with error check
 #define NEXTT()  {  \
@@ -16,13 +84,13 @@
 //check if token is correct
 #define CHECKT(expected){ \
   if (currentToken.token_type != expected){ \
-    fprintf(stderr, "Syntax Error: %d was expected but %d was given.\n", expected, currentToken.token_type);  \
+    synt_error_print(currentToken.token_type, expected);  \
     return SYNT_ERR; \
   } \
 }
 
 int end_of_lines(){
-  NEXTT();
+  //NEXTT();
   CHECKT(EOL);
   while (currentToken.token_type == EOL){
     NEXTT();
@@ -137,8 +205,6 @@ int if_statements(){
 //<statement>	do	while	<expr>	<endline>	<teloprogramu>	loop
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
-//TODO if statement
-//TODO while statement
 //TODO return psa call
 int statement(){
   //expecting one of the above
@@ -316,6 +382,8 @@ int functions(){
 
 int scope(){
   //int result = SYNT_ERR;
+  NEXTT();
+  CHECKT(EOL);
   NEXTT();
 
   while (currentToken.token_type != ENDF){

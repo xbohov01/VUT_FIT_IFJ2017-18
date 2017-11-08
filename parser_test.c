@@ -90,6 +90,7 @@ T_token_type *currentTest = NULL;
 //test for empty scope
 T_token_type test1[] = {
   SCOPE_KEY,
+  EOL,
   END_KEY,
   SCOPE_KEY,
   ENDF,
@@ -104,6 +105,7 @@ T_token_type test2[] = {
 //test with scope and one variable
 T_token_type test3[] = {
   SCOPE_KEY,
+  EOL,
   DIM_KEY,
   IDENTIFICATOR,
   AS_KEY,
