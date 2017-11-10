@@ -5,6 +5,9 @@
 //xberes01
 //xkosti07
 
+#ifndef IFJ2017_HEADER
+#define IFJ2017_HEADER
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -147,3 +150,6 @@ int statement();
 int if_statements();
 
 //====SCANNER====
+
+
+#endif

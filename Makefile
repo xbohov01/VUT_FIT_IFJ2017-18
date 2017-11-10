@@ -1,5 +1,5 @@
-parser_test: parser_test.c
-	gcc -o parser_test parser_test.c parser.c
+parser_test:
+	gcc -o psa_parser psa_parser.c
 
 clean:
-	rm parser_test
+	rm psa_parser
