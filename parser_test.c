@@ -10,7 +10,7 @@ int get_token();
 int testing = 0;
 
 //result of test
-int result = 2;
+int result = 55;
 
 //position in test array
 int pos = 0;
@@ -20,16 +20,23 @@ void print_curr_token(){
   //array of all tokens
   const char *tokenList[] = {
     "+",
+    "lex err",
     "-",
     "*",
     "/",
-    "modulo",
+    "mod",
     "<",
     ">",
     "<=",
     ">=",
     "=",
     "<>",
+    "}",
+    "{",
+    ")",
+    "(",
+    ",",
+    ";",
     "as",
     "asc",
     "declare",
@@ -69,20 +76,14 @@ void print_curr_token(){
     "integer_val",
     "string_val",
     "identifier",
-    "line comment",
-    "BLOCK_COMMENT",
     "UNDEFINED",
     "ERROR",
-    "end of file",
     "end of line",
-    ")",
-    "(",
-    ",",
-    ";",
+    "end of file",
   };
   //token to print
   char *printToken;
-  printf("Current token -> %s\n", tokenList[currentToken.token_type]);
+  printf("%d NEXTT used. Current token -> %s\n", pos, tokenList[currentToken.token_type]);
 }
 
 T_token_type *currentTest = NULL;
@@ -90,7 +91,7 @@ T_token_type *currentTest = NULL;
 //test for empty scope
 T_token_type test1[] = {
   SCOPE_KEY,
-  EOL,
+  ENDL,
   END_KEY,
   SCOPE_KEY,
   ENDF,
@@ -99,27 +100,46 @@ T_token_type test1[] = {
 //test just end of file
 T_token_type test2[] = {
   ENDF,
-
 };
 
 //test with scope and one variable
 T_token_type test3[] = {
   SCOPE_KEY,
-  EOL,
+  ENDL,
   DIM_KEY,
   IDENTIFICATOR,
   AS_KEY,
   INTEGER_KEY,
-  EOL,
+  ENDL,
   END_KEY,
   SCOPE_KEY,
+  ENDF,
+};
 
+T_token_type test4[] = {
+  ENDL, SCOPE_KEY, ENDL,
+  DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
+  DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
+	PRINT_KEY, STRING, SEM, ENDL,
+  INPUT_KEY, IDENTIFICATOR, ENDL,
+  IF_KEY, IDENTIFICATOR, LT_O, INTEGER, THEN_KEY, ENDL,
+  PRINT_KEY, STRING, SEM, ENDL, ELSE_KEY, ENDL,
+	IDENTIFICATOR, EQ_O, INTEGER, ENDL,
+  DO_KEY, WHILE_KEY, IDENTIFICATOR, GT_O, INTEGER, ENDL,
+  IDENTIFICATOR, EQ_O, IDENTIFICATOR, MUL_O, IDENTIFICATOR, ENDL,
+  IDENTIFICATOR, EQ_O, IDENTIFICATOR, SUB_O, INTEGER, ENDL,
+  LOOP_KEY, ENDL,
+  PRINT_KEY, STRING, SEM, IDENTIFICATOR, SEM, STRING, SEM, ENDL,
+  END_KEY, IF_KEY, ENDL,
+  END_KEY, SCOPE_KEY, ENDL,
+  ENDF,
 };
 
 //total number of tests
-int tests = 3;
+int tests = 4;
 
 int expectedResult[] = {
+  SUCCESS,
   SUCCESS,
   SUCCESS,
   SUCCESS,
@@ -135,6 +155,8 @@ int get_token(){
     currentTest = test2;
   } else if (testing == 2){
     currentTest = test3;
+  } else if (testing == 3){
+    currentTest = test4;
   }
 
   currentToken.token_type = currentTest[pos];

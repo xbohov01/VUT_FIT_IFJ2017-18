@@ -14,10 +14,16 @@
 #include <stdbool.h>
 
 //====SCANNER====
+#define N_KEYWORDS 35
+#define N_OPERATOR_CHARS 8
+#define N_OPERATORS 12
+#define N_DELIMITERS 7
+
 //enumerator for token types
 typedef enum {
 	//operators begin
 	ADD_O,// +
+	ERR,
 	SUB_O,// -
 	MUL_O,// *
 	DIV_O,// /
@@ -29,6 +35,15 @@ typedef enum {
 	EQ_O,// =
 	NE_O,// <>
 	//operators end
+
+	//other chars begin
+	BRA_P,// )
+	BRA_L,// (
+	PAR_R, // )
+	PAR_L,// (
+	COM,// ,
+	SEM,// ;
+	//other chars end
 
 	//keywords begin
 	AS_KEY,
@@ -67,21 +82,44 @@ typedef enum {
 	TRUE_KEY,
 	IF_KEY,
 	//keywords end
-  DOUBLE,
+
+	DOUBLE,
 	INTEGER,
 	STRING,
 	IDENTIFICATOR,
-	LINE_COMMENT,
-	BLOCK_COMMENT,
-  UNDEFINED,
+
+	UNDEFINED,
 	ERROR,
-	ENDF,
-	EOL,
-	TT_RIGHTPAR,
-	TT_LEFTPAR,
-	TT_COMMA,
-	TT_SEMICOLON,
+	ENDL,
+	ENDF
+
 } T_token_type;
+
+typedef enum {
+	BEGIN,
+
+	POS_LT,
+	POS_GT,
+
+	ID_OR_KEY,
+
+	POS_INT,
+	POS_EXP,
+	POS_EXP_S,
+	POS_FL,
+	POS_DOUBLE,
+
+	POS_BEG_STRING,
+	POS_STRING,
+	ESCAPE,
+
+	POS_BL_COMMENT,
+	POS_BL_END_COMMENT,
+
+	COM_OR_DIV,
+
+	POS_LIN_COMMENT
+} T_token_state;
 
 //structure for token
 typedef struct {
@@ -92,6 +130,27 @@ typedef struct {
 	char *id;
 } tToken;
 
+typedef struct {
+	char *content;
+	int len;
+	int size;
+} tBuffer;
+
+FILE* file;
+
+//buffer for identifiers
+tBuffer buffer;
+#define BUFFERSIZE 32
+
+int esc;
+
+//function declarations
+int addchar(char n_char, tBuffer *str);
+void delstr(tBuffer *str);
+void free_sources();
+int start_scanner(char *filename);
+int get_token();
+int str_init(tBuffer *str);
 
 //====SYMTABLE====
 

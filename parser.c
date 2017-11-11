@@ -9,16 +9,23 @@ void synt_error_print(int given, int expected){
   //array of all tokens
   const char *tokenList[] = {
     "+",
+    "lex err",
     "-",
     "*",
     "/",
-    "modulo",
+    "mod",
     "<",
     ">",
     "<=",
     ">=",
     "=",
     "<>",
+    "}",
+    "{",
+    ")",
+    "(",
+    ",",
+    ";",
     "as",
     "asc",
     "declare",
@@ -58,19 +65,13 @@ void synt_error_print(int given, int expected){
     "integer_val",
     "string_val",
     "identifier",
-    "line comment",
-    "BLOCK_COMMENT",
     "UNDEFINED",
     "ERROR",
-    "end of file",
     "end of line",
-    ")",
-    "(",
-    ",",
-    ";",
+    "end of file",
   };
 
-  printf("Syntax Error: %s was expected but %s was given.\n", tokenList[expected], tokenList[given]);
+  fprintf(stderr, "Syntax Error: %s was expected but %s was given.\n", tokenList[expected], tokenList[given]);
 }
 
 //some macros
@@ -91,8 +92,8 @@ void synt_error_print(int given, int expected){
 
 int end_of_lines(){
   //NEXTT();
-  CHECKT(EOL);
-  while (currentToken.token_type == EOL){
+  //CHECKT(ENDL);
+  while (currentToken.token_type == ENDL){
     NEXTT();
   }
   return SUCCESS;
@@ -120,8 +121,8 @@ int var_declr(){
     return SYNT_ERR;
   }
   NEXTT();
-  //expecting EOL or variable initialization
-  if (currentToken.token_type == EOL){
+  //expecting ENDL or variable initialization
+  if (currentToken.token_type == ENDL){
     return end_of_lines();
   } else if (currentToken.token_type == EQ_O){
     //call expression evaluation;
@@ -144,6 +145,7 @@ int fnc_arg(){
 
   //expecting type
   if (currentToken.token_type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
+    fprintf(stderr, "Invalid type\n");
     return SYNT_ERR;
   } else {
     //gets next for condition in fnc_arglist
@@ -161,25 +163,27 @@ int fnc_arglist(){
 
   //already has (
   //no arguments
-  if (currentToken.token_type == TT_RIGHTPAR){
+  if (currentToken.token_type == PAR_R){
     return SUCCESS;
   }
   //some arguments
-  while (currentToken.token_type != TT_RIGHTPAR){
+  while (currentToken.token_type != PAR_R){
     //one argument
     NEXTT();
     //expecting identifier
     CHECKT(IDENTIFICATOR);
     if (fnc_arg() != SUCCESS){
+      fprintf(stderr, "Invalid argument\n");
       return SYNT_ERR;
     }
     NEXTT()
-    //expecting TT_RIGHTPAR or a comma
-    if (currentToken.token_type == TT_RIGHTPAR){
+    //expecting PAR_R or a comma
+    if (currentToken.token_type == PAR_R){
       return SUCCESS;
-    } else if (currentToken.token_type == TT_COMMA){
+    } else if (currentToken.token_type == COM){
       continue;
     } else {
+      fprintf(stderr, "Invalid argument\n");
       return SYNT_ERR;
     }
   }
@@ -188,13 +192,20 @@ int fnc_arglist(){
 
 //<statement> ->	if	<expr>	then	<endline>	<thenstats>	else	<endline>	<elsestats>	end 	if
 int if_statements(){
-  while (currentToken.token_type != END_KEY || currentToken.token_type != ELSE_KEY || currentToken.token_type != ELSEIF_KEY){
+  //last was ENDL so need to get next
+  NEXTT();
+  while (currentToken.token_type != END_KEY && currentToken.token_type != ELSE_KEY
+        && currentToken.token_type != ELSEIF_KEY && currentToken.token_type != LOOP_KEY){
     if (statement() == SYNT_ERR){
+      fprintf(stderr, "Error in conditional statement\n");
       return SYNT_ERR;
-    } else {
-      return SUCCESS;
     }
+
   }
+  if (currentToken.token_type == LOOP_KEY || currentToken.token_type == END_KEY){
+    NEXTT();
+  }
+  return SUCCESS;
 }
 
 //<statement>	<expr>
@@ -209,6 +220,9 @@ int if_statements(){
 int statement(){
   //expecting one of the above
   switch (currentToken.token_type) {
+    case ENDL :
+      NEXTT();
+
     case INTEGER :
     case DOUBLE :
     case STRING :
@@ -216,6 +230,9 @@ int statement(){
     case RETURN_KEY :
       //resolve expression or function call or return
       //TODO add psa call
+      do {
+        NEXTT();
+      } while(currentToken.token_type != ENDL);
       return end_of_lines();
 
     case INPUT_KEY :
@@ -226,16 +243,28 @@ int statement(){
 
     case PRINT_KEY :
       NEXTT();
-      //expecting identifier
-      CHECKT(IDENTIFICATOR);
+
+      //expecting value or identifier
+      if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
+          && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
+            fprintf(stderr, "Identifier or expression expected\n");
+            return SYNT_ERR;
+          }
       NEXTT();
-      //expecting ; or EOL
-      while (currentToken.token_type == TT_SEMICOLON){
+      //expecting ; or ENDL
+      while (currentToken.token_type == SEM){
         NEXTT();
-        //expecting identifier
-        CHECKT(IDENTIFICATOR);
+        //expecting value or identifier or EOL
+        if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
+            && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
+              if (currentToken.token_type == ENDL){
+                return end_of_lines();
+              }
+              fprintf(stderr, "Identifier or expression expected\n");
+              return SYNT_ERR;
+            }
       }
-      //EOLs
+      //ENDLs
       return end_of_lines();
 
     case IF_KEY :
@@ -243,12 +272,15 @@ int statement(){
       //has if
       NEXTT();
       //TODO check if expression
+      do {
+        NEXTT();
+      } while (currentToken.token_type != THEN_KEY);
 
-      NEXTT();
+      //NEXTT();
       CHECKT(THEN_KEY);
       //expecting end of line
       NEXTT();
-      CHECKT(EOL);
+      CHECKT(ENDL);
       //if block
       if (if_statements() != SUCCESS){
         return SYNT_ERR;
@@ -271,15 +303,12 @@ int statement(){
           return SYNT_ERR;
         }
       }
+
       //check end if
-      if (currentToken.token_type == END_KEY){
-        NEXTT();
-        //expecting if
-        CHECKT(IF_KEY);
-      } else {
-        //TODO maybe remove this? probably dead code
-        return SYNT_ERR;
-      }
+      CHECKT(IF_KEY);
+      NEXTT();
+
+      return SUCCESS;
 
     case DO_KEY :
       //has do
@@ -287,10 +316,14 @@ int statement(){
       //expecting while
       CHECKT(WHILE_KEY);
       //TODO expression eval
+      do {
+        NEXTT();
+        printf("IGNORING EXPR\n");
+      } while(currentToken.token_type != ENDL);
 
-      //expecting EOL after expr TODO maybe not get next token
-      NEXTT();
-      CHECKT(EOL);
+      //expecting ENDL after expr TODO maybe not get next token
+      //NEXTT();
+      CHECKT(ENDL);
 
       //while block
       if (if_statements() != SUCCESS){
@@ -298,9 +331,13 @@ int statement(){
       }
 
       //expecting loop
-      CHECKT(LOOP_KEY);
+      //removed to fix multiple if stat blocks
+      //CHECKT(LOOP_KEY);
+
+      return SUCCESS;
 
     default :
+      fprintf(stderr, "Syntax error in statement\n");
       return SYNT_ERR;
   }
 
@@ -313,6 +350,7 @@ int fnc_stats(){
   NEXTT()
   while (currentToken.token_type != END_KEY){
     if (statement() != SUCCESS){
+      fprintf(stderr, "Invalid statement inside function\n");
       return SYNT_ERR;
     }
   }
@@ -342,13 +380,13 @@ int functions(){
   CHECKT(IDENTIFICATOR);
   NEXTT();
   //expecting (
-  CHECKT(TT_LEFTPAR);
+  CHECKT(PAR_L);
   NEXTT();
   //expecting argument declarations or right parenthesis
   //<paramlist>	-> <fncarg>	,	<paramlist>
   //<fncarg> ->	<id>	as 	<type>
-  if (currentToken.token_type == TT_RIGHTPAR){
-    //expecting EOL(s) before next statement
+  if (currentToken.token_type == PAR_R){
+    //expecting ENDL(s) before next statement
     if (definition != 0){
         return end_of_lines();
     }
@@ -357,8 +395,8 @@ int functions(){
     if (fnc_arglist() != SUCCESS){
       return SYNT_ERR;
     } else {
-      CHECKT(TT_RIGHTPAR);
-      //expecting EOL(s) before next statement
+      CHECKT(PAR_R);
+      //expecting ENDL(s) before next statement
       if (definition != 0){
           return end_of_lines();
       }
@@ -368,7 +406,7 @@ int functions(){
     return SYNT_ERR;
   }
   //if function is also defined
-  //expecting EOL(s) before next statement
+  //expecting ENDL(s) before next statement
   if (end_of_lines() != SUCCESS){
     return SYNT_ERR;
   } else {
@@ -383,14 +421,18 @@ int functions(){
 int scope(){
   //int result = SYNT_ERR;
   NEXTT();
-  CHECKT(EOL);
+  CHECKT(ENDL);
   NEXTT();
 
   while (currentToken.token_type != ENDF){
     switch (currentToken.token_type){
       case DIM_KEY :
         //is variable declaration
-        return var_declr();
+        if (var_declr() != SUCCESS){
+          return SYNT_ERR;
+        }
+        //return var_declr();
+        continue;
 
       case END_KEY :
         //expecting end scope
@@ -399,13 +441,24 @@ int scope(){
 
         //expecting EOF
         NEXTT()
+        //could have empty line
+        end_of_lines();
         CHECKT(ENDF);
         return SUCCESS;
 
+      case ENDL :
+        NEXTT();
+        continue;
+
       default :
         //expecting statement
-        return statement();
+        if (statement() != SUCCESS){
+          fprintf(stderr, "Invalid statement\n");
+          return SYNT_ERR;
+        }
+        continue;
     }
+    NEXTT();
   }
 
 }
@@ -428,9 +481,14 @@ int start(){
       case ENDF:
         //<s> -> EOF
         return SUCCESS;
+      case ENDL :
+        NEXTT();
+        continue;
       default:
-        return SYNT_ERR;
+        fprintf(stderr, "Syntax error in start\n");
+        return result;
     }
+    return result;
   }
 }
 
