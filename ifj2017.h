@@ -135,6 +135,13 @@ typedef struct {
 	hash_tab_symbol_type *list_items[];
 } hash_table_type;
 
+hash_table_type *sym_tab_init(unsigned size);
+unsigned int hash_function(const char *str, unsigned hashTable_size);
+hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbol_name);
+hash_tab_symbol_type *hash_table_search(hash_table_type *hash_table, char *entry_key);
+void hash_table_destroy(hash_table_type *hash_table);
+// ====END SYMTABlE====
+
 //====PARSER====
 tToken currentToken;
 
@@ -152,4 +159,4 @@ int if_statements();
 //====SCANNER====
 
 
-#endif
+#endif // IFJ_2017 header

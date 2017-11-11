@@ -1,3 +1,7 @@
+// In case of multiply include
+#ifndef HASH_TABLE
+#define HASH_TABLE
+
 #include "ifj2017.h"
 
 //Inicializuje hashovaciu tabulku, alokuje miesto
@@ -128,49 +132,51 @@ void hash_table_destroy(hash_table_type *hash_table) {
 	return;
 }
 
+// Sym table tests and usage
+// ===========================
+// int main(int argc, char const *argv[])
+// {
+
+// hash_table_type *tmp = NULL;
+// tmp = sym_tab_init(20);
 
 
-int main(int argc, char const *argv[])
-{
 
-hash_table_type *tmp = NULL;
-tmp = sym_tab_init(20);
-
-
-
-hash_table_insert(tmp, "ahoj");
-hash_table_insert(tmp, "if");
-hash_table_insert(tmp, "premmene");
-hash_table_insert(tmp, "in");
-hash_table_insert(tmp, "ko");
-hash_table_insert(tmp, "ok");
-hash_table_insert(tmp, "ahj");
-hash_table_insert(tmp, "ifk");
-hash_table_insert(tmp, "prekmmene");
-hash_table_insert(tmp, "ink");
-hash_table_insert(tmp, "kok");
-hash_table_insert(tmp, "okk");
-hash_table_insert(tmp, "anhoj");
-hash_table_insert(tmp, "inf");
-hash_table_insert(tmp, "pnremmene");
-hash_table_insert(tmp, "inn");
-hash_table_insert(tmp, "kno");
-hash_table_insert(tmp, "onk");
+// hash_table_insert(tmp, "ahoj");
+// hash_table_insert(tmp, "if");
+// hash_table_insert(tmp, "premmene");
+// hash_table_insert(tmp, "in");
+// hash_table_insert(tmp, "ko");
+// hash_table_insert(tmp, "ok");
+// hash_table_insert(tmp, "ahj");
+// hash_table_insert(tmp, "ifk");
+// hash_table_insert(tmp, "prekmmene");
+// hash_table_insert(tmp, "ink");
+// hash_table_insert(tmp, "kok");
+// hash_table_insert(tmp, "okk");
+// hash_table_insert(tmp, "anhoj");
+// hash_table_insert(tmp, "inf");
+// hash_table_insert(tmp, "pnremmene");
+// hash_table_insert(tmp, "inn");
+// hash_table_insert(tmp, "kno");
+// hash_table_insert(tmp, "onk");
 
 
-printf("fasdfas\n");
-hash_tab_symbol_type * num = hash_table_search(tmp, "inf");
-if (num != NULL)
-	printf("%s", num->next_symbol->symbol_name);
+// hash_tab_symbol_type * num = hash_table_search(tmp, "inf");
+// if (num != NULL)
+// 	printf("%s", num->next_symbol->symbol_name);
 
 
-num = hash_table_search(tmp, "inf");
-if (num != NULL)
-	printf("Nasiel som \n");
+// num = hash_table_search(tmp, "inf");
+// if (num != NULL)
+// 	printf("Nasiel som \n");
 
 
-hash_table_destroy(tmp);
+// hash_table_destroy(tmp);
 
-//free(tmp);
-	return 0;
-}
+// //free(tmp);
+// 	return 0;
+// }
+// ==================================
+
+#endif // HASH_TABLE include
