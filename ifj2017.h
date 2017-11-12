@@ -20,6 +20,10 @@ typedef struct {
 	int size;
 } tString;
 
+int str_init(tString *str);
+void delstr(tString *str);
+int addchar(char n_char, tString *str);
+
 //====SCANNER====
 #define N_KEYWORDS 35
 #define N_OPERATOR_CHARS 8
@@ -128,10 +132,6 @@ typedef enum {
 	POS_LIN_COMMENT
 } T_token_state;
 
-int str_init(tString *str);
-void delstr(tString *str);
-int addchar(char n_char, tString *str);
-
 //structure for token
 typedef struct {
 	int value_int;
@@ -153,8 +153,6 @@ int esc;
 void free_sources();
 int start_scanner(char *filename);
 int get_token();
-
-
 
 //====SYMTABLE====
 
