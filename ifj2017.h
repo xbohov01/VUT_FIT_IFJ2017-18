@@ -13,6 +13,17 @@
 #include <stdarg.h>
 #include <stdbool.h>
 
+//====STRING====
+typedef struct {
+	char *content;
+	int len;
+	int size;
+} tString;
+
+int str_init(tString *str);
+void delstr(tString *str);
+int addchar(char n_char, tString *str);
+
 //====SCANNER====
 #define N_KEYWORDS 35
 #define N_OPERATOR_CHARS 8
@@ -130,27 +141,18 @@ typedef struct {
 	char *id;
 } tToken;
 
-typedef struct {
-	char *content;
-	int len;
-	int size;
-} tBuffer;
-
 FILE* file;
 
 //buffer for identifiers
-tBuffer buffer;
+tString buffer;
 #define BUFFERSIZE 32
 
 int esc;
 
 //function declarations
-int addchar(char n_char, tBuffer *str);
-void delstr(tBuffer *str);
 void free_sources();
 int start_scanner(char *filename);
 int get_token();
-int str_init(tBuffer *str);
 
 //====SYMTABLE====
 
@@ -202,7 +204,7 @@ int var_declr();
 int fnc_arg();
 int fnc_arglist();
 int fnc_stats();
-int statement();
 int if_statements();
+int statements();
 
 //====SCANNER====
