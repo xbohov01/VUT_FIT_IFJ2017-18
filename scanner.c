@@ -1,8 +1,8 @@
-#include "scanner.h"
+//#include "scanner.h"
 #include "errors.h"
 #include "ifj2017.h"
 
-int addchar(char n_char, tBuffer *str) //funkcia pridava znak do bufferu
+int addchar(char n_char, tString *str) //funkcia pridava znak do bufferu
 {
 	if (str->len+1 > str->size)
 	{
@@ -19,7 +19,7 @@ int addchar(char n_char, tBuffer *str) //funkcia pridava znak do bufferu
 		str->len++;
 }
 
-void delstr(tBuffer *str) //funkcia uvolnuje tBuffer
+void delstr(tString *str) //funkcia uvolnuje tString
 {
 	if (str->len >= 1)
 	{
@@ -28,7 +28,7 @@ void delstr(tBuffer *str) //funkcia uvolnuje tBuffer
 	}
 }
 
-int str_init(tBuffer *str) //funkcia inicializuje tBuffer
+int str_init(tString *str) //funkcia inicializuje tString
 {
 
 	str->content = malloc(sizeof(char)*BUFFERSIZE); //alokovanie pamate
@@ -597,8 +597,6 @@ void print_curr_token(){
     "integer_val",
     "string_val",
     "identifier",
-		"a", //placeholder
-		"b", //placeholder
     "UNDEFINED",
 		"ERROR",
 		"end of line",
