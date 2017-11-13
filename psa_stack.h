@@ -26,19 +26,21 @@ Stack of stacks is a best representation
 // Possible types for non_terminals
 // Used after rule application
 typedef enum non_term_types {
-    NT_ADD = 1, // 1: E + E
-    NT_SUB,     // 2: E - E
-    NT_MUL,     // 3: E * E
-    NT_DIV,     // 4: E / E
-    NT_MOD,     // 5: E \ E
+    NT_ADD, // 1: E -> E + E
+    NT_SUB, // 2: E -> E - E
+    NT_MUL, // 3: E -> E * E
+    NT_DIV, // 4: E -> E / E
+    NT_MOD, // 5: E -> E \ E
 
-    NT_PAR,     // 6: (E)
+    NT_PAR, // 6: E -> (E)
 
-    NT_LT,      // 7: E < E
-    NT_GT,      // 8: E > E
-    NT_LE,      // 9: E <= E
-    NT_GE       // 10:E >= E
-} NT_types;
+    NT_ID,  // 7: E -> id
+
+    // NT_FN,  // 8: id(eps/E/E,...E) -> // TODO: function may need other processing
+
+    STOPPER // '<'
+} N_T_rules; // TODO: rename to "rule"
+
 
 // Extended stack of terminals and non terminals (Basically a one-way list with pop function)
 typedef struct t_nt_stack {
@@ -51,8 +53,8 @@ typedef struct t_nt_stack {
 // Non_terminal itself
 typedef struct data_non_term
 {
-    NT_types NT_type;
-
+    N_T_rules NT_type;
+    // TODO: add pointer on label with actual data
 } Data_NTerm; // Non-terminal data
 
 
@@ -92,14 +94,14 @@ void error_exit(T_NT_stack *T_NT_s, int code);
 
 T_NT_stack *init_T_NT_stack();
 void destroy_T_NT_stack(T_NT_stack *s);
-T_NT_item *push_T_NT(T_NT_stack *s, bool is_non_term, T_NT_Data data);
+T_NT_item *push_T_NT(T_NT_stack *s, bool is_non_term, T_NT_Data data); // TODO: pass data as a pointer
 T_NT_item *pop_T_NT(T_NT_stack *s); // Returns item for easy search
 
 // Extended stack operations
 void set_first_T_NT(T_NT_stack *s);
 void next_T_NT(T_NT_stack *s);
 bool active_T_NT(T_NT_stack *s);
-T_NT_item *insert_after_T_NT(T_NT_stack *s, bool is_non_term, T_NT_Data data);
+T_NT_item *insert_after_T_NT(T_NT_stack *s, bool is_non_term, T_NT_Data data); // TODO: pass data as a pointer
 
 
 // =======================

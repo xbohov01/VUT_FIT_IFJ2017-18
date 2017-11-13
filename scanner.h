@@ -1,5 +1,5 @@
-#ifndef SCANNER_HEADER
-#define SCANNER_HEADER
+#ifndef SCANNER_INCLUDED
+#define SCANNER_INCLUDED
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -149,4 +149,4 @@ int str_init(tBuffer *str);
 
 tToken currentToken;
 
-#endif // SCANNER_HEADER included
+#endif // SCANNER_INCLUDED end

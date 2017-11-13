@@ -146,21 +146,6 @@ T_NT_Data *int_fill_data_token(T_token_type type, char* id, int int_val) {
     return temp_data;
 } // end INTEGER type
 
-// Non terminal type
-T_NT_Data *non_term_create(NT_types input_type) {
-    T_NT_Data *temp_non_term_data = malloc(sizeof(T_NT_Data));
-    if (temp_non_term_data == NULL) {
-        return NULL;
-    }
-
-    Data_NTerm temp_non_term = temp_non_term_data->NTerm;
-
-    temp_non_term.NT_type = input_type;
-
-    temp_non_term_data->NTerm = temp_non_term;
-    return temp_non_term_data;
-} // end Non terminal type
-
 // ++++++++++++++++
 // End simulate token
 

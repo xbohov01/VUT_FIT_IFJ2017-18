@@ -21,6 +21,7 @@
 typedef enum {
 	//operators begin
 	ADD_O,// +
+	ERR,
 	SUB_O,// -
 	MUL_O,// *
 	DIV_O,// /
@@ -32,6 +33,15 @@ typedef enum {
 	EQ_O,// =
 	NE_O,// <>
 	//operators end
+
+	//other chars begin
+	BRA_P,// }
+	BRA_L,// {
+	PAR_R, // )
+	PAR_L,// (
+	COM,// ,
+	SEM,// ;
+	//other chars end
 
 	//keywords begin
 	AS_KEY,
@@ -70,20 +80,17 @@ typedef enum {
 	TRUE_KEY,
 	IF_KEY,
 	//keywords end
-  DOUBLE,
+
+	DOUBLE,
 	INTEGER,
 	STRING,
 	IDENTIFICATOR,
-	LINE_COMMENT,
-	BLOCK_COMMENT,
-  UNDEFINED,
+
+	UNDEFINED,
 	ERROR,
-	ENDF,
-	EOL,
-	TT_RIGHTPAR,
-	TT_LEFTPAR,
-	TT_COMMA,
-	TT_SEMICOLON,
+	ENDL,
+	ENDF
+
 } T_token_type;
 
 //structure for token
@@ -95,7 +102,8 @@ typedef struct {
 	char *id;
 } tToken;
 
-
+// TODO: Not very good idea to put all functions here
+// TODO: Leave only common structures and enumerators
 //====SYMTABLE====
 
 /*
@@ -143,7 +151,6 @@ void hash_table_destroy(hash_table_type *hash_table);
 // ====END SYMTABlE====
 
 //====PARSER====
-tToken currentToken;
 
 int start_parsing();
 int start();
@@ -158,5 +165,6 @@ int if_statements();
 
 //====SCANNER====
 
+tToken currentToken;
 
 #endif // IFJ_2017 header
