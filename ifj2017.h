@@ -48,8 +48,6 @@ typedef enum {
 	//operators end
 
 	//other chars begin
-	BRA_R,// )
-	BRA_L,// (
 	PAR_R, // )
 	PAR_L,// (
 	COM,// ,
@@ -216,5 +214,9 @@ int fnc_arglist();
 int fnc_stats();
 int if_statements();
 int statement();
+
+void hard_exit();
+
+tString params;
 
 //====SCANNER====
