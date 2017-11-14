@@ -1,2 +1,5 @@
-ial: ial.c
-	gcc -o ial ial.c -I.
+scanner: scanner.c
+	gcc -o scanner scanner.c -I.
+
+clean:
+	rm scanner

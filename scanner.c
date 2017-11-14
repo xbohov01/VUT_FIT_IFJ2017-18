@@ -148,7 +148,6 @@ T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je
 
 void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 {
-	int row = 0;
 	int n_char;
 	currentToken.token_type = UNDEFINED;
 	T_token_state token_state = BEGIN;
@@ -173,7 +172,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else if (n_char == '\n')
 			{
 			  currentToken.token_type = ENDL;
-				row++;
 			}
 			else if (n_char == '+')
 			{
@@ -334,6 +332,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -354,6 +353,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -392,6 +392,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 						else
 						{
 							currentToken.token_type = ERROR;
+							hard_exit(LEX_ERR);
 						}
 						i_e++;
 					}
@@ -403,11 +404,13 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					else
 					{
 						currentToken.token_type = ERROR;
+						hard_exit(LEX_ERR);
 					}
 				}
 				else
 				{
 					currentToken.token_type = ERROR;
+					hard_exit(LEX_ERR);
 				}
 			}
 			break;
@@ -429,10 +432,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = INTEGER;
 				currentToken.value_int = atoi(buffer.content);
 				token_state = BEGIN;
@@ -447,13 +446,8 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = ERROR;
-				token_state = BEGIN;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -465,10 +459,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = DOUBLE;
 				currentToken.value_double = atoi(buffer.content);
 				token_state = BEGIN;
@@ -483,13 +473,8 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = ERROR;
-				token_state = BEGIN;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -506,10 +491,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = DOUBLE;
 				currentToken.value_double = atoi(buffer.content);
 				token_state = BEGIN;
@@ -532,6 +513,11 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				n_char = tolower(n_char);
 				addchar(n_char, &buffer);
 			}
+			break;
+
+			default:
+				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			break;
 
 		}
@@ -557,35 +543,5 @@ int start_scanner(char *filename)
 	}
 }
 
-#ifdef DEBUG
-int main() //aby bol prekladac spoko a tiez na testovanie
-{
-	int i = 0;
-	char inputf1[] = "test.txt";
-	T_token_type test_tokens1[] = {ENDL, SCOPE_KEY, ENDL, DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL, DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-	PRINT_KEY, STRING, SEM, ENDL, INPUT_KEY, IDENTIFICATOR, ENDL, IF_KEY, IDENTIFICATOR, LT_O, INTEGER, THEN_KEY, ENDL, PRINT_KEY, STRING, SEM, ENDL, ELSE_KEY, ENDL,
-	IDENTIFICATOR, EQ_O, INTEGER, ENDL, DO_KEY, WHILE_KEY, IDENTIFICATOR, GT_O, INTEGER, ENDL, IDENTIFICATOR, EQ_O, IDENTIFICATOR, MUL_O, IDENTIFICATOR, ENDL,
-	IDENTIFICATOR, EQ_O, IDENTIFICATOR, SUB_O, INTEGER, ENDL, LOOP_KEY, ENDL, PRINT_KEY, STRING, SEM, IDENTIFICATOR, SEM, STRING, SEM, ENDL, END_KEY, IF_KEY, ENDL, END_KEY, SCOPE_KEY, ENDL, ENDF};
-
-	start_scanner("test.txt");
-	while(currentToken.token_type != ENDF)
-	{
-		if (get_token() == LEX_ERR){
-			printf("LEX ERR %s\n", buffer.content);
-		}
-		else if(currentToken.token_type == test_tokens1[i])
-		{
-			printf("OK %d ", i);
-			printf("%s ", buffer.content);
-		}
-		else
-		{
-			printf("WRONG %d ",i);
-			printf("%s ", buffer.content);
-		}
-		print_curr_token();
-		i++;
-	}
-	free_sources();
-}
-#endif
+int main() //aby bol prekladac spoko
+{}
