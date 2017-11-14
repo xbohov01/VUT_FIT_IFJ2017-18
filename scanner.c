@@ -146,7 +146,7 @@ T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je
 	}
 }
 
-int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
+void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 {
 	int row = 0;
 	int n_char;

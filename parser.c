@@ -10,6 +10,7 @@
 
 //terminates all resources and program for error handling
 void hard_exit(int code){
+  fprintf(stderr, "HARD EXIT\n");
   //free resources
   #ifndef DEBUG
   free_sources();
@@ -29,6 +30,76 @@ void hard_exit(int code){
   //TODO destroy all stacks
 
   exit(code);
+}
+
+void print_token(){
+  //array of all tokens
+  const char *tokenList[] = {
+    "+",
+    "lex err",
+    "-",
+    "*",
+    "/",
+    "mod",
+    "<",
+    ">",
+    "<=",
+    ">=",
+    "=",
+    "<>",
+    "}",
+    "{",
+    ")",
+    "(",
+    ",",
+    ";",
+    "as",
+    "asc",
+    "declare",
+    "dim",
+    "do",
+    "double",
+    "else",
+    "end",
+    "chr",
+    "function",
+    "input",
+    "integer",
+    "length",
+    "loop",
+    "print",
+    "return",
+    "scope",
+    "string",
+    "substr",
+    "then",
+    "while",
+    "and",
+    "boolean",
+    "continue",
+    "elseif",
+    "exit",
+    "false",
+    "for",
+    "next",
+    "not",
+    "or",
+    "shared",
+    "static",
+    "true",
+    "if",
+    "double_val",
+    "integer_val",
+    "string_val",
+    "identifier",
+    "UNDEFINED",
+    "ERROR",
+    "end of line",
+    "end of file",
+  };
+  //token to print
+  char *printToken;
+  printf("Current token -> %s\n", tokenList[currentToken.token_type]);
 }
 
 void synt_error_print(int given, int expected){
@@ -117,10 +188,10 @@ void synt_error_print(int given, int expected){
 }
 
 int end_of_lines(){
-  //NEXTT();
+  //get_token();
   //CHECKT(ENDL);
   while (currentToken.token_type == ENDL){
-    NEXTT();
+    get_token();
   }
   return SUCCESS;
 
@@ -134,19 +205,19 @@ int end_of_lines(){
 //TODO expr eval
 int var_declr(){
   //already has dim keyword
-  NEXTT();
+  get_token();
   //expecting identifier
   CHECKT(IDENTIFICATOR);
-  NEXTT();
+  get_token();
   //expecting as keyword
   CHECKT(AS_KEY);
-  NEXTT();
+  get_token();
   //expecting type
   if (currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY && currentToken.token_type != STRING_KEY){
     fprintf(stderr, "Syntax error: expecting variable type in variable declaration.\n");
     return SYNT_ERR;
   }
-  NEXTT();
+  get_token();
   //expecting ENDL or variable initialization
   if (currentToken.token_type == ENDL){
     return end_of_lines();
@@ -163,11 +234,11 @@ int var_declr(){
 //TODO add to symtable
 int fnc_arg(){
   //already got identifier
-  NEXTT()
+  get_token();
 
   //expecting as keyword
   CHECKT(AS_KEY);
-  NEXTT();
+  get_token();
 
   //expecting type
   if (currentToken.token_type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
@@ -175,7 +246,7 @@ int fnc_arg(){
     return SYNT_ERR;
   } else {
     //gets next for condition in fnc_arglist
-    NEXTT();
+    get_token();
     return SUCCESS;
   }
 
@@ -195,14 +266,14 @@ int fnc_arglist(){
   //some arguments
   while (currentToken.token_type != PAR_R){
     //one argument
-    NEXTT();
+    get_token();
     //expecting identifier
     CHECKT(IDENTIFICATOR);
     if (fnc_arg() != SUCCESS){
       fprintf(stderr, "Invalid argument\n");
       return SYNT_ERR;
     }
-    NEXTT()
+    get_token();
     //expecting PAR_R or a comma
     if (currentToken.token_type == PAR_R){
       return SUCCESS;
@@ -219,7 +290,7 @@ int fnc_arglist(){
 //<statement> ->	if	<expr>	then	<endline>	<thenstats>	else	<endline>	<elsestats>	end 	if
 int if_statements(){
   //last was ENDL so need to get next
-  NEXTT();
+  get_token();
   while (currentToken.token_type != END_KEY && currentToken.token_type != ELSE_KEY
         && currentToken.token_type != ELSEIF_KEY && currentToken.token_type != LOOP_KEY){
     if (statement() == SYNT_ERR){
@@ -229,7 +300,7 @@ int if_statements(){
 
   }
   if (currentToken.token_type == LOOP_KEY || currentToken.token_type == END_KEY){
-    NEXTT();
+    get_token();
   }
   return SUCCESS;
 }
@@ -247,7 +318,7 @@ int statement(){
   //expecting one of the above
   switch (currentToken.token_type) {
     case ENDL :
-      NEXTT();
+      get_token();
 
     case INTEGER :
     case DOUBLE :
@@ -257,18 +328,18 @@ int statement(){
       //resolve expression or function call or return
       //TODO add psa call
       do {
-        NEXTT();
+        get_token();
       } while(currentToken.token_type != ENDL);
       return end_of_lines();
 
     case INPUT_KEY :
-      NEXTT();
+      get_token();
       //expecting identifier
       CHECKT(IDENTIFICATOR);
       return end_of_lines();
 
     case PRINT_KEY :
-      NEXTT();
+      get_token();
 
       //expecting value or identifier
       if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
@@ -276,10 +347,10 @@ int statement(){
             fprintf(stderr, "Identifier or expression expected\n");
             return SYNT_ERR;
           }
-      NEXTT();
+      get_token();
       //expecting ; or ENDL
       while (currentToken.token_type == SEM){
-        NEXTT();
+        get_token();
         //expecting value or identifier or EOL
         if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
             && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
@@ -296,16 +367,16 @@ int statement(){
     case IF_KEY :
 
       //has if
-      NEXTT();
+      get_token();
       //TODO check if expression
       do {
-        NEXTT();
+        get_token();
       } while (currentToken.token_type != THEN_KEY);
 
-      //NEXTT();
+      //get_token();
       CHECKT(THEN_KEY);
       //expecting end of line
-      NEXTT();
+      get_token();
       CHECKT(ENDL);
       //if block
       if (if_statements() != SUCCESS){
@@ -314,7 +385,7 @@ int statement(){
       //else if block
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
-          NEXTT();
+          get_token();
           //expecting then
           CHECKT(THEN_KEY);
           //checking statements
@@ -332,23 +403,23 @@ int statement(){
 
       //check end if
       CHECKT(IF_KEY);
-      NEXTT();
+      get_token();
 
       return SUCCESS;
 
     case DO_KEY :
       //has do
-      NEXTT();
+      get_token();
       //expecting while
       CHECKT(WHILE_KEY);
       //TODO expression eval
       do {
-        NEXTT();
+        get_token();
         printf("IGNORING EXPR\n");
       } while(currentToken.token_type != ENDL);
 
       //expecting ENDL after expr TODO maybe not get next token
-      //NEXTT();
+      //get_token();
       CHECKT(ENDL);
 
       //while block
@@ -373,7 +444,7 @@ int statement(){
 //<fncstats>	epsilon
 int fnc_stats(){
   //expecting statements inside a function or end of function
-  NEXTT()
+  get_token();
   while (currentToken.token_type != END_KEY){
     if (statement() != SUCCESS){
       fprintf(stderr, "Invalid statement inside function\n");
@@ -394,20 +465,20 @@ int functions(){
 
   //if function is being declared one more NEXTT has to be called
   if (currentToken.token_type == DECLARE_KEY){
-    NEXTT();
+    get_token();
     CHECKT(FUNCTION_KEY);
     //is not definition
     definition = 1;
   }
   //already got 'function' keyword
-  NEXTT();
+  get_token();
 
   //expecting identifier
   CHECKT(IDENTIFICATOR);
-  NEXTT();
+  get_token();
   //expecting (
   CHECKT(PAR_L);
-  NEXTT();
+  get_token();
   //expecting argument declarations or right parenthesis
   //<paramlist>	-> <fncarg>	,	<paramlist>
   //<fncarg> ->	<id>	as 	<type>
@@ -446,9 +517,9 @@ int functions(){
 
 int scope(){
   //int result = SYNT_ERR;
-  NEXTT();
+  get_token();
   CHECKT(ENDL);
-  NEXTT();
+  get_token();
 
   while (currentToken.token_type != ENDF){
     switch (currentToken.token_type){
@@ -462,18 +533,18 @@ int scope(){
 
       case END_KEY :
         //expecting end scope
-        NEXTT();
+        get_token();
         CHECKT(SCOPE_KEY);
 
         //expecting EOF
-        NEXTT()
+        get_token();
         //could have empty line
         end_of_lines();
         CHECKT(ENDF);
         return SUCCESS;
 
       case ENDL :
-        NEXTT();
+        get_token();
         continue;
 
       default :
@@ -484,7 +555,7 @@ int scope(){
         }
         continue;
     }
-    NEXTT();
+    get_token();
   }
 
 }
@@ -492,7 +563,7 @@ int scope(){
 //<s> -> <funkcie> <scope>
 int start(){
 
-  int result;
+  int result = 0;
 
   while (result != SYNT_ERR){
     switch (currentToken.token_type) {
@@ -508,7 +579,7 @@ int start(){
         //<s> -> EOF
         return SUCCESS;
       case ENDL :
-        NEXTT();
+        get_token();
         continue;
       default:
         fprintf(stderr, "Syntax error in start\n");
@@ -523,9 +594,11 @@ int start_parsing(){
   int result = SYNT_ERR;
 
   //get first token
-  if (get_token() != SUCCESS){
+  get_token();
+  /*if (get_token() != SUCCESS){
+    printf("sss\n");
     return LEX_ERR;
-  }
+  }*/
   //begin parsing
   result = start();
   if (result == SUCCESS){
@@ -553,6 +626,8 @@ int main(int argc, char *argv[]){
 
   //start parsing
   result = start_parsing();
+
+  printf("%d\n", result);
 
   return result;
 

@@ -152,7 +152,7 @@ int esc;
 //function declarations
 void free_sources();
 int start_scanner(char *filename);
-int get_token();
+void get_token();
 
 //====SYMTABLE====
 
