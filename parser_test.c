@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include "parser.h"
 #include "ifj2017.h"
 #include "errors.h"
 

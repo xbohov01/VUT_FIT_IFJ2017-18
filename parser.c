@@ -1,9 +1,35 @@
 /****parser.c****/
 
 #include "ifj2017.h"
-#include "parser_test.h"
 #include "errors.h"
 #include <stdio.h>
+
+#ifdef DEBUG
+#include "parser_test.h"
+#endif
+
+//terminates all resources and program for error handling
+void hard_exit(int code){
+  //free resources
+  #ifndef DEBUG
+  free_sources();
+  #endif
+
+  if (func_table != NULL){
+    hash_table_destroy(func_table);
+  }
+  if (var_table != NULL){
+    hash_table_destroy(var_table);
+  }
+
+  if (file != NULL){
+    fclose(file);
+  }
+
+  //TODO destroy all stacks
+
+  exit(code);
+}
 
 void synt_error_print(int given, int expected){
   //array of all tokens
@@ -86,7 +112,7 @@ void synt_error_print(int given, int expected){
 #define CHECKT(expected){ \
   if (currentToken.token_type != expected){ \
     synt_error_print(currentToken.token_type, expected);  \
-    return SYNT_ERR; \
+    hard_exit(SYNT_ERR); \
   } \
 }
 
@@ -492,8 +518,6 @@ int start(){
   }
 }
 
-//TODO init symtable
-//TODO init scanner
 int start_parsing(){
 
   int result = SYNT_ERR;
@@ -509,5 +533,27 @@ int start_parsing(){
   } else {
     return SYNT_ERR;
   }
+
+}
+
+int main(int argc, char *argv[]){
+  int result;
+  if (argc != 2){
+    fprintf(stderr, "Incorrect arguments\n");
+    return INTERNAL_ERR;
+  }
+
+  //init symtables
+  func_table = sym_tab_init(64);
+  var_table = sym_tab_init(64);
+  //TODO check for correct init
+
+  //start scanner
+  start_scanner(argv[1]);
+
+  //start parsing
+  result = start_parsing();
+
+  return result;
 
 }
