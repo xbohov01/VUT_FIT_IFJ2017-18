@@ -29,8 +29,6 @@ typedef enum {
 	//operators end
 
 	//other chars begin
-	BRA_R,// }
-	BRA_L,// {
 	PAR_R, // )
 	PAR_L,// (
 	COM,// ,
