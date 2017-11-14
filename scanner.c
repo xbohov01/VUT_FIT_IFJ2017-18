@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 #include "scanner.h"
-=======
->>>>>>> c5b6c76126dc4a6c50d63e1a23c637b2f304677b
 #include "errors.h"
 #include "ifj2017.h"
 
@@ -150,7 +147,7 @@ T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je
 	}
 }
 
-void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
+int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 {
 	int row = 0;
 	int n_char;
@@ -561,7 +558,6 @@ int start_scanner(char *filename)
 	}
 }
 
-<<<<<<< HEAD
 //prints current token - testing
 void print_curr_token(){
   //array of all tokens
@@ -635,9 +631,6 @@ void print_curr_token(){
   printf("Current token -> %s\n", tokenList[currentToken.token_type]);
 }
 
-=======
-#ifdef DEBUG
->>>>>>> c5b6c76126dc4a6c50d63e1a23c637b2f304677b
 int main() //aby bol prekladac spoko a tiez na testovanie
 {
 	int i = 0;
@@ -651,21 +644,20 @@ int main() //aby bol prekladac spoko a tiez na testovanie
 	while(currentToken.token_type != ENDF)
 	{
 		if (get_token() == LEX_ERR){
-			printf("LEX ERR %s\n", buffer.content);
+			printf("LEX ERR %s\n", buffer);
 		}
 		else if(currentToken.token_type == test_tokens1[i])
 		{
 			printf("OK %d ", i);
-			printf("%s ", buffer.content);
+			printf("%s ", buffer);
 		}
 		else
 		{
 			printf("WRONG %d ",i);
-			printf("%s ", buffer.content);
+			printf("%s ", buffer);
 		}
 		print_curr_token();
 		i++;
 	}
 	free_sources();
 }
-#endif
