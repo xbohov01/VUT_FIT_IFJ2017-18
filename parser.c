@@ -225,7 +225,8 @@ int var_declr(){
     //call expression evaluation;
   } else {
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
-    return SYNT_ERR;
+    hard_exit(SYNT_ERR);
+    //return SYNT_ERR;
   }
 
 }
@@ -243,7 +244,8 @@ int fnc_arg(){
   //expecting type
   if (currentToken.token_type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
     fprintf(stderr, "Invalid type\n");
-    return SYNT_ERR;
+    hard_exit();
+    //return SYNT_ERR;
   } else {
     //gets next for condition in fnc_arglist
     get_token();
@@ -271,7 +273,8 @@ int fnc_arglist(){
     CHECKT(IDENTIFICATOR);
     if (fnc_arg() != SUCCESS){
       fprintf(stderr, "Invalid argument\n");
-      return SYNT_ERR;
+      hard_exit(SYNT_ERR);
+      //return SYNT_ERR;
     }
     get_token();
     //expecting PAR_R or a comma
@@ -281,7 +284,8 @@ int fnc_arglist(){
       continue;
     } else {
       fprintf(stderr, "Invalid argument\n");
-      return SYNT_ERR;
+      hard_exit(SYNT_ERR);
+      //return SYNT_ERR;
     }
   }
 
@@ -295,7 +299,8 @@ int if_statements(){
         && currentToken.token_type != ELSEIF_KEY && currentToken.token_type != LOOP_KEY){
     if (statement() == SYNT_ERR){
       fprintf(stderr, "Error in conditional statement\n");
-      return SYNT_ERR;
+      hard_exit(SYNT_ERR);
+      //return SYNT_ERR;
     }
 
   }
@@ -345,7 +350,8 @@ int statement(){
       if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
           && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
             fprintf(stderr, "Identifier or expression expected\n");
-            return SYNT_ERR;
+            hard_exit(SYNT_ERR);
+            //return SYNT_ERR;
           }
       get_token();
       //expecting ; or ENDL
@@ -358,7 +364,8 @@ int statement(){
                 return end_of_lines();
               }
               fprintf(stderr, "Identifier or expression expected\n");
-              return SYNT_ERR;
+              hard_exit(SYNT_ERR);
+              //return SYNT_ERR;
             }
       }
       //ENDLs
@@ -380,7 +387,8 @@ int statement(){
       CHECKT(ENDL);
       //if block
       if (if_statements() != SUCCESS){
-        return SYNT_ERR;
+        hard_exit(SYNT_ERR);
+        //return SYNT_ERR;
       }
       //else if block
       if (currentToken.token_type == ELSEIF_KEY){
@@ -390,14 +398,16 @@ int statement(){
           CHECKT(THEN_KEY);
           //checking statements
           if (if_statements() != SUCCESS){
-            return SYNT_ERR;
+            hard_exit(SYNT_ERR);
+            //return SYNT_ERR;
           }
         }
       }
       //else block
       if (currentToken.token_type == ELSE_KEY){
         if (if_statements() != SUCCESS){
-          return SYNT_ERR;
+          hard_exit(SYNT_ERR);
+          //return SYNT_ERR;
         }
       }
 
@@ -424,7 +434,8 @@ int statement(){
 
       //while block
       if (if_statements() != SUCCESS){
-        return SYNT_ERR;
+        hard_exit(SYNT_ERR);
+        //return SYNT_ERR;
       }
 
       //expecting loop
@@ -435,7 +446,8 @@ int statement(){
 
     default :
       fprintf(stderr, "Syntax error in statement\n");
-      return SYNT_ERR;
+      hard_exit(SYNT_ERR);
+      //return SYNT_ERR;
   }
 
 }
@@ -448,7 +460,8 @@ int fnc_stats(){
   while (currentToken.token_type != END_KEY){
     if (statement() != SUCCESS){
       fprintf(stderr, "Invalid statement inside function\n");
-      return SYNT_ERR;
+      hard_exit(SYNT_ERR);
+      //return SYNT_ERR;
     }
   }
   return SUCCESS;
@@ -490,7 +503,8 @@ int functions(){
   } else if (currentToken.token_type == IDENTIFICATOR){
     //expecting argument declaration
     if (fnc_arglist() != SUCCESS){
-      return SYNT_ERR;
+      hard_exit(SYNT_ERR);
+      //return SYNT_ERR;
     } else {
       CHECKT(PAR_R);
       //expecting ENDL(s) before next statement
@@ -500,15 +514,18 @@ int functions(){
     }
   } else {
     fprintf(stderr, "Syntax error in function declaration/definition. Expecting ')' or variables, %d was given.\n", currentToken.token_type);
-    return SYNT_ERR;
+    hard_exit(SYNT_ERR);
+    //return SYNT_ERR;
   }
   //if function is also defined
   //expecting ENDL(s) before next statement
   if (end_of_lines() != SUCCESS){
-    return SYNT_ERR;
+    hard_exit(SYNT_ERR);
+    //return SYNT_ERR;
   } else {
     if (fnc_stats() != SUCCESS){
-      return SYNT_ERR;
+      hard_exit(SYNT_ERR);
+      //return SYNT_ERR;
     }
     return end_of_lines();
   }
@@ -526,7 +543,8 @@ int scope(){
       case DIM_KEY :
         //is variable declaration
         if (var_declr() != SUCCESS){
-          return SYNT_ERR;
+          hard_exit(SYNT_ERR);
+          //return SYNT_ERR;
         }
         //return var_declr();
         continue;
@@ -551,7 +569,8 @@ int scope(){
         //expecting statement
         if (statement() != SUCCESS){
           fprintf(stderr, "Invalid statement\n");
-          return SYNT_ERR;
+          hard_exit(SYNT_ERR);
+          //return SYNT_ERR;
         }
         continue;
     }
@@ -593,6 +612,8 @@ int start_parsing(){
 
   int result = SYNT_ERR;
 
+  str_init(&params);
+
   //get first token
   get_token();
   /*if (get_token() != SUCCESS){
@@ -601,11 +622,8 @@ int start_parsing(){
   }*/
   //begin parsing
   result = start();
-  if (result == SUCCESS){
-    return SUCCESS;
-  } else {
-    return SYNT_ERR;
-  }
+
+  return result;
 
 }
 
