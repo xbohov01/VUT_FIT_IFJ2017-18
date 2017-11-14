@@ -1,8 +1,8 @@
-//#include "scanner.h"
+#include "scanner.h"
 #include "errors.h"
 #include "ifj2017.h"
 
-int addchar(char n_char, tString *str) //funkcia pridava znak do bufferu
+int addchar(char n_char, tBuffer *str) //funkcia pridava znak do bufferu
 {
 	if (str->len+1 > str->size)
 	{
@@ -19,7 +19,7 @@ int addchar(char n_char, tString *str) //funkcia pridava znak do bufferu
 		str->len++;
 }
 
-void delstr(tString *str) //funkcia uvolnuje tString
+void delstr(tBuffer *str) //funkcia uvolnuje tBuffer
 {
 	if (str->len >= 1)
 	{
@@ -28,7 +28,7 @@ void delstr(tString *str) //funkcia uvolnuje tString
 	}
 }
 
-int str_init(tString *str) //funkcia inicializuje tString
+int str_init(tBuffer *str) //funkcia inicializuje tBuffer
 {
 
 	str->content = malloc(sizeof(char)*BUFFERSIZE); //alokovanie pamate
@@ -149,6 +149,7 @@ T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je
 
 int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 {
+	int row = 0;
 	int n_char;
 	currentToken.token_type = UNDEFINED;
 	T_token_state token_state = BEGIN;
@@ -173,6 +174,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else if (n_char == '\n')
 			{
 			  currentToken.token_type = ENDL;
+				row++;
 			}
 			else if (n_char == '+')
 			{
@@ -209,7 +211,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			//pridane
 			else if (n_char == '}')
 			{
-			  currentToken.token_type = BRA_R;
+			  currentToken.token_type = BRA_P;
 			}
 			else if (n_char == '{')
 			{
@@ -428,6 +430,10 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
+				if (n_char == '\n')
+				{
+					row--;
+				}
 				currentToken.token_type = INTEGER;
 				currentToken.value_int = atoi(buffer.content);
 				token_state = BEGIN;
@@ -443,6 +449,10 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
+				if (n_char == '\n')
+				{
+					row--;
+				}
 				currentToken.token_type = ERROR;
 				token_state = BEGIN;
 			}
@@ -456,6 +466,10 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
+				if (n_char == '\n')
+				{
+					row--;
+				}
 				currentToken.token_type = DOUBLE;
 				currentToken.value_double = atoi(buffer.content);
 				token_state = BEGIN;
@@ -471,6 +485,10 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
+				if (n_char == '\n')
+				{
+					row--;
+				}
 				currentToken.token_type = ERROR;
 				token_state = BEGIN;
 			}
@@ -489,6 +507,10 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
+				if (n_char == '\n')
+				{
+					row--;
+				}
 				currentToken.token_type = DOUBLE;
 				currentToken.value_double = atoi(buffer.content);
 				token_state = BEGIN;
@@ -536,7 +558,7 @@ int start_scanner(char *filename)
 	}
 }
 
-//prints current token - testing only
+//prints current token - testing
 void print_curr_token(){
   //array of all tokens
   const char *tokenList[] = {
@@ -597,6 +619,8 @@ void print_curr_token(){
     "integer_val",
     "string_val",
     "identifier",
+		"a", //placeholder
+		"b", //placeholder
     "UNDEFINED",
 		"ERROR",
 		"end of line",
@@ -610,43 +634,13 @@ void print_curr_token(){
 int main() //aby bol prekladac spoko a tiez na testovanie
 {
 	int i = 0;
-	char inputf1[] = "test2.txt";
-	T_token_type test_tokens1[] = {
-	//test1:
-	/*ENDL, SCOPE_KEY, ENDL, DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL, DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
+	char inputf1[] = "test.txt";
+	T_token_type test_tokens1[] = {ENDL, SCOPE_KEY, ENDL, DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL, DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
 	PRINT_KEY, STRING, SEM, ENDL, INPUT_KEY, IDENTIFICATOR, ENDL, IF_KEY, IDENTIFICATOR, LT_O, INTEGER, THEN_KEY, ENDL, PRINT_KEY, STRING, SEM, ENDL, ELSE_KEY, ENDL,
 	IDENTIFICATOR, EQ_O, INTEGER, ENDL, DO_KEY, WHILE_KEY, IDENTIFICATOR, GT_O, INTEGER, ENDL, IDENTIFICATOR, EQ_O, IDENTIFICATOR, MUL_O, IDENTIFICATOR, ENDL,
-	IDENTIFICATOR, EQ_O, IDENTIFICATOR, SUB_O, INTEGER, ENDL, LOOP_KEY, ENDL, PRINT_KEY, STRING, SEM, IDENTIFICATOR, SEM, STRING, SEM, ENDL, END_KEY, IF_KEY, ENDL, END_KEY, SCOPE_KEY, ENDL, ENDF*/
-	//test2:
-	DECLARE_KEY, FUNCTION_KEY, IDENTIFICATOR, PAR_L, IDENTIFICATOR, AS_KEY, INTEGER_KEY, PAR_R, AS_KEY, INTEGER_KEY, ENDL,
-	FUNCTION_KEY, IDENTIFICATOR, PAR_L, IDENTIFICATOR, AS_KEY, INTEGER_KEY, PAR_R, AS_KEY, INTEGER_KEY, ENDL,
-		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-		IF_KEY, IDENTIFICATOR, LT_O, INTEGER, THEN_KEY, ENDL,
-			IDENTIFICATOR, EQ_O, INTEGER, ENDL,
-		ELSE_KEY, ENDL,
-			IDENTIFICATOR, EQ_O, IDENTIFICATOR, SUB_O, INTEGER, ENDL,
-			IDENTIFICATOR, EQ_O, IDENTIFICATOR, PAR_L, IDENTIFICATOR, PAR_R, ENDL,
-			IDENTIFICATOR, EQ_O, IDENTIFICATOR, MUL_O, IDENTIFICATOR, ENDL,
-		END_KEY, IF_KEY, ENDL,
-		RETURN_KEY, IDENTIFICATOR, ENDL,
-	END_KEY, FUNCTION_KEY, ENDL,
-	SCOPE_KEY, ENDL,
-		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-		PRINT_KEY, STRING, SEM, ENDL,
-		INPUT_KEY, IDENTIFICATOR, ENDL,
-		IF_KEY, IDENTIFICATOR, LT_O, INTEGER, THEN_KEY, ENDL,
-			PRINT_KEY, STRING, SEM, ENDL,
-		ELSE_KEY, ENDL,
-			IDENTIFICATOR, EQ_O, IDENTIFICATOR, PAR_L, IDENTIFICATOR, PAR_R, ENDL,
-			PRINT_KEY, STRING, SEM, IDENTIFICATOR, SEM, STRING, SEM, ENDL,
-		END_KEY, IF_KEY, ENDL,
-	END_KEY, SCOPE_KEY, ENDL, ENDF
-	};
+	IDENTIFICATOR, EQ_O, IDENTIFICATOR, SUB_O, INTEGER, ENDL, LOOP_KEY, ENDL, PRINT_KEY, STRING, SEM, IDENTIFICATOR, SEM, STRING, SEM, ENDL, END_KEY, IF_KEY, ENDL, END_KEY, SCOPE_KEY, ENDL, ENDF};
 
-	start_scanner("test2.txt");
+	start_scanner("test.txt");
 	while(currentToken.token_type != ENDF)
 	{
 		if (get_token() == LEX_ERR){
