@@ -205,15 +205,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 			  currentToken.token_type = EQ_O;
 			}
-			//pridane
-			else if (n_char == '}')
-			{
-			  currentToken.token_type = BRA_R;
-			}
-			else if (n_char == '{')
-			{
-			  currentToken.token_type = BRA_L;
-			}
 			else if (n_char == ')')
 			{
 			  currentToken.token_type = PAR_R;
@@ -419,7 +410,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 			}
 			break;
-			
+
 			case POS_INT:
 			if (isdigit(n_char))
 			{
