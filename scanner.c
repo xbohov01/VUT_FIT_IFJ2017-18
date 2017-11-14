@@ -208,15 +208,6 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 			  currentToken.token_type = EQ_O;
 			}
-			//pridane
-			else if (n_char == '}')
-			{
-			  currentToken.token_type = BRA_P;
-			}
-			else if (n_char == '{')
-			{
-			  currentToken.token_type = BRA_L;
-			}
 			else if (n_char == ')')
 			{
 			  currentToken.token_type = PAR_R;
