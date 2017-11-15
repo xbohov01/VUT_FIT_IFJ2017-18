@@ -148,7 +148,6 @@ T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je
 
 void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 {
-	int row = 0;
 	int n_char;
 	currentToken.token_type = UNDEFINED;
 	T_token_state token_state = BEGIN;
@@ -173,7 +172,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else if (n_char == '\n')
 			{
 			  currentToken.token_type = ENDL;
-				row++;
 			}
 			else if (n_char == '+')
 			{
@@ -206,15 +204,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else if (n_char == '=')
 			{
 			  currentToken.token_type = EQ_O;
-			}
-			//pridane
-			else if (n_char == '}')
-			{
-			  currentToken.token_type = BRA_R;
-			}
-			else if (n_char == '{')
-			{
-			  currentToken.token_type = BRA_L;
 			}
 			else if (n_char == ')')
 			{
@@ -334,6 +323,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -354,6 +344,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -392,6 +383,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 						else
 						{
 							currentToken.token_type = ERROR;
+							hard_exit(LEX_ERR);
 						}
 						i_e++;
 					}
@@ -403,11 +395,13 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					else
 					{
 						currentToken.token_type = ERROR;
+						hard_exit(LEX_ERR);
 					}
 				}
 				else
 				{
 					currentToken.token_type = ERROR;
+					hard_exit(LEX_ERR);
 				}
 			}
 			break;
@@ -429,10 +423,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = INTEGER;
 				currentToken.value_int = atoi(buffer.content);
 				token_state = BEGIN;
@@ -447,13 +437,8 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = ERROR;
-				token_state = BEGIN;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -465,10 +450,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = DOUBLE;
 				currentToken.value_double = atoi(buffer.content);
 				token_state = BEGIN;
@@ -483,13 +464,8 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = ERROR;
-				token_state = BEGIN;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -506,10 +482,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				ungetc(n_char, file);
-				if (n_char == '\n')
-				{
-					row--;
-				}
 				currentToken.token_type = DOUBLE;
 				currentToken.value_double = atoi(buffer.content);
 				token_state = BEGIN;
@@ -532,6 +504,11 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				n_char = tolower(n_char);
 				addchar(n_char, &buffer);
 			}
+			break;
+
+			default:
+				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			break;
 
 		}

@@ -244,7 +244,7 @@ int fnc_arg(){
   //expecting type
   if (currentToken.token_type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
     fprintf(stderr, "Invalid type\n");
-    hard_exit();
+    hard_exit(SYNT_ERR);
     //return SYNT_ERR;
   } else {
     //gets next for condition in fnc_arglist
@@ -506,7 +506,20 @@ int functions(){
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
     } else {
+      //check for ) after params
       CHECKT(PAR_R);
+      //checking for return type
+      //) as	<type> <endline>
+      get_token();
+      CHECKT(AS_KEY);
+      get_token();
+      //expecting type
+      if (currentToken.token_type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
+        fprintf(stderr, "Invalid type\n");
+        hard_exit(SYNT_ERR);
+        //return SYNT_ERR;
+      }
+
       //expecting ENDL(s) before next statement
       if (definition != 0){
           return end_of_lines();
@@ -626,7 +639,7 @@ int start_parsing(){
   return result;
 
 }
-
+/*
 int main(int argc, char *argv[]){
   int result;
   if (argc != 2){
@@ -650,3 +663,4 @@ int main(int argc, char *argv[]){
   return result;
 
 }
+*/

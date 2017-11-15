@@ -3,7 +3,7 @@
 #include "ifj2017.h"
 #include "errors.h"
 
-int get_token();
+void get_token();
 
 //which test should begin testing
 int testing = 0;
@@ -144,7 +144,7 @@ int expectedResult[] = {
 
 //replacement for scanner
 //gives parser "fake" tokens from array
-int get_token(){
+void get_token(){
 
   if (testing == 0){
     currentTest = test1;
@@ -160,8 +160,12 @@ int get_token(){
   print_curr_token();
   pos++;
 
-  return SUCCESS;
+}
 
+void free_sources() //funkcia uvolnuje pouzite zdroje
+{
+	free(buffer.content);
+	fclose(file);
 }
 
 int main(int argc, char *argv[]){
