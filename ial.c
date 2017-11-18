@@ -63,6 +63,7 @@ hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbo
 		return NULL;
 	}
 
+
 	strcpy(new_symbol->symbol_name, symbol_name);
 	//newSymbol->symbolType = st_undefined;
 
@@ -114,10 +115,6 @@ void hash_table_destroy(hash_table_type *hash_table) {
 		{
 			hash_tab_symbol_type *next = tmp -> next_symbol;
 
-			//TODO free all strings inside
-			if (tmp->param_types != NULL){
-				free(tmp->param_types);
-			}
 			free(tmp);  // postupne dealokuje cely spojity zoznam
 
 			tmp = next;
@@ -132,7 +129,7 @@ void hash_table_destroy(hash_table_type *hash_table) {
 }
 
 
-#ifdef DEBUG
+
 int main(int argc, char const *argv[])
 {
 
@@ -177,4 +174,3 @@ hash_table_destroy(tmp);
 //free(tmp);
 	return 0;
 }
-#endif
