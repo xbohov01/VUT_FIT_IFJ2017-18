@@ -22,85 +22,16 @@ void hard_exit(int code){
   if (var_table != NULL){
     hash_table_destroy(var_table);
   }
-
+  /*
   if (file != NULL){
     fclose(file);
   }
-
+*/
   //TODO destroy all stacks
 
   exit(code);
 }
 
-void print_token(){
-  //array of all tokens
-  const char *tokenList[] = {
-    "+",
-    "lex err",
-    "-",
-    "*",
-    "/",
-    "mod",
-    "<",
-    ">",
-    "<=",
-    ">=",
-    "=",
-    "<>",
-    "}",
-    "{",
-    ")",
-    "(",
-    ",",
-    ";",
-    "as",
-    "asc",
-    "declare",
-    "dim",
-    "do",
-    "double",
-    "else",
-    "end",
-    "chr",
-    "function",
-    "input",
-    "integer",
-    "length",
-    "loop",
-    "print",
-    "return",
-    "scope",
-    "string",
-    "substr",
-    "then",
-    "while",
-    "and",
-    "boolean",
-    "continue",
-    "elseif",
-    "exit",
-    "false",
-    "for",
-    "next",
-    "not",
-    "or",
-    "shared",
-    "static",
-    "true",
-    "if",
-    "double_val",
-    "integer_val",
-    "string_val",
-    "identifier",
-    "UNDEFINED",
-    "ERROR",
-    "end of line",
-    "end of file",
-  };
-  //token to print
-  char *printToken;
-  printf("Current token -> %s\n", tokenList[currentToken.token_type]);
-}
 
 void synt_error_print(int given, int expected){
   //array of all tokens
@@ -117,8 +48,6 @@ void synt_error_print(int given, int expected){
     ">=",
     "=",
     "<>",
-    "}",
-    "{",
     ")",
     "(",
     ",",
@@ -171,14 +100,6 @@ void synt_error_print(int given, int expected){
   fprintf(stderr, "Syntax Error: %s was expected but %s was given.\n", tokenList[expected], tokenList[given]);
 }
 
-//some macros
-//getting next token with error check
-#define NEXTT()  {  \
-  if (get_token() != SUCCESS){  \
-    return LEX_ERR; \
-  } \
-}
-
 //check if token is correct
 #define CHECKT(expected){ \
   if (currentToken.token_type != expected){ \
@@ -208,6 +129,8 @@ int var_declr(){
   get_token();
   //expecting identifier
   CHECKT(IDENTIFICATOR);
+  char *var_id = currentToken.id;
+
   get_token();
   //expecting as keyword
   CHECKT(AS_KEY);
@@ -217,6 +140,30 @@ int var_declr(){
     fprintf(stderr, "Syntax error: expecting variable type in variable declaration.\n");
     return SYNT_ERR;
   }
+
+  //check for redefinition
+  tmp_var_item = hash_table_search(var_table, var_id);
+  if (tmp_var_item != NULL){
+    fprintf(stderr, "Variable %s previously defined.\n", var_id);
+    hard_exit(SYNT_ERR);
+  }
+
+  //insert into variable table
+  tmp_var_item = hash_table_insert(var_table, var_id);
+  //TODO check for correct insert
+
+  //adds type to params and var_table
+  if (currentToken.token_type == INTEGER_KEY){
+    addchar('i', &params);
+    tmp_var_item->value_type = 0;
+  } else if (currentToken.token_type == DOUBLE_KEY){
+    addchar('d', &params);
+    tmp_var_item->value_type = 1;
+  } else {
+    addchar('s', &params);
+    tmp_var_item->value_type = 2;
+  }
+
   get_token();
   //expecting ENDL or variable initialization
   if (currentToken.token_type == ENDL){
@@ -234,6 +181,8 @@ int var_declr(){
 //<fncarg> -> <id>	as 	<type>
 //TODO add to symtable
 int fnc_arg(){
+  //copy identifier for later
+  char *var_id = currentToken.id;
   //already got identifier
   get_token();
 
@@ -242,11 +191,31 @@ int fnc_arg(){
   get_token();
 
   //expecting type
-  if (currentToken.token_type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
-    fprintf(stderr, "Invalid type\n");
+  if (currentToken.token_type != STRING_KEY && currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY){
+    fprintf(stderr, "Invalid param type\n");
     hard_exit(SYNT_ERR);
     //return SYNT_ERR;
   } else {
+    //check for redefinition
+    tmp_var_item = hash_table_search(var_table, var_id);
+    if (tmp_var_item != NULL){
+      fprintf(stderr, "Variable %s previously defined.\n", var_id);
+      hard_exit(SYNT_ERR);
+    }
+    //add variable to var_table
+    tmp_var_item = hash_table_insert(var_table, var_id);
+
+    //adds type to params and var_table
+    if (currentToken.token_type == INTEGER_KEY){
+      addchar('i', &params);
+      tmp_var_item->value_type = 0;
+    } else if (currentToken.token_type == DOUBLE_KEY){
+      addchar('d', &params);
+      tmp_var_item->value_type = 1;
+    } else {
+      addchar('s', &params);
+      tmp_var_item->value_type = 2;
+    }
     //gets next for condition in fnc_arglist
     get_token();
     return SUCCESS;
@@ -268,22 +237,22 @@ int fnc_arglist(){
   //some arguments
   while (currentToken.token_type != PAR_R){
     //one argument
-    get_token();
+    //get_token();
     //expecting identifier
     CHECKT(IDENTIFICATOR);
     if (fnc_arg() != SUCCESS){
-      fprintf(stderr, "Invalid argument\n");
+      fprintf(stderr, "Invalid parameter1\n");
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
     }
-    get_token();
+    //get_token();
     //expecting PAR_R or a comma
     if (currentToken.token_type == PAR_R){
       return SUCCESS;
     } else if (currentToken.token_type == COM){
       continue;
     } else {
-      fprintf(stderr, "Invalid argument\n");
+      fprintf(stderr, "Invalid parameter2\n");
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
     }
@@ -319,6 +288,7 @@ int if_statements(){
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
 //TODO return psa call
+//TODO var_table checks
 int statement(){
   //expecting one of the above
   switch (currentToken.token_type) {
@@ -474,6 +444,8 @@ int fnc_stats(){
 //<fncdef>	function	<id>	(	<paramlist>	) 	as	<type>	<endline>	<fncstats>	end	function
 //TODO add to symtable
 int functions(){
+  char *identifier;
+  int return_type;
   int definition = 0;
 
   //if function is being declared one more NEXTT has to be called
@@ -488,6 +460,8 @@ int functions(){
 
   //expecting identifier
   CHECKT(IDENTIFICATOR);
+  //save identifier for hash
+  identifier = currentToken.id;
   get_token();
   //expecting (
   CHECKT(PAR_L);
@@ -497,39 +471,89 @@ int functions(){
   //<fncarg> ->	<id>	as 	<type>
   if (currentToken.token_type == PAR_R){
     //expecting ENDL(s) before next statement
-    if (definition != 0){
-        return end_of_lines();
+    get_token();
+    CHECKT(AS_KEY);
+    get_token();
+    //expecting type
+    if (currentToken.token_type != STRING_KEY && currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY){
+      fprintf(stderr, "Invalid return type\n");
+      hard_exit(SYNT_ERR);
+      //return SYNT_ERR;
     }
+    //set return type
+    if (currentToken.token_type == INTEGER_KEY){
+      return_type = 0;
+    } else if (currentToken.token_type == DOUBLE_KEY){
+      return_type = 1;
+    } else {
+      return_type = 2;
+    }
+
   } else if (currentToken.token_type == IDENTIFICATOR){
+    //init variable table
+    var_table = sym_tab_init(64);
     //expecting argument declaration
     if (fnc_arglist() != SUCCESS){
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
     } else {
-      //check for ) after params
-      CHECKT(PAR_R);
       //checking for return type
       //) as	<type> <endline>
       get_token();
       CHECKT(AS_KEY);
       get_token();
       //expecting type
-      if (currentToken.token_type != (STRING_KEY || INTEGER_KEY || DOUBLE_KEY)){
+      if (currentToken.token_type != STRING_KEY && currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY){
         fprintf(stderr, "Invalid type\n");
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
 
-      //expecting ENDL(s) before next statement
-      if (definition != 0){
-          return end_of_lines();
+      //set return type
+      if (currentToken.token_type == INTEGER_KEY){
+        return_type = 0;
+      } else if (currentToken.token_type == DOUBLE_KEY){
+        return_type = 1;
+      } else {
+        return_type = 2;
       }
+
     }
   } else {
     fprintf(stderr, "Syntax error in function declaration/definition. Expecting ')' or variables, %d was given.\n", currentToken.token_type);
     hard_exit(SYNT_ERR);
     //return SYNT_ERR;
   }
+
+  //check if function is in symtable
+  tmp_func_item = hash_table_search(func_table, identifier);
+  //no entry found
+  if (tmp_func_item == NULL){
+    //add entry into functions table
+    //tmp_func_item points to new table item
+    tmp_func_item = hash_table_insert(func_table, identifier);
+    //set return type
+    tmp_func_item->value_type = return_type;
+    //set parameter types
+    if (params.len != 0){
+      tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
+      //TODO add malloc check
+      strcpy(tmp_func_item->param_types, params.content);
+    } else {
+      tmp_func_item->param_types = NULL;
+    }
+  }
+  //TODO else check for redefinition
+
+
+  //if function is only declared
+  //expecting ENDL(s) before next statement
+  if (definition != 0){
+    //destroy variable table
+    hash_table_destroy(var_table);
+    return end_of_lines();
+  }
+
   //if function is also defined
   //expecting ENDL(s) before next statement
   if (end_of_lines() != SUCCESS){
@@ -540,6 +564,8 @@ int functions(){
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
     }
+    //destroy variable table
+    hash_table_destroy(var_table);
     return end_of_lines();
   }
 
@@ -550,6 +576,9 @@ int scope(){
   get_token();
   CHECKT(ENDL);
   get_token();
+
+  //init var_table
+  var_table = sym_tab_init(64);
 
   while (currentToken.token_type != ENDF){
     switch (currentToken.token_type){
@@ -572,6 +601,9 @@ int scope(){
         //could have empty line
         end_of_lines();
         CHECKT(ENDF);
+
+        //hash_table_destroy(var_table);
+
         return SUCCESS;
 
       case ENDL :
@@ -607,6 +639,7 @@ int start(){
       case SCOPE_KEY:
         //'scope' keyword
         result = scope();
+        hash_table_destroy(var_table);
       case ENDF:
         //<s> -> EOF
         return SUCCESS;
@@ -649,7 +682,6 @@ int main(int argc, char *argv[]){
 
   //init symtables
   func_table = sym_tab_init(64);
-  var_table = sym_tab_init(64);
   //TODO check for correct init
 
   //start scanner

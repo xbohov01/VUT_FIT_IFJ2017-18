@@ -14,6 +14,8 @@ int result = 55;
 //position in test array
 int pos = 0;
 
+tString tid;
+
 //prints current token
 void print_curr_token(){
   //array of all tokens
@@ -132,10 +134,16 @@ T_token_type test4[] = {
   ENDF,
 };
 
+T_token_type test5[] = {
+  DECLARE_KEY, FUNCTION_KEY, IDENTIFICATOR, PAR_L, IDENTIFICATOR, AS_KEY, INTEGER_KEY, PAR_R, AS_KEY, INTEGER_KEY, ENDL,
+  ENDF,
+};
+
 //total number of tests
-int tests = 4;
+int tests = 5;
 
 int expectedResult[] = {
+  SUCCESS,
   SUCCESS,
   SUCCESS,
   SUCCESS,
@@ -154,9 +162,15 @@ void get_token(){
     currentTest = test3;
   } else if (testing == 3){
     currentTest = test4;
+  } else if (testing == 4){
+    currentTest = test5;
   }
 
   currentToken.token_type = currentTest[pos];
+  if (currentToken.token_type == IDENTIFICATOR){
+    addchar('d', &tid);
+    currentToken.id = tid.content;
+  }
   print_curr_token();
   pos++;
 
@@ -164,8 +178,8 @@ void get_token(){
 
 void free_sources() //funkcia uvolnuje pouzite zdroje
 {
-	free(buffer.content);
-	fclose(file);
+	free(params.content);
+
 }
 
 int main(int argc, char *argv[]){
@@ -173,15 +187,27 @@ int main(int argc, char *argv[]){
     testing =   strtol(argv[1], NULL, 10);
   }
 
+  //str_init(&params);
+  file == NULL;
+
+  str_init(&tid);
+
 
   for (int i = 0; i < tests; i++){
     printf("===>>> Starting TEST%d <<<===\n", i+1);
     pos = 0;
+    func_table = sym_tab_init(64);
     result = start_parsing();
+
+    hash_table_destroy(func_table);
+    free_sources();
+
     printf(">>> TEST%d result: %d || expected: %d\n", i+1, result, expectedResult[i]);
     printf("==================================\n");
     testing++;
 
   }
+
+  free(tid.content);
 
 }
