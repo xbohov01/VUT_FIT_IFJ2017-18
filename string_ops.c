@@ -1,24 +1,26 @@
 //*****string_ops.c******
 //xbohov01
 //xberes01
+//xgrigo02
 
 #include <ifj2017.h>
 
 int addchar(char n_char, tString *str) //funkcia pridava znak do string
 {
-	if (str->len+1 > str->size)
+	if (str->len >= str->size - 1)
 	{
-		char *b_char = realloc(str->content, str->len + BUFFERSIZE); // zvacsenie alokovaneho priestoru
-			if (str->content == NULL)
-			{
-				return INTERNAL_ERR;
-			}
-			str->content = b_char;
-			str->size = str->size + BUFFERSIZE;
+		str->content = realloc(str->content, str->len + BUFFERSIZE); // zvacsenie alokovaneho priestoru
+		if (str->content == NULL)
+		{
+			return INTERNAL_ERR;
+		}
+		str->size = str->size + BUFFERSIZE;
+		for (int i = str->len; i < str->size - 1; i++) {
+			str->content[i] = 0;
+		}
 	}
 
-		str->content[str->len] = n_char;
-		str->len++;
+	str->content[str->len++] = n_char;
 }
 
 //deletes content of string
@@ -26,7 +28,7 @@ void delstr(tString *str)
 {
 	if (str->len >= 1)
 	{
-		memset(str->content, 0, 0);
+		memset(str->content, 0, str->len);
 		str->len = 0;
 	}
 }
@@ -34,14 +36,15 @@ void delstr(tString *str)
 int str_init(tString *str) //funkcia inicializuje tBuffer
 {
 
-	str->content = malloc(sizeof(char)*BUFFERSIZE); //alokovanie pamate
+	size_t init_len = sizeof(char)*BUFFERSIZE;
+	str->content = malloc(init_len); //alokovanie pamate
 	if (str->content == NULL)
 	{
 		return INTERNAL_ERR;
 	}
 	else
 	{
-		str->content[0] = '\0';
+		memset(str->content, 0, init_len);
 		str->len = 0;
 		str->size = BUFFERSIZE;
 	}
