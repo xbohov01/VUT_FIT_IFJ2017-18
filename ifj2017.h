@@ -5,9 +5,6 @@
 //xberes01
 //xkosti07
 
-#ifndef IFJ_HEADER_INCLUDED
-#define IFJ_HEADER_INCLUDED
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -15,7 +12,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include "errors.h"
 
 //====STRING====
 typedef struct {
@@ -27,7 +23,6 @@ typedef struct {
 int str_init(tString *str);
 void delstr(tString *str);
 int addchar(char n_char, tString *str);
-void free_string(tString *str);
 
 //====SCANNER====
 #define N_KEYWORDS 35
@@ -53,8 +48,6 @@ typedef enum {
 	//operators end
 
 	//other chars begin
-	BRA_R,// )
-	BRA_L,// (
 	PAR_R, // )
 	PAR_L,// (
 	COM,// ,
@@ -157,8 +150,7 @@ int esc;
 //function declarations
 void free_sources();
 int start_scanner(char *filename);
-int get_token();
-void print_curr_token(); // TODO: delete -- tests
+void get_token();
 
 //====SYMTABLE====
 
@@ -180,16 +172,17 @@ typedef struct hash_tab_symbol hash_tab_symbol_type;
 struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
 
-	bool is_function;  // false = variable     true = function
+	//bool is_function;  // false = variable     true = function
 
 	int value_type;  // 0 = integer     1 = float     2 = string
 
-	int integer_t;
-	float float_t;
-	char *char_t;
+	//int integer_t;
+	//float float_t;
+	//char *char_t;
 
-	int num_parameters;
-	int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
+	char *param_types;
+	//int num_parameters;
+	//int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
 	char symbol_name[];	    // meno funkcie / premennej
 
 };
@@ -198,6 +191,17 @@ typedef struct {
 	unsigned table_size;
 	hash_tab_symbol_type *list_items[];
 } hash_table_type;
+
+hash_table_type *func_table;
+hash_table_type *var_table;
+hash_tab_symbol_type *tmp_func_item;
+hash_tab_symbol_type *tmp_var_item;
+
+hash_table_type *sym_tab_init(unsigned size);
+hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbol_name);
+hash_tab_symbol_type *hash_table_search(hash_table_type *hash_table, char *entry_key);
+void hash_table_destroy(hash_table_type *hash_table);
+
 
 //====PARSER====
 tToken currentToken;
@@ -211,8 +215,10 @@ int fnc_arg();
 int fnc_arglist();
 int fnc_stats();
 int if_statements();
-int statements();
+int statement();
+
+void hard_exit();
+
+tString params;
 
 //====SCANNER====
-
-#endif // IFJ_HEADER_INCLUDED end
