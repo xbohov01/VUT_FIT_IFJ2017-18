@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include "errors.h"
 
 //====STRING====
 typedef struct {
@@ -216,8 +217,6 @@ int fnc_arglist();
 int fnc_stats();
 int if_statements();
 int statement();
-
-void hard_exit();
 
 tString params;
 

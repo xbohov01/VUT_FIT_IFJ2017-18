@@ -1,8 +1,9 @@
 /****parser.c****/
+//xbohov01
+//xkosti07
+//xgrigo02
 
 #include "ifj2017.h"
-#include "errors.h"
-#include <stdio.h>
 
 #ifdef DEBUG
 #include "parser_test.h"
@@ -122,14 +123,13 @@ int end_of_lines(){
 //<deklaracia> -> dim	<id>	as	<type>	<varinit>
 //<varinit> -> = <expr>
 //<varinit> -> epsilon
-//TODO add to symtable
-//TODO expr eval
 int var_declr(){
   //already has dim keyword
   get_token();
   //expecting identifier
   CHECKT(IDENTIFICATOR);
-  char *var_id = currentToken.id;
+  char *var_id = malloc(strlen(currentToken.id)*sizeof(char)+1);
+  memcpy(var_id, currentToken.id, strlen(currentToken.id)+1);
 
   get_token();
   //expecting as keyword
@@ -138,14 +138,24 @@ int var_declr(){
   //expecting type
   if (currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY && currentToken.token_type != STRING_KEY){
     fprintf(stderr, "Syntax error: expecting variable type in variable declaration.\n");
-    return SYNT_ERR;
+    free(var_id);
+    hard_exit(SYNT_ERR);
   }
 
-  //check for redefinition
+
+  //check for redeclaration
+  //TODO can be declared and defined separately?
   tmp_var_item = hash_table_search(var_table, var_id);
   if (tmp_var_item != NULL){
-    fprintf(stderr, "Variable %s previously defined.\n", var_id);
-    hard_exit(SYNT_ERR);
+    fprintf(stderr, "Syntax error: Variable %s previously declared.\n", var_id);
+    free(var_id);
+    hard_exit(UNDEF_ERR);
+  }
+  //check if function with same name exists
+  if(hash_table_search(func_table, var_id) != NULL){
+    fprintf(stderr, "Syntax error: Function with name %s previously declared.\n", var_id);
+    free(var_id);
+    hard_exit(UNDEF_ERR);
   }
 
   //insert into variable table
@@ -167,11 +177,16 @@ int var_declr(){
   get_token();
   //expecting ENDL or variable initialization
   if (currentToken.token_type == ENDL){
+    //TODO tac
+    free(var_id);
     return end_of_lines();
   } else if (currentToken.token_type == EQ_O){
-    //call expression evaluation;
+    free(var_id);
+    //TODO expr
+    //TODO tac
   } else {
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
+    free(var_id);
     hard_exit(SYNT_ERR);
     //return SYNT_ERR;
   }
@@ -199,7 +214,7 @@ int fnc_arg(){
     //check for redefinition
     tmp_var_item = hash_table_search(var_table, var_id);
     if (tmp_var_item != NULL){
-      fprintf(stderr, "Variable %s previously defined.\n", var_id);
+      fprintf(stderr, "Syntax error: Variable %s previously declared.\n", var_id);
       hard_exit(SYNT_ERR);
     }
     //add variable to var_table
@@ -216,6 +231,9 @@ int fnc_arg(){
       addchar('s', &params);
       tmp_var_item->value_type = 2;
     }
+
+    //TODO tac
+
     //gets next for condition in fnc_arglist
     get_token();
     return SUCCESS;
@@ -311,6 +329,13 @@ int statement(){
       get_token();
       //expecting identifier
       CHECKT(IDENTIFICATOR);
+
+      //check if symbol exists
+      if (hash_table_search(var_table, currentToken.id) == NULL){
+        fprintf(stderr, "Syntax error: Variable %s doesn't exist in this context.\n", currentToken.id);
+        hard_exit(UNDEF_ERR);
+      }
+
       return end_of_lines();
 
     case PRINT_KEY :
@@ -525,6 +550,8 @@ int functions(){
     //return SYNT_ERR;
   }
 
+  //TODO add a label?
+
   //check if function is in symtable
   tmp_func_item = hash_table_search(func_table, identifier);
   //no entry found
@@ -669,14 +696,16 @@ int start_parsing(){
   //begin parsing
   result = start();
 
+  free(params.content);
+
   return result;
 
 }
-/*
+
 int main(int argc, char *argv[]){
   int result;
   if (argc != 2){
-    fprintf(stderr, "Incorrect arguments\n");
+    fprintf(stderr, "Too few arguments.\n");
     return INTERNAL_ERR;
   }
 
@@ -690,9 +719,13 @@ int main(int argc, char *argv[]){
   //start parsing
   result = start_parsing();
 
-  printf("%d\n", result);
+  //close file
+  fclose(file);
+  //destroy function table
+  hash_table_destroy(func_table);
+  //free buffer
+  free(buffer.content);
 
   return result;
 
 }
-*/

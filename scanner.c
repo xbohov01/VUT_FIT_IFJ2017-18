@@ -1,48 +1,9 @@
-#include "errors.h"
+/****scanner.c****/
+//ifj2017
+//xberes01
+//xbohov01
+
 #include "ifj2017.h"
-
-int addchar(char n_char, tString *str) //funkcia pridava znak do bufferu
-{
-	if (str->len+1 > str->size)
-	{
-		char *b_char = realloc(str->content, str->len + BUFFERSIZE); // zvacsenie alokovaneho priestoru
-			if (str->content == NULL)
-			{
-				return LEX_ERR;
-			}
-			str->content = b_char;
-			str->size = str->size + BUFFERSIZE;
-	}
-
-		str->content[str->len] = n_char;
-		str->len++;
-}
-
-void delstr(tString *str) //funkcia uvolnuje tString
-{
-	if (str->len >= 1)
-	{
-		memset(str->content, 0, str->len);
-		str->len = 0;
-	}
-}
-
-int str_init(tString *str) //funkcia inicializuje tString
-{
-
-	str->content = malloc(sizeof(char)*BUFFERSIZE); //alokovanie pamate
-	if (str->content == NULL)
-	{
-		return LEX_ERR;
-	}
-	else
-	{
-		str->content[0] = '\0';
-		str->len = 0;
-		str->size = BUFFERSIZE;
-	}
-	return SUCCESS;
-}
 
 void free_sources() //funkcia uvolnuje pouzite zdroje
 {
@@ -205,15 +166,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 			  currentToken.token_type = EQ_O;
 			}
-			//pridane
-			else if (n_char == '}')
-			{
-			  currentToken.token_type = BRA_R;
-			}
-			else if (n_char == '{')
-			{
-			  currentToken.token_type = BRA_L;
-			}
 			else if (n_char == ')')
 			{
 			  currentToken.token_type = PAR_R;
@@ -271,7 +223,9 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 				else
 				{
+					ungetc(n_char, file);
 					currentToken.token_type = LT_O;
+					token_state = BEGIN;
 				}
 			}
 			break;
@@ -284,7 +238,9 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 				else
 				{
+					ungetc(n_char, file);
 					currentToken.token_type = GT_O;
+					token_state = BEGIN;
 				}
 			}
 			break;
@@ -297,8 +253,9 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				//ungetc
+				ungetc(n_char, file);
 				currentToken.token_type = DIV_O;
+				token_state = BEGIN;
 			}
 			break;
 
@@ -414,6 +371,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 			}
 			break;
+
 			case POS_INT:
 			if (isdigit(n_char))
 			{
@@ -543,5 +501,6 @@ int start_scanner(char *filename)
 	}
 }
 
-int main() //aby bol prekladac spoko
-{}
+/*
+int main() //aby bol prekladac spoko, testy zmazane
+{}*/

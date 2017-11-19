@@ -4,7 +4,7 @@
 //vracia ukazatel na hashovaciu tabulku
 //v pirpade chyby NULL
 
- 
+
 hash_table_type *sym_tab_init(unsigned size)
 {
 
@@ -43,7 +43,7 @@ unsigned int hash_function(const char *str, unsigned hashTable_size) {
 }
 
 //vlozi dany symbol do hashovacej tabulky
-//vrati ukazatel na dany symbol 
+//vrati ukazatel na dany symbol
 //v pripade chyby NULL
 
 hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbol_name)
@@ -66,12 +66,12 @@ hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbo
 
 	strcpy(new_symbol->symbol_name, symbol_name);
 	//newSymbol->symbolType = st_undefined;
-	
+
 	unsigned key = hash_function(symbol_name, hash_table->table_size);
 	new_symbol->next_symbol = hash_table->list_items[key];
 	hash_table->list_items[key] = new_symbol;
 
-	
+
 	return new_symbol;
 
 }
@@ -106,10 +106,10 @@ hash_tab_symbol_type *hash_table_search(hash_table_type *hash_table, char *entry
 void hash_table_destroy(hash_table_type *hash_table) {
 	if (hash_table == NULL)
 		return;
-	
+
 	for (int i = 0; i < (hash_table -> table_size) ; ++i)
 	{
-		hash_tab_symbol_type *tmp = hash_table -> list_items[i]; 
+		hash_tab_symbol_type *tmp = hash_table -> list_items[i];
 
 		while(tmp != NULL)
 		{
@@ -129,7 +129,7 @@ void hash_table_destroy(hash_table_type *hash_table) {
 }
 
 
-
+/*
 int main(int argc, char const *argv[])
 {
 
@@ -173,4 +173,4 @@ hash_table_destroy(tmp);
 
 //free(tmp);
 	return 0;
-}
+}*/
