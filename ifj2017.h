@@ -5,8 +5,8 @@
 //xberes01
 //xkosti07
 
-#ifndef IFJ2017_HEADER
-#define IFJ2017_HEADER
+#ifndef IFJ_HEADER_INCLUDED
+#define IFJ_HEADER_INCLUDED
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -15,8 +15,26 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include "errors.h"
+
+//====STRING====
+typedef struct {
+	char *content;
+	int len;
+	int size;
+} tString;
+
+int str_init(tString *str);
+void delstr(tString *str);
+int addchar(char n_char, tString *str);
+void free_string(tString *str);
 
 //====SCANNER====
+#define N_KEYWORDS 35
+#define N_OPERATOR_CHARS 8
+#define N_OPERATORS 12
+#define N_DELIMITERS 7
+
 //enumerator for token types
 typedef enum {
 	//operators begin
@@ -35,8 +53,8 @@ typedef enum {
 	//operators end
 
 	//other chars begin
-	BRA_P,// }
-	BRA_L,// {
+	BRA_R,// )
+	BRA_L,// (
 	PAR_R, // )
 	PAR_L,// (
 	COM,// ,
@@ -93,6 +111,32 @@ typedef enum {
 
 } T_token_type;
 
+typedef enum {
+	BEGIN,
+
+	POS_LT,
+	POS_GT,
+
+	ID_OR_KEY,
+
+	POS_INT,
+	POS_EXP,
+	POS_EXP_S,
+	POS_FL,
+	POS_DOUBLE,
+
+	POS_BEG_STRING,
+	POS_STRING,
+	ESCAPE,
+
+	POS_BL_COMMENT,
+	POS_BL_END_COMMENT,
+
+	COM_OR_DIV,
+
+	POS_LIN_COMMENT
+} T_token_state;
+
 //structure for token
 typedef struct {
 	int value_int;
@@ -102,8 +146,20 @@ typedef struct {
 	char *id;
 } tToken;
 
-// TODO: Not very good idea to put all functions here
-// TODO: Leave only common structures and enumerators
+FILE* file;
+
+//buffer for identifiers
+tString buffer;
+#define BUFFERSIZE 32
+
+int esc;
+
+//function declarations
+void free_sources();
+int start_scanner(char *filename);
+int get_token();
+void print_curr_token(); // TODO: delete -- tests
+
 //====SYMTABLE====
 
 /*
@@ -143,14 +199,8 @@ typedef struct {
 	hash_tab_symbol_type *list_items[];
 } hash_table_type;
 
-hash_table_type *sym_tab_init(unsigned size);
-unsigned int hash_function(const char *str, unsigned hashTable_size);
-hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbol_name);
-hash_tab_symbol_type *hash_table_search(hash_table_type *hash_table, char *entry_key);
-void hash_table_destroy(hash_table_type *hash_table);
-// ====END SYMTABlE====
-
 //====PARSER====
+tToken currentToken;
 
 int start_parsing();
 int start();
@@ -160,11 +210,9 @@ int var_declr();
 int fnc_arg();
 int fnc_arglist();
 int fnc_stats();
-int statement();
 int if_statements();
+int statements();
 
 //====SCANNER====
 
-tToken currentToken;
-
-#endif // IFJ_2017 header
+#endif // IFJ_HEADER_INCLUDED end

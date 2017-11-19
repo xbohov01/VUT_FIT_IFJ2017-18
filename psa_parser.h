@@ -3,6 +3,9 @@
 **  Author: Danil Grigorev, xgrigo02
 */
 
+#ifndef PSA_PARSER_INCLUDED
+#define PSA_PARSER_INCLUDED
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -10,69 +13,34 @@
 
 #include "errors.h"
 #include "ifj2017.h"
-#include "ial.c"
-#include "scanner.h"
 #include "psa_stack.h"
-// #include "psa_stack_test.h" TESTS
+#include "psa_stack_test.h" // TESTS
 
 
-typedef enum psa_states {
-    START_RULE_PSA,
-
-    INT_ARITHM_PSA,
-    DOUBLE_ARITHM_PSA,
-    STRING_ARITHM_PSA,
-
-    PARENTHESES_PSA,
-
-    IDENTIFIER_PSA,
-    CONSTANT_PSA,
-    FUNCTION_PSA,
-
-    ACCEPT_RULE_PSA,
-    FINISHED_PSA,
-    ERROR_PSA
-} PSA_state;
-
-typedef enum psa_term_type{
-    ERR = -1,
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    MOD,
-    PR,
-    PL,
-    ID,
-    END,
-
-    // Relational operators
-    // which are not used in PSA table,
-    // but logically are included
-    LT,
-    GT,
-    LTE,
-    GTE,
-    EQ,
-    NEQ
-} PSA_Term_type;
+void eval_expr();
+void psa_operation();
+void get_reversed_rule();
 
 // TODO: create operations 
-// int psa_parse();
+Data_NTerm *id_or_function_R();
+Data_NTerm *function_R();
+Data_NTerm *parenthesis_R();
+Data_NTerm *arithm_R();
 
-// void push_start_term(T_NT_stack *s);
-// bool expected_token(Data_Term *tok, PSA_Term_type expect);
-// T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
-// void insert_stopper(T_NT_stack *s);
-// void psa_compare(Data_Term *tok, T_NT_stack *s);
-// PSA_state reduce_by_rule(T_NT_stack *s, Data_Term *input, PSA_state now);
-// T_NT_Data *non_term_create(N_T_rules type);
 
-// PSA_Term_type term_type(Data_Term *term);
+void push_start_term(T_NT_stack *s);
+T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
+void insert_stopper(T_NT_stack *s);
+void psa_compare(Data_Term *tok, T_NT_stack *s);
+void reduce_by_rule();
+Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
 
-// Data_Term currentToken; // TODO: make extern
-// T_NT_stack *processing_stack;
+extern Data_Term currentToken;
+T_NT_stack *processing_stack;
+T_NT_stack *evaluation_stack;
 
-// // TODO: to be deleted
-// // For test, simulate rule usage and shows order
-// NT_types *right_order
+// TODO: to be deleted
+// For test, simulate rule usage and shows order
+N_T_rules *right_order;
+
+#endif // PSA_PARSER_INCLUDED end

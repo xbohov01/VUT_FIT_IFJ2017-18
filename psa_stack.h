@@ -15,14 +15,6 @@
 // Start of stack file
 // ==============================
 
-/* 
-Technically non terminal is a list of 
-terminals/non-terminals sorted for interpreter
-conversion to IFJ_17 code.
-
-Stack of stacks is a best representation
-*/
-
 // Possible types for non_terminals
 // Used after rule application
 typedef enum non_term_types {
@@ -30,46 +22,61 @@ typedef enum non_term_types {
     NT_SUB, // 2: E -> E - E
     NT_MUL, // 3: E -> E * E
     NT_DIV, // 4: E -> E / E
-    NT_MOD, // 5: E -> E \ E
+    NT_IDIV, // 5: E -> E \ E
 
     NT_PAR, // 6: E -> (E)
 
     NT_ID,  // 7: E -> id
-
-    // NT_FN,  // 8: id(eps/E/E,...E) -> // TODO: function may need other processing
+    NT_FN,  // 8: E -> id(eps/E/E,...E)
 
     STOPPER // '<'
-} N_T_rules; // TODO: rename to "rule"
+} N_T_rules;
+
+typedef enum {
+    DOUBLE_NT,
+    INTEGER_NT,
+    STRING_NT,
+    NONE_NT
+} N_T_types;
+
+typedef enum psa_term_type{
+    ADD,
+    MUL,
+    SUB,
+    DIV,
+    IDIV,
+    PL,
+    PR,
+    ID,
+    FNC,
+    CM,
+    END,
+
+    // Relational operators
+    LT,
+    GT,
+    LTE,
+    GTE,
+    EQ,
+    NEQ,
+
+    PSA_ERR
+} PSA_Term_type;
 
 
-// Extended stack of terminals and non terminals (Basically a one-way list with pop function)
+// Extended stack of terminals and non terminals
 typedef struct t_nt_stack {
     struct t_nt_item *top;
-    // Active item, mostly used for first terminal search and after item insertion
     struct t_nt_item *active;
-    struct t_nt_item *popped; // Lastly popped item
+    struct t_nt_item *popped;
 } T_NT_stack;
 
 // Non_terminal itself
 typedef struct data_non_term
 {
-    N_T_rules NT_type;
-    // TODO: add pointer on label with actual data
+    N_T_rules rule;
+    N_T_types type;
 } Data_NTerm; // Non-terminal data
-
-
-// TODO: redo token for similar view
-// typedef struct data_term {
-//     T_token_type T_type;
-
-//     union {
-//         int int_val;
-//         double double_var;
-//         char* str_val;
-//     } value;
-
-// } Data_T; // Terminal data
-
 
 // Style conversion of tToken structure
 typedef tToken Data_Term;
@@ -90,19 +97,19 @@ typedef struct t_nt_item {
 } T_NT_item;
 
 
-void error_exit(T_NT_stack *T_NT_s, int code);
+void error_exit(int code);
+PSA_Term_type get_term_type(Data_Term *in_term);
 
 T_NT_stack *init_T_NT_stack();
 void destroy_T_NT_stack(T_NT_stack *s);
-T_NT_item *push_T_NT(T_NT_stack *s, bool is_non_term, T_NT_Data data); // TODO: pass data as a pointer
+T_NT_item *push_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
 T_NT_item *pop_T_NT(T_NT_stack *s); // Returns item for easy search
 
 // Extended stack operations
-void set_first_T_NT(T_NT_stack *s);
-void next_T_NT(T_NT_stack *s);
+T_NT_item *set_first_T_NT(T_NT_stack *s);
+T_NT_item *set_next_T_NT(T_NT_stack *s);
 bool active_T_NT(T_NT_stack *s);
-T_NT_item *insert_after_T_NT(T_NT_stack *s, bool is_non_term, T_NT_Data data); // TODO: pass data as a pointer
-
+T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
 
 // =======================
 // End of stack file
