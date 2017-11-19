@@ -129,7 +129,7 @@ void hash_table_destroy(hash_table_type *hash_table) {
 }
 
 
-
+/*
 int main(int argc, char const *argv[])
 {
 
@@ -173,4 +173,4 @@ hash_table_destroy(tmp);
 
 //free(tmp);
 	return 0;
-}
+}*/
