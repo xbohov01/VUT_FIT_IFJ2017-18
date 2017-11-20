@@ -24,8 +24,7 @@ void get_reversed_rule();
 // TODO: create operations 
 Data_NTerm *id_or_function_R();
 Data_NTerm *function_R();
-Data_NTerm *parenthesis_R();
-Data_NTerm *arithm_R();
+Data_NTerm *arithm_R(int i);
 
 
 void push_start_term(T_NT_stack *s);
@@ -41,6 +40,6 @@ T_NT_stack *evaluation_stack;
 
 // TODO: to be deleted
 // For test, simulate rule usage and shows order
-N_T_rules *right_order;
+char *right_order;
 
 #endif // PSA_PARSER_INCLUDED end

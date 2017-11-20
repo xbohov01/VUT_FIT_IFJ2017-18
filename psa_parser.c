@@ -1,11 +1,11 @@
-/*
+/* 
 ** Precedense syntax parser implementation
 ** Author: Danil Grigorev, xgrigo02
 */
 
-#include "ifj2017.h"
+#include "psa_parser.h"
 
-/*
+
 int main() {
     // Tests
     // +++++++++++++++
@@ -17,12 +17,14 @@ int main() {
 
     // test();
     // +++++++++++++++
-
+    right_order = malloc(100);
+    memset(right_order, 0, 100);
     eval_expr();
-
+    printf("\n");
+    printf("right_order: %s\n", right_order);
+    printf("Result: 0\n");
     return 0;
 }
-*/
 
 // Feeds non terminal
 Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
@@ -61,7 +63,7 @@ void eval_expr() {
     extern T_NT_stack *evaluation_stack;
     processing_stack = init_T_NT_stack();
     evaluation_stack = init_T_NT_stack();
-    start_scanner("test1.txt"); // TODO: delete -- test
+    start_scanner("hard_test_with_seg_fault.txt"); // TODO: delete -- test
 
     // TODO: delete -- test
     // id
@@ -81,7 +83,10 @@ void eval_expr() {
 
     // <PSA_second> -> epsilon
     if (relational_op == END) {
-        ;
+        free_sources(); // TODO: delete -- test
+        destroy_T_NT_stack(processing_stack);
+        destroy_T_NT_stack(evaluation_stack);
+        return;
     }
     // --END-- <PSA_second> -> epsilon
     // ++++++++++++++++++++++++++++++++++
@@ -125,14 +130,13 @@ void eval_expr() {
             case NEQ:
                 // TODO: add instruction
                 break;
+            default:
+                break;
         }
         // --END-- <rel>
     }
     // --END-- <PSA_second> -> <rel> <PSA>
 
-    if (get_term_type(&currentToken) != END) {
-        error_exit(SYNT_ERR);
-    }
     // --END-- <PSA_second>
 
 
@@ -140,7 +144,7 @@ void eval_expr() {
     free_sources(); // TODO: delete -- test
     destroy_T_NT_stack(processing_stack);
     destroy_T_NT_stack(evaluation_stack);
-
+    
     return;
 }
 // --END-- <expr> -> <PSA> <PSA_second>
@@ -214,7 +218,6 @@ void get_reversed_rule() {
 
 Data_NTerm *id_or_function_R() {
     // TODO: undone
-    //print_stack(evaluation_stack);
     static enum {
         START_ID,
         ID_OR_FUNC,
@@ -286,18 +289,13 @@ Data_NTerm *id_or_function_R() {
     return used_rule;
 }
 
-Data_NTerm *parenthesis_R() {
-    // TODO
-    return create_non_term(NT_PAR, INTEGER_NT);
-}
-
 Data_NTerm *function_R() {
     // TODO
     return create_non_term(NT_FN, INTEGER_NT);
 }
 
 
-Data_NTerm *arithm_R() {
+Data_NTerm *arithm_R(int i) {
 
     static enum {
         START_ARITHM_PSA,
@@ -314,7 +312,7 @@ Data_NTerm *arithm_R() {
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;
     Data_NTerm *E;
-
+    
 
     look_ahead = evaluation_stack->popped;
     arithm_state = START_ARITHM_PSA;
@@ -353,6 +351,8 @@ Data_NTerm *arithm_R() {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_ADD, DOUBLE_NT);
+                        right_order[i] = '1';
+                        printf("1");
                         break;
                     case SUB:
                         look_ahead = pop_T_NT(evaluation_stack);
@@ -371,6 +371,8 @@ Data_NTerm *arithm_R() {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_SUB, DOUBLE_NT);
+                        right_order[i] = '2';
+                        printf("2");
                         break;
                     case MUL:
                         look_ahead = pop_T_NT(evaluation_stack);
@@ -389,6 +391,8 @@ Data_NTerm *arithm_R() {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_MUL, DOUBLE_NT);
+                        right_order[i] = '3';
+                        printf("3");
                         break;
                     case DIV:
                         look_ahead = pop_T_NT(evaluation_stack);
@@ -407,9 +411,11 @@ Data_NTerm *arithm_R() {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
+                        right_order[i] = '4';
+                        printf("4");
                         break;
                     case IDIV:
-                        error_exit(SEM_ERR);
+                        error_exit(TYPE_ERR);
                         break;
                     default:
                         printf("UNEXPECTED SIGN AFTER PSA\n");
@@ -438,6 +444,8 @@ Data_NTerm *arithm_R() {
                         else {
                             error_exit(SEM_ERR);
                         }
+                        right_order[i] = '1';
+                        printf("1");
                         break;
                     case SUB:
                         look_ahead = pop_T_NT(evaluation_stack);
@@ -457,6 +465,8 @@ Data_NTerm *arithm_R() {
                         else {
                             error_exit(SEM_ERR);
                         }
+                        right_order[i] = '2';
+                        printf("2");
                         break;
                     case MUL:
                         look_ahead = pop_T_NT(evaluation_stack);
@@ -476,6 +486,8 @@ Data_NTerm *arithm_R() {
                         else {
                             error_exit(SEM_ERR);
                         }
+                        right_order[i] = '3';
+                        printf("3");
                         break;
                     case DIV:
                         look_ahead = pop_T_NT(evaluation_stack);
@@ -496,8 +508,11 @@ Data_NTerm *arithm_R() {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
+                        right_order[i] = '4';
+                        printf("4");
                         break;
                     case IDIV:
+                        printf("OK IDIV\n");
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
@@ -506,9 +521,11 @@ Data_NTerm *arithm_R() {
                         }
                         // Unexpected double or string type
                         else {
-                            error_exit(SEM_ERR);
+                            error_exit(TYPE_ERR);
                         }
                         used_rule = create_non_term(NT_IDIV, INTEGER_NT);
+                        right_order[i] = '5';
+                        printf("5");
                         break;
                     default:
                         printf("UNEXPECTED SIGN AFTER PSA\n");
@@ -521,17 +538,19 @@ Data_NTerm *arithm_R() {
                     look_ahead = pop_T_NT(evaluation_stack);
                     E = &(look_ahead->data.NTerm);
                     if (E->type == STRING_NT) {
-                        // TODO: Concat str_result str_temp_1 str_temp_2
+                        // TODO: Concat str_result str_temp_1 str_temp_2 
                         arithm_state = AR_END_PSA;
                     }
                     else {
-                        error_exit(SEM_ERR);
+                        error_exit(TYPE_ERR);
                     }
                 }
                 else {
                     error_exit(SEM_ERR);
                 }
                 used_rule = create_non_term(NT_ADD, STRING_NT);
+                right_order[i] = '1';
+                printf("1");
                 break;
             case AR_END_PSA:
                 look_ahead = pop_T_NT(evaluation_stack);
@@ -548,7 +567,7 @@ Data_NTerm *arithm_R() {
                 error_exit(INTERNAL_ERR);
                 break;
         }
-
+        
     }
 
     return used_rule;
@@ -567,34 +586,46 @@ void reduce_by_rule() {
         // ID_PSA,
 
         // ACCEPT_RULE_PSA,
-
+    static int i = -1;
+    i++;
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;
-
+   
     extern T_NT_stack *evaluation_stack;
-
+    
     push_start_term(evaluation_stack);
     get_reversed_rule();
     look_ahead = pop_T_NT(evaluation_stack);
 
     if (look_ahead->is_non_term == true) {
-        used_rule = arithm_R();
+        used_rule = arithm_R(i);
     }
     else {
         if (get_term_type(&(look_ahead->data.Term)) == ID) {
-            used_rule = id_or_function_R();
+            used_rule = id_or_function_R(i);
+            right_order[i] = '7';
+            printf("7");
         }
         else if (get_term_type(&(look_ahead->data.Term)) == PL) {
-            // parenthesis_R();
+            // E
+            look_ahead = pop_T_NT(evaluation_stack);
+            used_rule = create_non_term(look_ahead->data.NTerm.rule, look_ahead->data.NTerm.type);
+
+            // )
+            look_ahead = pop_T_NT(evaluation_stack);
+
+            // $
+            look_ahead = pop_T_NT(evaluation_stack);
+            right_order[i] = '6';
+            printf("6");
         }
         else {
-            error_exit(INTERNAL_ERR); // Debug
+            error_exit(INTERNAL_ERR); // Debug 
         }
     }
 
     push_T_NT(processing_stack, NULL, used_rule);
     free(used_rule);
-
     return;
 }
 
@@ -603,15 +634,15 @@ void psa_operation() {
     char table_psa[11][11] = {
     //        | ADD | MUL| SUB| DIV|IDIV| PL | PR | ID | FNC| CM | END|
     //        |   + |  * |  - |  / |  \ |  ( |  ) |  i |  f |  , |  $ |
-    //----------------------------------------------------------------
-    /* ADD| + |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>',
-    /* MUL| * |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>',
+    //----------------------------------------------------------------    
+    /* ADD| + |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>', 
+    /* MUL| * |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>', 
     /* SUB| - |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>',
     /* DIV| / |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>',
     /* IDI| \ |*/'>', '<', '>', '<', '>', '<', '>', '<', '<', '>', '>',
-    /* PL | ( |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#',
-    /* PR | ) |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>',
-    /* ID | i |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>',
+    /* PL | ( |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#', 
+    /* PR | ) |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>', 
+    /* ID | i |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>', 
     /* FNC| f |*/'#', '#', '#', '#', '#', '=', '#', '#', '#', '#', '#',
     /* CM | , |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#',
     /* END| $ |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '\0'
@@ -649,7 +680,7 @@ void psa_operation() {
                 get_token();
                 break;
             // Reduce by rule
-            //
+            // 
             // -------------------Semantic control part-----------------------
             case '>':
                 reduce_by_rule(processing_stack);
