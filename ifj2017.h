@@ -335,6 +335,7 @@ void hash_table_destroy(hash_table_type *hash_table);
 
 //====PARSER====
 tToken currentToken;
+bool func_definition;
 
 int start_parsing();
 int start();
