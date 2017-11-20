@@ -17,6 +17,10 @@ void hard_exit(int code){
   free_sources();
   #endif
 
+  free(currentToken.id);
+  free(currentToken.value_string);
+  free(params.content);
+
   if (func_table != NULL){
     hash_table_destroy(func_table);
   }
@@ -211,7 +215,6 @@ int var_declr(){
     hard_exit(SYNT_ERR);
   }
 
-
   //check for redeclaration
   //TODO can be declared and defined separately?
   tmp_var_item = hash_table_search(var_table, var_id);
@@ -272,7 +275,8 @@ int var_declr(){
 //<fncarg> -> <id>	as 	<type>
 int fnc_arg(){
   //copy identifier for later
-  char *var_id = currentToken.id;
+  char *var_id = malloc(strlen(currentToken.id)*sizeof(char));
+  memcpy(var_id, currentToken.id, strlen(currentToken.id));
   //already got identifier
   get_token();
 
@@ -612,8 +616,8 @@ int functions(){
   //expecting identifier
   CHECKT(IDENTIFICATOR);
   //save identifier for hash
-  identifier= malloc(strlen(currentToken.id)*sizeof(char)+1);
-  memcpy(identifier, currentToken.id, strlen(currentToken.id)+1);
+  identifier= malloc(strlen(currentToken.id+1)*sizeof(char));
+  memcpy(identifier, currentToken.id, strlen(currentToken.id+1));
 
   //tac
   printf("LABEL %s\n", identifier);
@@ -872,6 +876,9 @@ int main(int argc, char *argv[]){
   hash_table_destroy(func_table);
   //free buffer
   free(buffer.content);
+
+  free(currentToken.id);
+  free(currentToken.value_string);
 
   printf("RESULT %d\n", result);
 

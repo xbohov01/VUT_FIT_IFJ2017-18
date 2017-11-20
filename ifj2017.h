@@ -14,6 +14,9 @@
 #include <stdbool.h>
 #include "errors.h"
 
+//===ERRORS====
+void hard_exit(int code);
+
 //====STRING====
 typedef struct {
 	char *content;
