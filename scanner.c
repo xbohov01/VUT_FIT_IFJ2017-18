@@ -1,4 +1,4 @@
-/****scanner.c****/
+	/****scanner.c****/
 //ifj2017
 //xberes01
 //xbohov01
@@ -297,6 +297,8 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			if (n_char == '\"')
 			{
 				currentToken.token_type = STRING;
+				currentToken.value_string = realloc(currentToken.value_string, strlen(buffer.content)*sizeof(char)+1);
+				memcpy(currentToken.value_string, buffer.content, strlen(buffer.content)+1);
 			}
 			else if (n_char > 31)
 			{
@@ -462,7 +464,8 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				currentToken.token_type = get_key(buffer.content);
 				if (currentToken.token_type == IDENTIFICATOR)
 				{
-					currentToken.id = buffer.content;
+					currentToken.id = realloc(currentToken.id, strlen(buffer.content)*sizeof(char)+1);
+					strcpy(currentToken.id, buffer.content);
 				}
 				token_state = BEGIN;
 			}
@@ -490,15 +493,18 @@ int start_scanner(char *filename)
 		if (file == NULL)
 		{
 			fprintf(stderr, "File %s cannot be opened.\n", filename);
-			return LEX_ERR;
+			hard_exit(INTERNAL_ERR);
 		}
 	}
 
 	if (str_init(&buffer) != SUCCESS)
 	{
 		fclose(file);
-		return LEX_ERR;
+		hard_exit(INTERNAL_ERR);
 	}
+
+	currentToken.id = malloc(1);
+	currentToken.value_string = malloc(1);
 }
 
 /*
