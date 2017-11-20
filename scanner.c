@@ -112,6 +112,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 	int n_char;
 	currentToken.token_type = UNDEFINED;
 	T_token_state token_state = BEGIN;
+	delstr(&buffer);
 
 	while (currentToken.token_type == UNDEFINED)
 	{
@@ -300,14 +301,24 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				currentToken.value_string = realloc(currentToken.value_string, strlen(buffer.content)*sizeof(char)+1);
 				memcpy(currentToken.value_string, buffer.content, strlen(buffer.content)+1);
 			}
+			else if (n_char == '\\')
+			{
+				addchar(n_char, &buffer);
+				int esc = 0;
+				token_state = ESCAPE;
+			}
+			else if (isspace(n_char)) //prevod bielych znakov v stringu do escape
+			{
+				addchar('\\', &buffer);
+				addchar('0', &buffer);
+				char a = n_char / 10 + 48;
+				addchar(a, &buffer);
+				char b = n_char % 10 + 48;
+				addchar(b, &buffer);
+			}
 			else if (n_char > 31)
 			{
 				addchar(n_char, &buffer);
-			}
-			else if (n_char == '\\')
-			{
-				int esc = 0;
-				token_state = ESCAPE;
 			}
 			else
 			{
@@ -320,44 +331,51 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 				if (n_char == '"')
 				{
-					addchar('"', &buffer);
+					addchar('0', &buffer);
+					addchar('3', &buffer);
+					addchar('4', &buffer);
 					token_state = POS_STRING;
 				}
 				else if (n_char == 'n')
 				{
-					addchar('\n', &buffer);
+					addchar('0', &buffer);
+					addchar('1', &buffer);
+					addchar('0', &buffer);
 					token_state = POS_STRING;
 				}
 				else if (n_char == 't')
 				{
-					addchar('\t', &buffer);
+					addchar('0', &buffer);
+					addchar('0', &buffer);
+					addchar('9', &buffer);
 					token_state = POS_STRING;
 				}
 				else if (n_char == '\\')
 				{
-					addchar('\\', &buffer);
+					addchar('0', &buffer);
+					addchar('9', &buffer);
+					addchar('2', &buffer);
 					token_state = POS_STRING;
 				}
 				else if (isdigit(n_char))
 				{
-					int i_e = 0;
-					while (i_e < 3)
+					ungetc(n_char, file);
+					for (int i_e = 0; i_e <= 2; i_e++)
 					{
+						n_char = fgetc(file);
 						if (isdigit(n_char))
 						{
-							n_char = fgetc(file);
-						 esc = (esc * 10) + n_char;
+							addchar(n_char, &buffer);
+						  esc = (esc * 10) + (n_char - 48);
 						}
 						else
 						{
 							currentToken.token_type = ERROR;
 							hard_exit(LEX_ERR);
 						}
-						i_e++;
 					}
 					if ((esc >= 1) && (esc <= 255))
 					{
-						addchar(esc, &buffer);
 						token_state = POS_STRING;
 					}
 					else
@@ -379,7 +397,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 				addchar(n_char, &buffer);
 			}
-			if ((n_char == 'E')||(n_char == 'e'))
+			else if ((n_char == 'E')||(n_char == 'e'))
 			{
 				addchar(n_char, &buffer);
 				token_state = POS_EXP;
@@ -443,7 +461,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 				addchar(n_char, &buffer);
 			}
-			if ((n_char == 'E')||(n_char == 'e'))
+			else if ((n_char == 'E')||(n_char == 'e'))
 			{
 				addchar(n_char, &buffer);
 				token_state = POS_EXP;

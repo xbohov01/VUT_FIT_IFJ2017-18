@@ -234,6 +234,8 @@ int var_declr(){
   tmp_var_item = hash_table_insert(var_table, var_id);
   //TODO check for correct insert
 
+  tmp_var_item->param_types = NULL;
+
   //adds type to params and var_table
   if (currentToken.token_type == INTEGER_KEY){
     addchar('i', &params);
@@ -275,8 +277,9 @@ int var_declr(){
 //<fncarg> -> <id>	as 	<type>
 int fnc_arg(){
   //copy identifier for later
-  char *var_id = malloc(strlen(currentToken.id)*sizeof(char));
-  memcpy(var_id, currentToken.id, strlen(currentToken.id));
+  char *var_id = malloc(strlen(currentToken.id)*sizeof(char)+1);
+  memcpy(var_id, currentToken.id, strlen(currentToken.id)+1);
+
   //already got identifier
   get_token();
 
@@ -299,6 +302,8 @@ int fnc_arg(){
     //add variable to var_table
     tmp_var_item = hash_table_insert(var_table, var_id);
 
+    tmp_var_item->param_types = NULL;
+
     //adds type to params and var_table
     if (currentToken.token_type == INTEGER_KEY){
       addchar('i', &params);
@@ -312,6 +317,8 @@ int fnc_arg(){
     }
 
     //TODO tac
+
+    free(var_id);
 
     //gets next for condition in fnc_arglist
     get_token();
@@ -616,12 +623,17 @@ int functions(){
   //expecting identifier
   CHECKT(IDENTIFICATOR);
   //save identifier for hash
-  identifier= malloc(strlen(currentToken.id+1)*sizeof(char));
-  memcpy(identifier, currentToken.id, strlen(currentToken.id+1));
+  identifier= malloc(strlen(currentToken.id)*sizeof(char)+1);
+  memcpy(identifier, currentToken.id, strlen(currentToken.id)+1);
 
-  //tac
-  printf("LABEL %s\n", identifier);
-  printf("PUSHFRAME\n");
+  if (definition){
+    //tac
+    printf("LABEL %s\n", identifier);
+    printf("PUSHFRAME\n");
+
+    //return value room
+    printf("DEFVAR @LF%cRETVAL\n", '%');
+  }
 
   get_token();
   //expecting (
@@ -689,12 +701,18 @@ int functions(){
   //check if function is in symtable
   tmp_func_item = hash_table_search(func_table, identifier);
   //no entry found
-  if (tmp_func_item == NULL){
+  if (tmp_func_item == NULL || (tmp_func_item != NULL && tmp_func_item->is_defined == false)){
     //add entry into functions table
     //tmp_func_item points to new table item
     tmp_func_item = hash_table_insert(func_table, identifier);
     //set return type
     tmp_func_item->value_type = return_type;
+    //is defined
+    if (definition){
+      tmp_func_item->is_defined = true;
+    } else {
+      tmp_func_item->is_defined = false;
+    }
     //set parameter types
     if (params.len != 0){
       tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
@@ -705,6 +723,7 @@ int functions(){
     }
   } else {
     fprintf(stderr, "Syntax error: Function %s is already defined\n", identifier);
+    free(identifier);
     hard_exit(UNDEF_ERR);
   }
 
@@ -714,6 +733,7 @@ int functions(){
     //destroy variable table
     hash_table_destroy(var_table);
     get_token();
+    free(identifier);
     return end_of_lines();
   }
 
@@ -730,6 +750,13 @@ int functions(){
     get_token();
     CHECKT(FUNCTION_KEY);
     get_token();
+
+    free(identifier);
+
+    //tac
+    printf("POPFRAME\n");
+    printf("RETURN\n");
+
     //destroy variable table
     hash_table_destroy(var_table);
     return end_of_lines();
@@ -798,6 +825,8 @@ int scope(){
 //<s> -> <funkcie> <scope>
 int start(){
 
+  printf(".IFJcode17\n");
+
   int result = 0;
 
   while (result != SYNT_ERR){
@@ -808,8 +837,8 @@ int start(){
         //'declare' keyword
         result = functions();
         //tac
-        printf("POPFRAME\n");
-        printf("RETURN\n");
+        //printf("POPFRAME\n");
+        //printf("RETURN\n");
         continue;
 
       case SCOPE_KEY:
