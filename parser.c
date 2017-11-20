@@ -825,6 +825,8 @@ int scope(){
 //<s> -> <funkcie> <scope>
 int start(){
 
+  printf(".IFJcode17\n");
+
   int result = 0;
 
   while (result != SYNT_ERR){
