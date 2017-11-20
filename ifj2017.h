@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include "errors.h"
 
 //====STRING====
 typedef struct {
@@ -48,8 +49,6 @@ typedef enum {
 	//operators end
 
 	//other chars begin
-	BRA_R,// )
-	BRA_L,// (
 	PAR_R, // )
 	PAR_L,// (
 	COM,// ,
@@ -174,16 +173,17 @@ typedef struct hash_tab_symbol hash_tab_symbol_type;
 struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
 
-	bool is_function;  // false = variable     true = function
+	//bool is_function;  // false = variable     true = function
 
 	int value_type;  // 0 = integer     1 = float     2 = string
 
-	int integer_t;
-	float float_t;
-	char *char_t;
+	//int integer_t;
+	//float float_t;
+	//char *char_t;
 
-	int num_parameters;
-	int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
+	char *param_types;
+	//int num_parameters;
+	//int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
 	char symbol_name[];	    // meno funkcie / premennej
 
 };
@@ -195,7 +195,8 @@ typedef struct {
 
 hash_table_type *func_table;
 hash_table_type *var_table;
-hash_tab_symbol_type tmp_hash_item;
+hash_tab_symbol_type *tmp_func_item;
+hash_tab_symbol_type *tmp_var_item;
 
 hash_table_type *sym_tab_init(unsigned size);
 hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbol_name);
@@ -216,5 +217,7 @@ int fnc_arglist();
 int fnc_stats();
 int if_statements();
 int statement();
+
+tString params;
 
 //====SCANNER====
