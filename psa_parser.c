@@ -3,7 +3,7 @@
 ** Author: Danil Grigorev, xgrigo02
 */
 
-#include "psa_parser.h"
+#include "ifj2017.h"
 
 
 int main() {

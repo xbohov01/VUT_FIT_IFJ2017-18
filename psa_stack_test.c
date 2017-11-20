@@ -6,7 +6,7 @@
 // Tests part
 // =======================
 
-#include "psa_stack_test.h"
+#include "ifj2017.h"
 
 void print_stack(T_NT_stack *s) {
     static int call_num = 1;

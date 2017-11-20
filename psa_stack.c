@@ -4,7 +4,7 @@
 **          Samuel Bohovic, xbohov01
 */
 
-#include "psa_stack.h"
+#include "ifj2017.h"
 
 // Additional options
 // =======================
