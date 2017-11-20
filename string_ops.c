@@ -3,7 +3,7 @@
 //xberes01
 //xgrigo02
 
-#include <ifj2017.h>
+#include "ifj2017.h"
 
 int addchar(char n_char, tString *str) //funkcia pridava znak do string
 {
