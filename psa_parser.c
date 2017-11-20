@@ -65,7 +65,7 @@ void eval_expr() {
     extern T_NT_stack *evaluation_stack;
     processing_stack = init_T_NT_stack();
     evaluation_stack = init_T_NT_stack();
-    start_scanner("hard_test_with_seg_fault.txt"); // TODO: delete -- test
+    //start_scanner("hard_test_with_seg_fault.txt"); // TODO: delete -- test
 
     // TODO: delete -- test
     // id
