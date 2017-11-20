@@ -155,7 +155,7 @@ T_NT_item *pop_T_NT(T_NT_stack *s) {
         s->popped = NULL;
     }
     if (s->active == s->top) {
-        s->active == NULL;
+        s->active = NULL;
     }
     if (s->top == NULL) {
         return NULL;

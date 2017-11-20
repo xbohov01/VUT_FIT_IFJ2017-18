@@ -3,7 +3,6 @@
 ** Author: Danil Grigorev, xgrigo02
 */
 
-//#include "psa_parser.h"
 #include "ifj2017.h"
 
 /*
@@ -27,7 +26,6 @@ int main() {
     return 0;
 }
 */
-
 // Feeds non terminal
 Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
     Data_NTerm *temp_non_term_data = malloc(sizeof(Data_NTerm));
