@@ -1,11 +1,11 @@
-/* 
+/*
 ** Precedense syntax parser implementation
 ** Author: Danil Grigorev, xgrigo02
 */
 
-#include "psa_parser.h"
+#include "ifj2017.h"
 
-
+/*
 int main() {
     // Tests
     // +++++++++++++++
@@ -22,6 +22,7 @@ int main() {
 
     return 0;
 }
+*/
 
 // Feeds non terminal
 Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
@@ -139,7 +140,7 @@ void eval_expr() {
     free_sources(); // TODO: delete -- test
     destroy_T_NT_stack(processing_stack);
     destroy_T_NT_stack(evaluation_stack);
-    
+
     return;
 }
 // --END-- <expr> -> <PSA> <PSA_second>
@@ -213,7 +214,7 @@ void get_reversed_rule() {
 
 Data_NTerm *id_or_function_R() {
     // TODO: undone
-    print_stack(evaluation_stack);
+    //print_stack(evaluation_stack);
     static enum {
         START_ID,
         ID_OR_FUNC,
@@ -313,7 +314,7 @@ Data_NTerm *arithm_R() {
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;
     Data_NTerm *E;
-    
+
 
     look_ahead = evaluation_stack->popped;
     arithm_state = START_ARITHM_PSA;
@@ -520,7 +521,7 @@ Data_NTerm *arithm_R() {
                     look_ahead = pop_T_NT(evaluation_stack);
                     E = &(look_ahead->data.NTerm);
                     if (E->type == STRING_NT) {
-                        // TODO: Concat str_result str_temp_1 str_temp_2 
+                        // TODO: Concat str_result str_temp_1 str_temp_2
                         arithm_state = AR_END_PSA;
                     }
                     else {
@@ -547,7 +548,7 @@ Data_NTerm *arithm_R() {
                 error_exit(INTERNAL_ERR);
                 break;
         }
-        
+
     }
 
     return used_rule;
@@ -569,9 +570,9 @@ void reduce_by_rule() {
 
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;
-   
+
     extern T_NT_stack *evaluation_stack;
-    
+
     push_start_term(evaluation_stack);
     get_reversed_rule();
     look_ahead = pop_T_NT(evaluation_stack);
@@ -587,7 +588,7 @@ void reduce_by_rule() {
             // parenthesis_R();
         }
         else {
-            error_exit(INTERNAL_ERR); // Debug 
+            error_exit(INTERNAL_ERR); // Debug
         }
     }
 
@@ -602,15 +603,15 @@ void psa_operation() {
     char table_psa[11][11] = {
     //        | ADD | MUL| SUB| DIV|IDIV| PL | PR | ID | FNC| CM | END|
     //        |   + |  * |  - |  / |  \ |  ( |  ) |  i |  f |  , |  $ |
-    //----------------------------------------------------------------    
-    /* ADD| + |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>', 
-    /* MUL| * |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>', 
+    //----------------------------------------------------------------
+    /* ADD| + |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>',
+    /* MUL| * |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>',
     /* SUB| - |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>',
     /* DIV| / |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>',
     /* IDI| \ |*/'>', '<', '>', '<', '>', '<', '>', '<', '<', '>', '>',
-    /* PL | ( |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#', 
-    /* PR | ) |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>', 
-    /* ID | i |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>', 
+    /* PL | ( |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#',
+    /* PR | ) |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>',
+    /* ID | i |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>',
     /* FNC| f |*/'#', '#', '#', '#', '#', '=', '#', '#', '#', '#', '#',
     /* CM | , |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#',
     /* END| $ |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '\0'
@@ -648,7 +649,7 @@ void psa_operation() {
                 get_token();
                 break;
             // Reduce by rule
-            // 
+            //
             // -------------------Semantic control part-----------------------
             case '>':
                 reduce_by_rule(processing_stack);
