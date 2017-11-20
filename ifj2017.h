@@ -5,9 +5,6 @@
 //xberes01
 //xkosti07
 
-#ifndef IFJ_HEADER_INCLUDED
-#define IFJ_HEADER_INCLUDED
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -16,6 +13,134 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include "errors.h"
+
+//====PSA_STACK====
+
+// Possible types for non_terminals
+// Used after rule application
+typedef enum non_term_types {
+    NT_ADD, // 1: E -> E + E
+    NT_SUB, // 2: E -> E - E
+    NT_MUL, // 3: E -> E * E
+    NT_DIV, // 4: E -> E / E
+    NT_IDIV, // 5: E -> E \ E
+
+    NT_PAR, // 6: E -> (E)
+
+    NT_ID,  // 7: E -> id
+    NT_FN,  // 8: E -> id(eps/E/E,...E)
+
+    STOPPER // '<'
+} N_T_rules;
+
+typedef enum {
+    DOUBLE_NT,
+    INTEGER_NT,
+    STRING_NT,
+    NONE_NT
+} N_T_types;
+
+typedef enum psa_term_type{
+    ADD,
+    MUL,
+    SUB,
+    DIV,
+    IDIV,
+    PL,
+    PR,
+    ID,
+    FNC,
+    CM,
+    END,
+
+    // Relational operators
+    LT,
+    GT,
+    LTE,
+    GTE,
+    EQ,
+    NEQ,
+
+    PSA_ERR
+} PSA_Term_type;
+
+
+// Extended stack of terminals and non terminals
+typedef struct t_nt_stack {
+    struct t_nt_item *top;
+    struct t_nt_item *active;
+    struct t_nt_item *popped;
+} T_NT_stack;
+
+// Non_terminal itself
+typedef struct data_non_term
+{
+    N_T_rules rule;
+    N_T_types type;
+} Data_NTerm; // Non-terminal data
+
+// Style conversion of tToken structure
+typedef tToken Data_Term;
+
+// Data types of stack items
+typedef union t_nt_data{
+    Data_NTerm NTerm;
+    Data_Term Term;
+} T_NT_Data;
+
+// Stack item structure
+typedef struct t_nt_item {
+
+    bool is_non_term;
+    T_NT_Data data;
+    struct t_nt_item *next_T_NT;
+
+} T_NT_item;
+
+
+void error_exit(int code);
+PSA_Term_type get_term_type(Data_Term *in_term);
+
+T_NT_stack *init_T_NT_stack();
+void destroy_T_NT_stack(T_NT_stack *s);
+T_NT_item *push_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
+T_NT_item *pop_T_NT(T_NT_stack *s); // Returns item for easy search
+
+// Extended stack operations
+T_NT_item *set_first_T_NT(T_NT_stack *s);
+T_NT_item *set_next_T_NT(T_NT_stack *s);
+bool active_T_NT(T_NT_stack *s);
+T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
+
+//====PSA===
+void eval_expr();
+void psa_operation();
+void get_reversed_rule();
+
+// TODO: create operations
+Data_NTerm *id_or_function_R();
+Data_NTerm *function_R();
+Data_NTerm *parenthesis_R();
+Data_NTerm *arithm_R();
+
+
+void push_start_term(T_NT_stack *s);
+T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
+void insert_stopper(T_NT_stack *s);
+void psa_compare(Data_Term *tok, T_NT_stack *s);
+void reduce_by_rule();
+Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
+
+extern Data_Term currentToken;
+T_NT_stack *processing_stack;
+T_NT_stack *evaluation_stack;
+
+// TODO: to be deleted
+// For test, simulate rule usage and shows order
+N_T_rules *right_order;
+
+//====ERRORS====
+void hard_exit(int code);
 
 //====STRING====
 typedef struct {
@@ -27,7 +152,6 @@ typedef struct {
 int str_init(tString *str);
 void delstr(tString *str);
 int addchar(char n_char, tString *str);
-void free_string(tString *str);
 
 //====SCANNER====
 #define N_KEYWORDS 35
@@ -53,8 +177,6 @@ typedef enum {
 	//operators end
 
 	//other chars begin
-	BRA_R,// )
-	BRA_L,// (
 	PAR_R, // )
 	PAR_L,// (
 	COM,// ,
@@ -157,8 +279,7 @@ int esc;
 //function declarations
 void free_sources();
 int start_scanner(char *filename);
-int get_token();
-void print_curr_token(); // TODO: delete -- tests
+void get_token();
 
 //====SYMTABLE====
 
@@ -180,16 +301,17 @@ typedef struct hash_tab_symbol hash_tab_symbol_type;
 struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
 
-	bool is_function;  // false = variable     true = function
+	//bool is_function;  // false = variable     true = function
 
 	int value_type;  // 0 = integer     1 = float     2 = string
 
-	int integer_t;
-	float float_t;
-	char *char_t;
+	int value_int;
+	float value_float;
+	char *value_string;
 
-	int num_parameters;
-	int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
+	char *param_types;
+	//int num_parameters;
+	//int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
 	char symbol_name[];	    // meno funkcie / premennej
 
 };
@@ -198,6 +320,17 @@ typedef struct {
 	unsigned table_size;
 	hash_tab_symbol_type *list_items[];
 } hash_table_type;
+
+hash_table_type *func_table;
+hash_table_type *var_table;
+hash_tab_symbol_type *tmp_func_item;
+hash_tab_symbol_type *tmp_var_item;
+
+hash_table_type *sym_tab_init(unsigned size);
+hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbol_name);
+hash_tab_symbol_type *hash_table_search(hash_table_type *hash_table, char *entry_key);
+void hash_table_destroy(hash_table_type *hash_table);
+
 
 //====PARSER====
 tToken currentToken;
@@ -211,8 +344,8 @@ int fnc_arg();
 int fnc_arglist();
 int fnc_stats();
 int if_statements();
-int statements();
+int statement();
+
+tString params;
 
 //====SCANNER====
-
-#endif // IFJ_HEADER_INCLUDED end

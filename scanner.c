@@ -1,4 +1,8 @@
-#include "errors.h"
+	/****scanner.c****/
+//ifj2017
+//xberes01
+//xbohov01
+
 #include "ifj2017.h"
 
 void free_sources() //funkcia uvolnuje pouzite zdroje
@@ -103,11 +107,12 @@ T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je
 	}
 }
 
-int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
+void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 {
 	int n_char;
 	currentToken.token_type = UNDEFINED;
 	T_token_state token_state = BEGIN;
+	delstr(&buffer);
 
 	while (currentToken.token_type == UNDEFINED)
 	{
@@ -161,15 +166,6 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else if (n_char == '=')
 			{
 			  currentToken.token_type = EQ_O;
-			}
-			//pridane
-			else if (n_char == '}')
-			{
-			  currentToken.token_type = BRA_R;
-			}
-			else if (n_char == '{')
-			{
-			  currentToken.token_type = BRA_L;
 			}
 			else if (n_char == ')')
 			{
@@ -228,7 +224,9 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 				else
 				{
+					ungetc(n_char, file);
 					currentToken.token_type = LT_O;
+					token_state = BEGIN;
 				}
 			}
 			break;
@@ -241,7 +239,9 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 				else
 				{
+					ungetc(n_char, file);
 					currentToken.token_type = GT_O;
+					token_state = BEGIN;
 				}
 			}
 			break;
@@ -254,8 +254,9 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				//ungetc
+				ungetc(n_char, file);
 				currentToken.token_type = DIV_O;
+				token_state = BEGIN;
 			}
 			break;
 
@@ -289,6 +290,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -296,20 +298,32 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			if (n_char == '\"')
 			{
 				currentToken.token_type = STRING;
-				currentToken.value_string = buffer.content;
+				currentToken.value_string = realloc(currentToken.value_string, strlen(buffer.content)*sizeof(char)+1);
+				memcpy(currentToken.value_string, buffer.content, strlen(buffer.content)+1);
+			}
+			else if (n_char == '\\')
+			{
+				addchar(n_char, &buffer);
+				int esc = 0;
+				token_state = ESCAPE;
+			}
+			else if (isspace(n_char)) //prevod bielych znakov v stringu do escape
+			{
+				addchar('\\', &buffer);
+				addchar('0', &buffer);
+				char a = n_char / 10 + 48;
+				addchar(a, &buffer);
+				char b = n_char % 10 + 48;
+				addchar(b, &buffer);
 			}
 			else if (n_char > 31)
 			{
 				addchar(n_char, &buffer);
 			}
-			else if (n_char == '\\')
-			{
-				int esc = 0;
-				token_state = ESCAPE;
-			}
 			else
 			{
 				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -317,62 +331,73 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 				if (n_char == '"')
 				{
-					addchar('"', &buffer);
+					addchar('0', &buffer);
+					addchar('3', &buffer);
+					addchar('4', &buffer);
 					token_state = POS_STRING;
 				}
 				else if (n_char == 'n')
 				{
-					addchar('\n', &buffer);
+					addchar('0', &buffer);
+					addchar('1', &buffer);
+					addchar('0', &buffer);
 					token_state = POS_STRING;
 				}
 				else if (n_char == 't')
 				{
-					addchar('\t', &buffer);
+					addchar('0', &buffer);
+					addchar('0', &buffer);
+					addchar('9', &buffer);
 					token_state = POS_STRING;
 				}
 				else if (n_char == '\\')
 				{
-					addchar('\\', &buffer);
+					addchar('0', &buffer);
+					addchar('9', &buffer);
+					addchar('2', &buffer);
 					token_state = POS_STRING;
 				}
 				else if (isdigit(n_char))
 				{
-					int i_e = 0;
-					while (i_e < 3)
+					ungetc(n_char, file);
+					for (int i_e = 0; i_e <= 2; i_e++)
 					{
+						n_char = fgetc(file);
 						if (isdigit(n_char))
 						{
-							n_char = fgetc(file);
-						 esc = (esc * 10) + n_char;
+							addchar(n_char, &buffer);
+						  esc = (esc * 10) + (n_char - 48);
 						}
 						else
 						{
 							currentToken.token_type = ERROR;
+							hard_exit(LEX_ERR);
 						}
-						i_e++;
 					}
 					if ((esc >= 1) && (esc <= 255))
 					{
-						addchar(esc, &buffer);
 						token_state = POS_STRING;
 					}
 					else
 					{
 						currentToken.token_type = ERROR;
+						hard_exit(LEX_ERR);
 					}
 				}
 				else
 				{
 					currentToken.token_type = ERROR;
+					hard_exit(LEX_ERR);
 				}
 			}
 			break;
+
 			case POS_INT:
 			if (isdigit(n_char))
 			{
 				addchar(n_char, &buffer);
 			}
-			if ((n_char == 'E')||(n_char == 'e'))
+			else if ((n_char == 'E')||(n_char == 'e'))
 			{
 				addchar(n_char, &buffer);
 				token_state = POS_EXP;
@@ -399,9 +424,8 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
 				currentToken.token_type = ERROR;
-				token_state = BEGIN;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -427,9 +451,8 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
 				currentToken.token_type = ERROR;
-				token_state = BEGIN;
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -438,7 +461,7 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 				addchar(n_char, &buffer);
 			}
-			if ((n_char == 'E')||(n_char == 'e'))
+			else if ((n_char == 'E')||(n_char == 'e'))
 			{
 				addchar(n_char, &buffer);
 				token_state = POS_EXP;
@@ -459,7 +482,8 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				currentToken.token_type = get_key(buffer.content);
 				if (currentToken.token_type == IDENTIFICATOR)
 				{
-					currentToken.id = buffer.content;
+					currentToken.id = realloc(currentToken.id, strlen(buffer.content)*sizeof(char)+1);
+					strcpy(currentToken.id, buffer.content);
 				}
 				token_state = BEGIN;
 			}
@@ -468,6 +492,11 @@ int get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				n_char = tolower(n_char);
 				addchar(n_char, &buffer);
 			}
+			break;
+
+			default:
+				currentToken.token_type = ERROR;
+				hard_exit(LEX_ERR);
 			break;
 
 		}
@@ -482,162 +511,20 @@ int start_scanner(char *filename)
 		if (file == NULL)
 		{
 			fprintf(stderr, "File %s cannot be opened.\n", filename);
-			return LEX_ERR;
+			hard_exit(INTERNAL_ERR);
 		}
 	}
 
 	if (str_init(&buffer) != SUCCESS)
 	{
 		fclose(file);
-		return LEX_ERR;
+		hard_exit(INTERNAL_ERR);
 	}
+
+	currentToken.id = malloc(1);
+	currentToken.value_string = malloc(1);
 }
 
-//prints current token - testing only
-void print_curr_token(){
-  //array of all tokens
-  const char *tokenList[] = {
-    "+",
-		"err",
-    "-",
-    "*",
-    "/",
-    "modulo",
-    "<",
-    ">",
-    "<=",
-    ">=",
-    "=",
-    "<>",
-		"}",
-		"{",
-		")",
-		"(",
-		",",
-		";",
-    "as",
-    "asc",
-    "declare",
-    "dim",
-    "do",
-    "double",
-    "else",
-    "end",
-    "chr",
-    "function",
-    "input",
-    "integer",
-    "length",
-    "loop",
-    "print",
-    "return",
-    "scope",
-    "string",
-    "substr",
-    "then",
-    "while",
-    "and",
-    "boolean",
-    "continue",
-    "elseif",
-    "exit",
-    "false",
-    "for",
-    "next",
-    "not",
-    "or",
-    "shared",
-    "static",
-    "true",
-    "if",
-    "double_val",
-    "integer_val",
-    "string_val",
-    "identifier",
-    "UNDEFINED",
-		"ERROR",
-		"end of line",
-    "end of file",
-  };
-  //token to print
-  char *printToken;
-  printf("Current token -> %s\n", tokenList[currentToken.token_type]);
-}
-
-// int main() //aby bol prekladac spoko a tiez na testovanie
-// {
-// 	int i = 0;
-// 	char inputf1[] = "test2.txt";
-// 	T_token_type test_tokens1[] = {
-// 	//test1:
-// 	/*ENDL, SCOPE_KEY, ENDL, DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL, DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-// 	PRINT_KEY, STRING, SEM, ENDL, INPUT_KEY, IDENTIFICATOR, ENDL, IF_KEY, IDENTIFICATOR, LT_O, INTEGER, THEN_KEY, ENDL, PRINT_KEY, STRING, SEM, ENDL, ELSE_KEY, ENDL,
-// 	IDENTIFICATOR, EQ_O, INTEGER, ENDL, DO_KEY, WHILE_KEY, IDENTIFICATOR, GT_O, INTEGER, ENDL, IDENTIFICATOR, EQ_O, IDENTIFICATOR, MUL_O, IDENTIFICATOR, ENDL,
-// 	IDENTIFICATOR, EQ_O, IDENTIFICATOR, SUB_O, INTEGER, ENDL, LOOP_KEY, ENDL, PRINT_KEY, STRING, SEM, IDENTIFICATOR, SEM, STRING, SEM, ENDL, END_KEY, IF_KEY, ENDL, END_KEY, SCOPE_KEY, ENDL, ENDF*/
-// 	//test2:
-// 	DECLARE_KEY, FUNCTION_KEY, IDENTIFICATOR, PAR_L, IDENTIFICATOR, AS_KEY, INTEGER_KEY, PAR_R, AS_KEY, INTEGER_KEY, ENDL,
-// 	FUNCTION_KEY, IDENTIFICATOR, PAR_L, IDENTIFICATOR, AS_KEY, INTEGER_KEY, PAR_R, AS_KEY, INTEGER_KEY, ENDL,
-// 		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-// 		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-// 		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-// 		IF_KEY, IDENTIFICATOR, LT_O, INTEGER, THEN_KEY, ENDL,
-// 			IDENTIFICATOR, EQ_O, INTEGER, ENDL,
-// 		ELSE_KEY, ENDL,
-// 			IDENTIFICATOR, EQ_O, IDENTIFICATOR, SUB_O, INTEGER, ENDL,
-// 			IDENTIFICATOR, EQ_O, IDENTIFICATOR, PAR_L, IDENTIFICATOR, PAR_R, ENDL,
-// 			IDENTIFICATOR, EQ_O, IDENTIFICATOR, MUL_O, IDENTIFICATOR, ENDL,
-// 		END_KEY, IF_KEY, ENDL,
-// 		RETURN_KEY, IDENTIFICATOR, ENDL,
-// 	END_KEY, FUNCTION_KEY, ENDL,
-// 	SCOPE_KEY, ENDL,
-// 		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-// 		DIM_KEY, IDENTIFICATOR, AS_KEY, INTEGER_KEY, ENDL,
-// 		PRINT_KEY, STRING, SEM, ENDL,
-// 		INPUT_KEY, IDENTIFICATOR, ENDL,
-// 		IF_KEY, IDENTIFICATOR, LT_O, INTEGER, THEN_KEY, ENDL,
-// 			PRINT_KEY, STRING, SEM, ENDL,
-// 		ELSE_KEY, ENDL,
-// 			IDENTIFICATOR, EQ_O, IDENTIFICATOR, PAR_L, IDENTIFICATOR, PAR_R, ENDL,
-// 			PRINT_KEY, STRING, SEM, IDENTIFICATOR, SEM, STRING, SEM, ENDL,
-// 		END_KEY, IF_KEY, ENDL,
-// 	END_KEY, SCOPE_KEY, ENDL, ENDF
-// 	};
-
-// 	start_scanner("test2.txt");
-// 	while(currentToken.token_type != ENDF)
-// 	{
-// 		if (get_token() == LEX_ERR){
-// 			printf("LEX ERR %s\n", buffer);
-// 		}
-// 		else if(currentToken.token_type == test_tokens1[i])
-// 		{
-// 			printf("OK %d ", i);
-// 			printf("%s ", buffer);
-// 		}
-// 		else
-// 		{
-// 			printf("WRONG %d ",i);
-// 			printf("%s ", buffer);
-// 		}
-// 		print_curr_token();
-// 		i++;
-// 	}
-// 	free_sources();
-	// tString test_str;
-	// char *bad_var = NULL;
-	// str_init(&test_str);
-
-	// char *test = "-------|-------|-------|-------|-------|test-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|-------|";
-	// for (int i = 0; test[i] != '\0'; i++) {
-	// 	addchar(test[i], &test_str);
-	// }
-	// printf("%s\n", test_str);
-	// make_str_copy(test_str.content, &bad_var);
-	// printf("STR: %s\n", bad_var);
-	// make_str_copy(test_str.content, &bad_var);
-
-	// free_string(&test_str);
-	// free(bad_var);
-
-	// return 0;
-// }
+/*
+int main() //aby bol prekladac spoko, testy zmazane
+{}*/

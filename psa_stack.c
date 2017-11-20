@@ -220,9 +220,11 @@ void error_exit(int code) {
     if (code == INTERNAL_ERR) {
         printf("CHYBA PAMETI\n");
     }
+    printf("\n");
     free_sources();
     destroy_T_NT_stack(processing_stack);
     destroy_T_NT_stack(evaluation_stack);
+    printf("Result: %d\n", code);
     exit(code);
 }
 

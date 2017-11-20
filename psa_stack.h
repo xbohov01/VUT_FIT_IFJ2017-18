@@ -28,7 +28,7 @@ typedef enum non_term_types {
 
     NT_ID,  // 7: E -> id
     NT_FN,  // 8: E -> id(eps/E/E,...E)
-
+    
     STOPPER // '<'
 } N_T_rules;
 
@@ -99,6 +99,7 @@ typedef struct t_nt_item {
 
 void error_exit(int code);
 PSA_Term_type get_term_type(Data_Term *in_term);
+void copy_term(Data_Term *from, Data_Term *to);
 
 T_NT_stack *init_T_NT_stack();
 void destroy_T_NT_stack(T_NT_stack *s);
