@@ -9,6 +9,10 @@
 #include "parser_test.h"
 #endif
 
+int cond_label = 0;
+//condition label format
+//printf("LABEL $condition%d$end\n", cond_label);
+
 //terminates all resources and program for error handling
 void hard_exit(int code){
   fprintf(stderr, "HARD EXIT\n");
@@ -216,7 +220,6 @@ int var_declr(){
   }
 
   //check for redeclaration
-  //TODO can be declared and defined separately?
   tmp_var_item = hash_table_search(var_table, var_id);
   if (tmp_var_item != NULL){
     fprintf(stderr, "Syntax error: Variable %s previously declared.\n", var_id);
@@ -533,6 +536,9 @@ int statement(){
             hard_exit(SYNT_ERR);
             //return SYNT_ERR;
           }
+          //end of conditional statements
+          printf("LABEL $condition%d$end\n", cond_label);
+          cond_label++;
         }
       }
       //else block
@@ -541,6 +547,9 @@ int statement(){
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
         }
+        //end of conditional statements
+        printf("LABEL $condition%d$end\n", cond_label);
+        cond_label++;
       }
 
       //check end if
@@ -771,6 +780,7 @@ int scope(){
   get_token();
 
   //tac
+  printf("LABEL $$main\n");
   printf("CREATEFRAME\n");
   printf("PUSHFRAME\n");
 
@@ -825,7 +835,10 @@ int scope(){
 //<s> -> <funkcie> <scope>
 int start(){
 
+  //header
   printf(".IFJcode17\n");
+  //jump to main
+  printf("JUMP $$main\n");
 
   int result = 0;
 
