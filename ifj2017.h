@@ -177,9 +177,9 @@ struct hash_tab_symbol {
 
 	int value_type;  // 0 = integer     1 = float     2 = string
 
-	//int integer_t;
-	//float float_t;
-	//char *char_t;
+	int value_int;
+	float value_float;
+	char *value_string;
 
 	char *param_types;
 	//int num_parameters;

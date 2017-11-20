@@ -33,6 +33,75 @@ void hard_exit(int code){
   exit(code);
 }
 
+//prints current token
+void print_curr_token(){
+  //array of all tokens
+  const char *tokenList[] = {
+    "+",
+    "lex err",
+    "-",
+    "*",
+    "/",
+    "mod",
+    "<",
+    ">",
+    "<=",
+    ">=",
+    "=",
+    "<>",
+    ")",
+    "(",
+    ",",
+    ";",
+    "as",
+    "asc",
+    "declare",
+    "dim",
+    "do",
+    "double",
+    "else",
+    "end",
+    "chr",
+    "function",
+    "input",
+    "integer",
+    "length",
+    "loop",
+    "print",
+    "return",
+    "scope",
+    "string",
+    "substr",
+    "then",
+    "while",
+    "and",
+    "boolean",
+    "continue",
+    "elseif",
+    "exit",
+    "false",
+    "for",
+    "next",
+    "not",
+    "or",
+    "shared",
+    "static",
+    "true",
+    "if",
+    "double_val",
+    "integer_val",
+    "string_val",
+    "identifier",
+    "UNDEFINED",
+    "ERROR",
+    "end of line",
+    "end of file",
+  };
+  //token to print
+  char *printToken;
+  printf("Current token -> %s\n", tokenList[currentToken.token_type]);
+}
+
 
 void synt_error_print(int given, int expected){
   //array of all tokens
@@ -166,18 +235,25 @@ int var_declr(){
   if (currentToken.token_type == INTEGER_KEY){
     addchar('i', &params);
     tmp_var_item->value_type = 0;
+    tmp_var_item->value_int = currentToken.value_int;
   } else if (currentToken.token_type == DOUBLE_KEY){
     addchar('d', &params);
     tmp_var_item->value_type = 1;
+    tmp_var_item->value_float = currentToken.value_double;
   } else {
     addchar('s', &params);
     tmp_var_item->value_type = 2;
+    tmp_var_item->value_string = malloc(strlen(currentToken.value_string)+1);
+    memcpy(tmp_var_item->value_string, currentToken.value_string, strlen(currentToken.value_string)+1);
   }
 
   get_token();
   //expecting ENDL or variable initialization
   if (currentToken.token_type == ENDL){
-    //TODO tac
+    //generate TAC
+    printf("DEFVAR LF@_%s\n", var_id);
+
+    //free and return
     free(var_id);
     return end_of_lines();
   } else if (currentToken.token_type == EQ_O){
@@ -194,7 +270,6 @@ int var_declr(){
 }
 
 //<fncarg> -> <id>	as 	<type>
-//TODO add to symtable
 int fnc_arg(){
   //copy identifier for later
   char *var_id = currentToken.id;
@@ -312,6 +387,14 @@ int statement(){
   switch (currentToken.token_type) {
     case ENDL :
       get_token();
+      return SUCCESS;
+
+    case DIM_KEY :
+      //is variable declaration
+      if (var_declr() != SUCCESS){
+        hard_exit(SYNT_ERR);
+      }
+      return end_of_lines();
 
     case INTEGER :
     case DOUBLE :
@@ -331,10 +414,19 @@ int statement(){
       CHECKT(IDENTIFICATOR);
 
       //check if symbol exists
-      if (hash_table_search(var_table, currentToken.id) == NULL){
+      tmp_var_item = hash_table_search(var_table, currentToken.id);
+      if (tmp_var_item == NULL){
         fprintf(stderr, "Syntax error: Variable %s doesn't exist in this context.\n", currentToken.id);
         hard_exit(UNDEF_ERR);
       }
+
+      char* types[3] = {
+        "INT",
+        "FLOAT",
+        "STRING",
+      };
+      //tac
+      printf("READ LF@_%s %s\n", currentToken.id, types[tmp_var_item->value_type]);
 
       return end_of_lines();
 
@@ -348,6 +440,24 @@ int statement(){
             hard_exit(SYNT_ERR);
             //return SYNT_ERR;
           }
+
+      //tac
+      if (currentToken.token_type == IDENTIFICATOR){
+        tmp_var_item = hash_table_search(var_table, currentToken.id);
+        if (tmp_var_item == NULL){
+          fprintf(stderr, "Syntax error: Variable %s not declared.\n", currentToken.id);
+          hard_exit(UNDEF_ERR);
+        }
+        printf("WRITE LF@_%s\n", currentToken.id);
+      } else if (currentToken.token_type == INTEGER){
+        printf("WRITE int@%d\n", currentToken.value_int);
+      } else if (currentToken.token_type == DOUBLE){
+        printf("WRITE float@%f\n", currentToken.value_double);
+      } else if (currentToken.token_type == STRING){
+        printf("WRITE string@%s\n", currentToken.value_string);
+      }
+
+
       get_token();
       //expecting ; or ENDL
       while (currentToken.token_type == SEM){
@@ -362,6 +472,22 @@ int statement(){
               hard_exit(SYNT_ERR);
               //return SYNT_ERR;
             }
+
+        //tac
+        if (currentToken.token_type == IDENTIFICATOR){
+          tmp_var_item = hash_table_search(var_table, currentToken.id);
+          if (tmp_var_item == NULL){
+            fprintf(stderr, "Syntax error: Variable %s not declared.\n", currentToken.id);
+            hard_exit(UNDEF_ERR);
+          }
+          printf("WRITE LF@_%s\n", currentToken.id);
+        } else if (currentToken.token_type == INTEGER){
+          printf("WRTIE int@%d\n", currentToken.value_int);
+        } else if (currentToken.token_type == DOUBLE){
+          printf("WRTIE float@%f\n", currentToken.value_double);
+        } else if (currentToken.token_type == STRING){
+          printf("WRTIE string@%s\n", currentToken.value_string);
+        }
       }
       //ENDLs
       return end_of_lines();
@@ -471,14 +597,14 @@ int fnc_stats(){
 int functions(){
   char *identifier;
   int return_type;
-  int definition = 0;
+  bool definition = true;
 
   //if function is being declared one more NEXTT has to be called
   if (currentToken.token_type == DECLARE_KEY){
     get_token();
     CHECKT(FUNCTION_KEY);
     //is not definition
-    definition = 1;
+    definition = false;
   }
   //already got 'function' keyword
   get_token();
@@ -486,7 +612,13 @@ int functions(){
   //expecting identifier
   CHECKT(IDENTIFICATOR);
   //save identifier for hash
-  identifier = currentToken.id;
+  identifier= malloc(strlen(currentToken.id)*sizeof(char)+1);
+  memcpy(identifier, currentToken.id, strlen(currentToken.id)+1);
+
+  //tac
+  printf("LABEL %s\n", identifier);
+  printf("PUSHFRAME\n");
+
   get_token();
   //expecting (
   CHECKT(PAR_L);
@@ -550,8 +682,6 @@ int functions(){
     //return SYNT_ERR;
   }
 
-  //TODO add a label?
-
   //check if function is in symtable
   tmp_func_item = hash_table_search(func_table, identifier);
   //no entry found
@@ -569,15 +699,17 @@ int functions(){
     } else {
       tmp_func_item->param_types = NULL;
     }
+  } else {
+    fprintf(stderr, "Syntax error: Function %s is already defined\n", identifier);
+    hard_exit(UNDEF_ERR);
   }
-  //TODO else check for redefinition
-
 
   //if function is only declared
   //expecting ENDL(s) before next statement
-  if (definition != 0){
+  if (definition == false){
     //destroy variable table
     hash_table_destroy(var_table);
+    get_token();
     return end_of_lines();
   }
 
@@ -589,8 +721,11 @@ int functions(){
   } else {
     if (fnc_stats() != SUCCESS){
       hard_exit(SYNT_ERR);
-      //return SYNT_ERR;
     }
+    //has end expecting function
+    get_token();
+    CHECKT(FUNCTION_KEY);
+    get_token();
     //destroy variable table
     hash_table_destroy(var_table);
     return end_of_lines();
@@ -604,6 +739,10 @@ int scope(){
   CHECKT(ENDL);
   get_token();
 
+  //tac
+  printf("CREATEFRAME\n");
+  printf("PUSHFRAME\n");
+
   //init var_table
   var_table = sym_tab_init(64);
 
@@ -611,6 +750,7 @@ int scope(){
     switch (currentToken.token_type){
       case DIM_KEY :
         //is variable declaration
+        //ready for global variable
         if (var_declr() != SUCCESS){
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
@@ -663,9 +803,16 @@ int start(){
       case DECLARE_KEY:
         //'declare' keyword
         result = functions();
+        //tac
+        printf("POPFRAME\n");
+        printf("RETURN\n");
+        continue;
+
       case SCOPE_KEY:
         //'scope' keyword
         result = scope();
+        //tac
+        printf("POPFRAME\n");
         hash_table_destroy(var_table);
       case ENDF:
         //<s> -> EOF
@@ -725,6 +872,8 @@ int main(int argc, char *argv[]){
   hash_table_destroy(func_table);
   //free buffer
   free(buffer.content);
+
+  printf("RESULT %d\n", result);
 
   return result;
 
