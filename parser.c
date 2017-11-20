@@ -105,8 +105,7 @@ void print_curr_token(){
     "end of line",
     "end of file",
   };
-  //token to print
-  char *printToken;
+
   printf("Current token -> %s\n", tokenList[currentToken.token_type]);
 }
 
@@ -275,6 +274,7 @@ int var_declr(){
     //return SYNT_ERR;
   }
 
+  return SUCCESS;
 }
 
 //<fncarg> -> <id>	as 	<type>
@@ -319,7 +319,10 @@ int fnc_arg(){
       tmp_var_item->value_type = 2;
     }
 
-    //TODO tac
+    //tac
+    if (func_definition == true){
+      printf("DEFVAR LF@%s\n", var_id);
+    }
 
     free(var_id);
 
@@ -328,6 +331,7 @@ int fnc_arg(){
     return SUCCESS;
   }
 
+  return SUCCESS;
 }
 
 //<paramlist> ->	<fncarg>	<paramlist2>
@@ -364,6 +368,8 @@ int fnc_arglist(){
       //return SYNT_ERR;
     }
   }
+
+  return SUCCESS;
 
 }
 
@@ -591,6 +597,8 @@ int statement(){
       //return SYNT_ERR;
   }
 
+  return SUCCESS;
+
 }
 
 //<fncstats>	<statement>	<endline>	<fncstats>
@@ -618,6 +626,7 @@ int functions(){
   char *identifier;
   int return_type;
   bool definition = true;
+  func_definition = true;
 
   //if function is being declared one more NEXTT has to be called
   if (currentToken.token_type == DECLARE_KEY){
@@ -625,6 +634,7 @@ int functions(){
     CHECKT(FUNCTION_KEY);
     //is not definition
     definition = false;
+    func_definition = false;
   }
   //already got 'function' keyword
   get_token();
@@ -771,6 +781,8 @@ int functions(){
     return end_of_lines();
   }
 
+  return SUCCESS;
+
 }
 
 int scope(){
@@ -830,6 +842,7 @@ int scope(){
     get_token();
   }
 
+  return SUCCESS;
 }
 
 //<s> -> <funkcie> <scope>
@@ -872,6 +885,8 @@ int start(){
     }
     return result;
   }
+
+  return result;
 }
 
 int start_parsing(){

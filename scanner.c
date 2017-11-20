@@ -304,7 +304,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else if (n_char == '\\')
 			{
 				addchar(n_char, &buffer);
-				int esc = 0;
+				//int esc = 0;
 				token_state = ESCAPE;
 			}
 			else if (isspace(n_char)) //prevod bielych znakov v stringu do escape
@@ -523,6 +523,8 @@ int start_scanner(char *filename)
 
 	currentToken.id = malloc(1);
 	currentToken.value_string = malloc(1);
+
+	return SUCCESS;
 }
 
 /*

@@ -3,7 +3,7 @@
 //xberes01
 //xgrigo02
 
-#include <ifj2017.h>
+#include "ifj2017.h"
 
 int addchar(char n_char, tString *str) //funkcia pridava znak do string
 {
@@ -12,6 +12,7 @@ int addchar(char n_char, tString *str) //funkcia pridava znak do string
 		str->content = realloc(str->content, str->len + BUFFERSIZE); // zvacsenie alokovaneho priestoru
 		if (str->content == NULL)
 		{
+			hard_exit(INTERNAL_ERR);
 			return INTERNAL_ERR;
 		}
 		str->size = str->size + BUFFERSIZE;
@@ -21,6 +22,8 @@ int addchar(char n_char, tString *str) //funkcia pridava znak do string
 	}
 
 	str->content[str->len++] = n_char;
+
+	return SUCCESS;
 }
 
 //deletes content of string
