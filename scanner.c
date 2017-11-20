@@ -112,6 +112,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 	int n_char;
 	currentToken.token_type = UNDEFINED;
 	T_token_state token_state = BEGIN;
+	delstr(&buffer);
 
 	while (currentToken.token_type == UNDEFINED)
 	{

@@ -107,13 +107,19 @@ void hash_table_destroy(hash_table_type *hash_table) {
 	if (hash_table == NULL)
 		return;
 
+		hash_tab_symbol_type *tmp;
+
 	for (int i = 0; i < (hash_table -> table_size) ; ++i)
 	{
-		hash_tab_symbol_type *tmp = hash_table -> list_items[i];
+		tmp = hash_table -> list_items[i];
 
 		while(tmp != NULL)
 		{
 			hash_tab_symbol_type *next = tmp -> next_symbol;
+
+			if (tmp->param_types != NULL){
+					free(tmp->param_types);
+			}
 
 			free(tmp);  // postupne dealokuje cely spojity zoznam
 

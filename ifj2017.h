@@ -177,6 +177,7 @@ struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
 
 	//bool is_function;  // false = variable     true = function
+	bool is_defined;
 
 	int value_type;  // 0 = integer     1 = float     2 = string
 
