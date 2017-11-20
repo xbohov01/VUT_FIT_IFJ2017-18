@@ -265,8 +265,8 @@ int var_declr(){
     return end_of_lines();
   } else if (currentToken.token_type == EQ_O){
     free(var_id);
-    //TODO expr
-    //TODO tac
+    //evaluate expression
+    eval_expr();
   } else {
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
     free(var_id);
@@ -422,10 +422,10 @@ int statement(){
     case IDENTIFICATOR:
     case RETURN_KEY :
       //resolve expression or function call or return
-      //TODO add psa call
-      do {
-        get_token();
-      } while(currentToken.token_type != ENDL);
+      eval_expr();
+      // do {
+      //   get_token();
+      // } while(currentToken.token_type != ENDL);
       return end_of_lines();
 
     case INPUT_KEY :
@@ -517,9 +517,10 @@ int statement(){
       //has if
       get_token();
       //TODO check if expression
-      do {
-        get_token();
-      } while (currentToken.token_type != THEN_KEY);
+      // do {
+      //   get_token();
+      // } while (currentToken.token_type != THEN_KEY);
+      eval_expr();
 
       //get_token();
       CHECKT(THEN_KEY);
@@ -534,7 +535,10 @@ int statement(){
       //else if block
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
-          get_token();
+          //elseif condition
+          eval_expr();
+
+          //get_token();
           //expecting then
           CHECKT(THEN_KEY);
           //checking statements
@@ -570,10 +574,11 @@ int statement(){
       //expecting while
       CHECKT(WHILE_KEY);
       //TODO expression eval
-      do {
-        get_token();
-        printf("IGNORING EXPR\n");
-      } while(currentToken.token_type != ENDL);
+      eval_expr();
+      // do {
+      //   get_token();
+      //   printf("IGNORING EXPR\n");
+      // } while(currentToken.token_type != ENDL);
 
       //expecting ENDL after expr TODO maybe not get next token
       //get_token();

@@ -7,8 +7,8 @@
 #ifndef PSA_STACK_HEADER
 #define PSA_STACK_HEADER
 
-#include <stdlib.h>
-#include "ifj2017.h"
+//#include <stdlib.h>
+//#include "ifj2017.h"
 #include "errors.h"
 
 
@@ -28,7 +28,7 @@ typedef enum non_term_types {
 
     NT_ID,  // 7: E -> id
     NT_FN,  // 8: E -> id(eps/E/E,...E)
-    
+
     STOPPER // '<'
 } N_T_rules;
 

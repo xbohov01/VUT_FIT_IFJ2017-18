@@ -13,15 +13,15 @@
 
 #include "errors.h"
 #include "ifj2017.h"
-#include "psa_stack.h"
-#include "psa_stack_test.h" // TESTS
+//#include "psa_stack.h"
+//#include "psa_stack_test.h" // TESTS
 
 
 void eval_expr();
 void psa_operation();
 void get_reversed_rule();
 
-// TODO: create operations 
+// TODO: create operations
 Data_NTerm *id_or_function_R();
 Data_NTerm *function_R();
 Data_NTerm *arithm_R(int i);
