@@ -256,7 +256,7 @@ T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_n
 
 //====PSA===
 void eval_expr();
-void psa_operation();
+void psa_operation(bool first_call);
 void get_reversed_rule();
 
 // TODO: create operations
@@ -270,7 +270,7 @@ void push_start_term(T_NT_stack *s);
 T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
 void insert_stopper(T_NT_stack *s);
 void psa_compare(Data_Term *tok, T_NT_stack *s);
-void reduce_by_rule();
+void reduce_by_rule(bool first_call);
 Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
 
 extern Data_Term currentToken;

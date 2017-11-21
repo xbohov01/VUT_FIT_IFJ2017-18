@@ -400,8 +400,6 @@ int if_statements(){
 //<statement>	do	while	<expr>	<endline>	<teloprogramu>	loop
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
-//TODO return psa call
-//TODO var_table checks
 int statement(){
   //expecting one of the above
   switch (currentToken.token_type) {
@@ -477,7 +475,6 @@ int statement(){
         printf("WRITE string@%s\n", currentToken.value_string);
       }
 
-
       get_token();
       //expecting ; or ENDL
       while (currentToken.token_type == SEM){
@@ -508,6 +505,8 @@ int statement(){
         } else if (currentToken.token_type == STRING){
           printf("WRTIE string@%s\n", currentToken.value_string);
         }
+        //has thing to print, move to next token
+        get_token();
       }
       //ENDLs
       return end_of_lines();
