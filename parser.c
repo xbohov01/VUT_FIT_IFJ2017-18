@@ -265,8 +265,8 @@ int var_declr(){
     return end_of_lines();
   } else if (currentToken.token_type == EQ_O){
     free(var_id);
-    //TODO expr
-    //TODO tac
+    //evaluate expression
+    eval_expr();
   } else {
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
     free(var_id);
@@ -422,10 +422,10 @@ int statement(){
     case IDENTIFICATOR:
     case RETURN_KEY :
       //resolve expression or function call or return
-      //TODO add psa call
-      do {
-        get_token();
-      } while(currentToken.token_type != ENDL);
+      eval_expr();
+      // do {
+      //   get_token();
+      // } while(currentToken.token_type != ENDL);
       return end_of_lines();
 
     case INPUT_KEY :
@@ -517,9 +517,10 @@ int statement(){
       //has if
       get_token();
       //TODO check if expression
-      do {
-        get_token();
-      } while (currentToken.token_type != THEN_KEY);
+      // do {
+      //   get_token();
+      // } while (currentToken.token_type != THEN_KEY);
+      eval_expr();
 
       //get_token();
       CHECKT(THEN_KEY);
@@ -534,7 +535,10 @@ int statement(){
       //else if block
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
-          get_token();
+          //elseif condition
+          eval_expr();
+
+          //get_token();
           //expecting then
           CHECKT(THEN_KEY);
           //checking statements
@@ -569,11 +573,14 @@ int statement(){
       get_token();
       //expecting while
       CHECKT(WHILE_KEY);
+
+      get_token();
       //TODO expression eval
-      do {
-        get_token();
-        printf("IGNORING EXPR\n");
-      } while(currentToken.token_type != ENDL);
+      eval_expr();
+      // do {
+      //   get_token();
+      //   printf("IGNORING EXPR\n");
+      // } while(currentToken.token_type != ENDL);
 
       //expecting ENDL after expr TODO maybe not get next token
       //get_token();
@@ -895,6 +902,11 @@ int start_parsing(){
 
   str_init(&params);
 
+  extern T_NT_stack *processing_stack;
+  extern T_NT_stack *evaluation_stack;
+  processing_stack = NULL; // Init psa_parser stacks to NULL for
+  evaluation_stack = NULL; // correct error exit (if needed)
+
   //get first token
   get_token();
   /*if (get_token() != SUCCESS){
@@ -910,35 +922,35 @@ int start_parsing(){
 
 }
 
-// int main(int argc, char *argv[]){
-//   int result;
-//   if (argc != 2){
-//     fprintf(stderr, "Too few arguments.\n");
-//     return INTERNAL_ERR;
-//   }
+int main(int argc, char *argv[]){
+  int result;
+  if (argc != 2){
+    fprintf(stderr, "Too few arguments.\n");
+    return INTERNAL_ERR;
+  }
 
-//   //init symtables
-//   func_table = sym_tab_init(64);
-//   //TODO check for correct init
+  //init symtables
+  func_table = sym_tab_init(64);
+  //TODO check for correct init
 
-//   //start scanner
-//   start_scanner(argv[1]);
+  //start scanner
+  start_scanner(argv[1]);
 
-//   //start parsing
-//   result = start_parsing();
+  //start parsing
+  result = start_parsing();
 
-//   //close file
-//   fclose(file);
-//   //destroy function table
-//   hash_table_destroy(func_table);
-//   //free buffer
-//   free(buffer.content);
+  //close file
+  fclose(file);
+  //destroy function table
+  hash_table_destroy(func_table);
+  //free buffer
+  free(buffer.content);
 
-//   free(currentToken.id);
-//   free(currentToken.value_string);
+  free(currentToken.id);
+  free(currentToken.value_string);
 
-//   printf("RESULT %d\n", result);
+  printf("RESULT %d\n", result);
 
-//   return result;
+  return result;
 
-// }
+}

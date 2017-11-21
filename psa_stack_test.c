@@ -121,100 +121,62 @@ void print_stack(T_NT_stack *s) {
     return;
 }
 
+// int test(T_NT_stack *processing_stack) {
+
+//     // processing_stack = init_T_NT_stack();
+
+//     T_NT_Data *non_term = malloc(sizeof(union t_nt_data));
+//     if (non_term == NULL) {
+//         error_exit(INTERNAL_ERR);
+//     }
+
+//     T_NT_Data *str_token;
+
+//     non_term->NTerm.rule = NT_MUL;
+//     push_T_NT(processing_stack, NULL, &(non_term->NTerm));
+//     print_stack(processing_stack);
 
 
-// Simulate token
-// ++++++++++++++++++++
-// STRING type
+//     pop_T_NT(processing_stack);
+//     print_stack(processing_stack);
 
-T_NT_Data *str_fill_data_token(T_token_type type, char* id, char* str) {
-    T_NT_Data *temp_data = malloc(sizeof(T_NT_Data));
-    if (temp_data == NULL) {
-        return NULL;
-    }
+//     non_term->NTerm.rule = NT_ADD;
+//     push_T_NT(processing_stack, NULL, &(non_term->NTerm));
+//     non_term->NTerm.rule = NT_SUB;
+//     push_T_NT(processing_stack, NULL, &(non_term->NTerm));
+//     str_token = str_fill_data_token(STRING, "first", "string");
+//     push_T_NT(processing_stack, NULL, &(non_term->NTerm));
+//     print_stack(processing_stack);
 
-    Data_Term temp_term = temp_data->Term;
+//     pop_T_NT(processing_stack);
+//     print_stack(processing_stack);
 
-    temp_term.id = malloc(20);
-    if (temp_term.id == NULL) {
-        return NULL;
-    }
+//     str_token = str_fill_data_token(STRING, "string", "second");
+//     push_T_NT(processing_stack, &(str_token->Term), NULL);
+//     free(str_token);
+//     str_token = str_fill_data_token(STRING, "some", "string");
+//     push_T_NT(processing_stack, &(str_token->Term), NULL);
+//     free(str_token);
+//     print_stack(processing_stack);
 
-    temp_term.value_string = malloc(20);
-    if (temp_term.value_string == NULL) {
-        return NULL;
-    }
+//     set_first_T_NT(processing_stack);
+//     set_next_T_NT(processing_stack);
+//     str_token = str_fill_data_token(STRING, "string", "inside");
+//     insert_after_T_NT(processing_stack, &(str_token->Term), NULL);
+//     free(str_token);
+//     print_stack(processing_stack);
 
-    memcpy(temp_term.id, id, sizeof(id) + 1);
-    memcpy(temp_term.value_string, str, sizeof(str) + 1);
+//     pop_T_NT(processing_stack);
+//     pop_T_NT(processing_stack);
+//     pop_T_NT(processing_stack);
+//     pop_T_NT(processing_stack);
+//     pop_T_NT(processing_stack);
+//     print_stack(processing_stack);
+//     free(non_term);
 
-    temp_term.token_type = STRING;
-
-    temp_data->Term = temp_term;
-    return temp_data;
-} // End STRING type
-
-
-// ++++++++++++++++
-// End simulate token
-
-
-int test(T_NT_stack *processing_stack) {
-
-    // processing_stack = init_T_NT_stack();
-
-    T_NT_Data *non_term = malloc(sizeof(union t_nt_data));
-    if (non_term == NULL) {
-        error_exit(INTERNAL_ERR);
-    }
-
-    T_NT_Data *str_token;
-
-    non_term->NTerm.rule = NT_MUL;
-    push_T_NT(processing_stack, NULL, &(non_term->NTerm));
-    print_stack(processing_stack);
-
-
-    pop_T_NT(processing_stack);
-    print_stack(processing_stack);
-
-    non_term->NTerm.rule = NT_ADD;
-    push_T_NT(processing_stack, NULL, &(non_term->NTerm));
-    non_term->NTerm.rule = NT_SUB;
-    push_T_NT(processing_stack, NULL, &(non_term->NTerm));
-    str_token = str_fill_data_token(STRING, "first", "string");
-    push_T_NT(processing_stack, NULL, &(non_term->NTerm));
-    print_stack(processing_stack);
-
-    pop_T_NT(processing_stack);
-    print_stack(processing_stack);
-
-    str_token = str_fill_data_token(STRING, "string", "second");
-    push_T_NT(processing_stack, &(str_token->Term), NULL);
-    free(str_token);
-    str_token = str_fill_data_token(STRING, "some", "string");
-    push_T_NT(processing_stack, &(str_token->Term), NULL);
-    free(str_token);
-    print_stack(processing_stack);
-
-    set_first_T_NT(processing_stack);
-    set_next_T_NT(processing_stack);
-    str_token = str_fill_data_token(STRING, "string", "inside");
-    insert_after_T_NT(processing_stack, &(str_token->Term), NULL);
-    free(str_token);
-    print_stack(processing_stack);
-
-    pop_T_NT(processing_stack);
-    pop_T_NT(processing_stack);
-    pop_T_NT(processing_stack);
-    pop_T_NT(processing_stack);
-    pop_T_NT(processing_stack);
-    print_stack(processing_stack);
-    free(non_term);
-
-    destroy_T_NT_stack(processing_stack);
-    return 0;
-}
+//     destroy_T_NT_stack(processing_stack);
+//     return 0;
+// }
 
 // =======================
 // End tests

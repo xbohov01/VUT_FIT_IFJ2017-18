@@ -6,7 +6,7 @@ OBJ = psa_parser.o string_ops.o psa_stack.o symtable.o parser.o psa_stack_test.o
 %.o: %.c $(DEPS)
 	$(CC) -g -c -o $@ $< $(CFLAGS)
 
-psa_parser: $(OBJ)
+ifj2017: $(OBJ)
 	gcc -g -o $@ $^ $(CFLAGS)
 
 clean:

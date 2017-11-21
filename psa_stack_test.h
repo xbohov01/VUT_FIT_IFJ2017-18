@@ -16,8 +16,5 @@
 int test();
 void print_stack(T_NT_stack *T_NT_s);
 
-
-T_NT_Data *str_fill_data_token(T_token_type type, char* id, char* str);
-
 // =======================
 // TODO: End tests

@@ -33,7 +33,11 @@ PSA_Term_type get_term_type(Data_Term *in_term) {
             // TODO: can be const or function or variable,
             // should look in hash_table
             return ID;
+        case COM:
+            return CM;
         case ENDL:
+        case SEM:
+        case THEN_KEY:
             return END;
 
         /*---------------------
@@ -217,13 +221,14 @@ T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_n
 void error_exit(int code) {
     extern T_NT_stack *processing_stack;
     extern T_NT_stack *evaluation_stack;
-    if (code == INTERNAL_ERR) {
-        printf("CHYBA PAMETI\n");
-    }
     printf("\n");
     free_sources();
-    destroy_T_NT_stack(processing_stack);
-    destroy_T_NT_stack(evaluation_stack);
+    if (processing_stack != NULL) {
+        destroy_T_NT_stack(processing_stack);
+    }
+    if (evaluation_stack != NULL) {
+        destroy_T_NT_stack(evaluation_stack);
+    }
     printf("Result: %d\n", code);
     exit(code);
 }

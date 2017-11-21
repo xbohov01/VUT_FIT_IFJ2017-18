@@ -6,33 +6,27 @@
 #include "ifj2017.h"
 
 
-int main() {
-    // Tests
-    // +++++++++++++++
-    // hash_table_type *tmp = NULL;
-    // tmp = sym_tab_init(20);
-    // hash_table_insert(tmp, "new_id");
-    // printf("symbol name: %s\n", hash_table_search(tmp, "new_id")->symbol_name);
-    // hash_table_destroy(tmp);
+// int main() {
+//     // Tests
+//     // +++++++++++++++
+//     // hash_table_type *tmp = NULL;
+//     // tmp = sym_tab_init(20);
+//     // hash_table_insert(tmp, "new_id");
+//     // printf("symbol name: %s\n", hash_table_search(tmp, "new_id")->symbol_name);
+//     // hash_table_destroy(tmp);
 
 
-    // Started
-    start_scanner("hard_test_with_seg_fault.txt"); // TODO: delete -- test
-    right_order = malloc(100); // Tests
-    memset(right_order, 0, 100); // Tests
+//     // Started
+//     start_scanner("hard_test_with_seg_fault.txt"); // TODO: delete -- test
+//     // Parser did its work
+//     get_token();
 
-    // Parser did it work
-    get_token();
-
-    eval_expr();
-    // Parser continues
-    // End
-    free_sources();
-    printf("\n"); // Tests
-    printf("right_order: %s\n", right_order); // Tests
-    printf("Result: 0\n"); // Tests
-    return 0;
-}
+//     eval_expr();
+//     // Parser continues
+//     // End
+//     free_sources();
+//     return 0;
+// }
 
 // Feeds non terminal
 Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
@@ -65,6 +59,7 @@ void push_start_term(T_NT_stack *s) {
 // <expr> -> <PSA> <PSA_second>
 void eval_expr() {
 
+    printf("======EVAL_PART\n");
     // Init
     PSA_Term_type relational_op;
     extern T_NT_stack *processing_stack;
@@ -72,94 +67,96 @@ void eval_expr() {
     processing_stack = init_T_NT_stack();
     evaluation_stack = init_T_NT_stack();
 
-    // <PSA>
-    // id already there
-    // = or id 
-    get_token();
-    if (currentToken.token_type == EQ_O) {
-        // id
-        get_token();
-        psa_operation();
-        if (get_term_type(&currentToken) != END) {
-            error_exit(SYNT_ERR);
-        }
-        printf("PSA done\n");
+    // TODO: check
+    Data_Term *result = &currentToken;
+
+    // <PSA> -> <PSA_first> <PSA_second>
+    // <ID> -> <PSA_first>
+    psa_operation(true);
+    // --END-- <ID> -> <PSA_first>
+
+    // relational operator or id 
+    relational_op = get_term_type(&currentToken);
+
+
+    // <PSA_second> -> epsilon
+    if (relational_op == END) {
+        destroy_T_NT_stack(processing_stack);
+        destroy_T_NT_stack(evaluation_stack);
+        // TODO: Compare to zero 
+        printf("\nPSA done\n");
+        printf("Result =  0\n"); // Tests
+        printf("=====END_EVAL\n");
         return;
     }
+    // --END-- <PSA_second> -> epsilon
+    // ++++++++++++++++++++++++++++++++++
+    // <PSA_second> -> <rel> <PSA_end>
     else {
-        psa_operation();
-        relational_op = get_term_type(&currentToken);
-
-        // <PSA_second>
-
-        // <PSA_second> -> epsilon
-        if (relational_op == END) {
-            destroy_T_NT_stack(processing_stack);
-            destroy_T_NT_stack(evaluation_stack);
-            // TODO: Maybe get_token needed
-            // TODO: Compare to zero 
-            return;
+        // <PSA_end>
+        get_token();
+        psa_operation(false);
+        if (get_term_type(&currentToken) != END) {
+            fprintf(stderr, "More than one relational operator in expression\n");
+            error_exit(SYNT_ERR);
         }
-        // --END-- <PSA_second> -> epsilon
-        // ++++++++++++++++++++++++++++++++++
-        // <PSA_second> -> <rel> <PSA>
-        else {
-            get_token();
-            // <PSA>
-            psa_operation();
-            if (get_term_type(&currentToken) != END) {
-                fprintf(stderr, "More than one relational operator in expression\n");
-                error_exit(SYNT_ERR);
-            }
-            // --END-- <PSA>
+        // --END-- <PSA_end>
 
-            // <rel>
-            switch (relational_op) {
+        // <rel>
+        switch (relational_op) {
 
-                // <rel> -> '<'
-                case LT:
-                    // TODO: add instruction
-                    break;
-                // ++++++++++++++++++++++++++
-                // <rel> -> '>'
-                case GT:
-                    // TODO: add instruction
-                    break;
-                // ++++++++++++++++++++++++++
-                // <rel> -> '<='
-                case LTE:
-                    // TODO: add instruction
-                    break;
-                // ++++++++++++++++++++++++++
-                // <rel> -> '>='
-                case GTE:
-                    // TODO: add instruction
-                    break;
-                // ++++++++++++++++++++++++++
-                // <rel> -> '='
-                case EQ:
-                    // TODO: add instruction
-                    break;
-                // ++++++++++++++++++++++++++
-                // <rel> -> '<>'
-                case NEQ:
-                    // TODO: add instruction
-                    break;
-                default:
-                    fprintf(stderr, "Bad relational operator after psa\n");
-                    error_exit(INTERNAL_ERR);
-                    break;
-            }
-            // --END-- <rel>
-
-            destroy_T_NT_stack(processing_stack);
-            destroy_T_NT_stack(evaluation_stack);
-            return;
+            // <rel> -> '<'
+            case LT:
+                // TODO: add instruction
+                printf("|<|");
+                break;
+            // ++++++++++++++++++++++++++
+            // <rel> -> '>'
+            case GT:
+                // TODO: add instruction
+                printf("|>|");
+                break;
+            // ++++++++++++++++++++++++++
+            // <rel> -> '<='
+            case LTE:
+                // TODO: add instruction
+                printf("|<=|\n");
+                break;
+            // ++++++++++++++++++++++++++
+            // <rel> -> '>='
+            case GTE:
+                // TODO: add instruction
+                printf("|>=|\n");
+                break;
+            // ++++++++++++++++++++++++++
+            // <rel> -> '='
+            case EQ:
+                // TODO: add instruction
+                printf("|=|");
+                break;
+            // ++++++++++++++++++++++++++
+            // <rel> -> '<>'
+            case NEQ:
+                // TODO: add instruction
+                printf("|<>|");
+                break;
+            default:
+                fprintf(stderr, "Bad relational operator after psa\n");
+                error_exit(INTERNAL_ERR);
+                break;
         }
-        // --END-- <PSA_second> -> <rel> <PSA>
+        // --END-- <rel>
 
-        // --END-- <PSA_second>
+        destroy_T_NT_stack(processing_stack);
+        destroy_T_NT_stack(evaluation_stack);
+        printf("\nPSA done\n");
+        printf("Result = 0\n"); // Tests
+        printf("=====END_EVAL\n");
+        return;
     }
+    // --END-- <PSA_second> -> <rel> <PSA>
+
+    // --END-- <PSA_second>
     // --END-- <PSA>
 }
 // --END-- <expr> -> <PSA> <PSA_second>
@@ -310,7 +307,7 @@ Data_NTerm *function_R() {
 }
 
 
-Data_NTerm *arithm_R(int i) {
+Data_NTerm *arithm_R() {
 
     static enum {
         START_ARITHM_PSA,
@@ -366,7 +363,7 @@ Data_NTerm *arithm_R(int i) {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_ADD, DOUBLE_NT);
-                        right_order[i] = '1';
+                        
                         printf("1");
                         break;
                     case SUB:
@@ -386,7 +383,7 @@ Data_NTerm *arithm_R(int i) {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_SUB, DOUBLE_NT);
-                        right_order[i] = '2';
+                        
                         printf("2");
                         break;
                     case MUL:
@@ -406,7 +403,7 @@ Data_NTerm *arithm_R(int i) {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_MUL, DOUBLE_NT);
-                        right_order[i] = '3';
+                        
                         printf("3");
                         break;
                     case DIV:
@@ -426,7 +423,7 @@ Data_NTerm *arithm_R(int i) {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
-                        right_order[i] = '4';
+                        
                         printf("4");
                         break;
                     case IDIV:
@@ -459,7 +456,7 @@ Data_NTerm *arithm_R(int i) {
                         else {
                             error_exit(SEM_ERR);
                         }
-                        right_order[i] = '1';
+                        
                         printf("1");
                         break;
                     case SUB:
@@ -480,7 +477,7 @@ Data_NTerm *arithm_R(int i) {
                         else {
                             error_exit(SEM_ERR);
                         }
-                        right_order[i] = '2';
+                        
                         printf("2");
                         break;
                     case MUL:
@@ -501,7 +498,7 @@ Data_NTerm *arithm_R(int i) {
                         else {
                             error_exit(SEM_ERR);
                         }
-                        right_order[i] = '3';
+                        
                         printf("3");
                         break;
                     case DIV:
@@ -523,7 +520,7 @@ Data_NTerm *arithm_R(int i) {
                             error_exit(SEM_ERR);
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
-                        right_order[i] = '4';
+                        
                         printf("4");
                         break;
                     case IDIV:
@@ -539,7 +536,7 @@ Data_NTerm *arithm_R(int i) {
                             error_exit(TYPE_ERR);
                         }
                         used_rule = create_non_term(NT_IDIV, INTEGER_NT);
-                        right_order[i] = '5';
+                        
                         printf("5");
                         break;
                     default:
@@ -564,7 +561,7 @@ Data_NTerm *arithm_R(int i) {
                     error_exit(SEM_ERR);
                 }
                 used_rule = create_non_term(NT_ADD, STRING_NT);
-                right_order[i] = '1';
+                
                 printf("1");
                 break;
             case AR_END_PSA:
@@ -588,7 +585,7 @@ Data_NTerm *arithm_R(int i) {
     return used_rule;
 }
 
-void reduce_by_rule() {
+void reduce_by_rule(bool first_call) {
 
 
         // PARENTHESIS_END_PSA,
@@ -601,8 +598,6 @@ void reduce_by_rule() {
         // ID_PSA,
 
         // ACCEPT_RULE_PSA,
-    static int i = -1;
-    i++;
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;
    
@@ -613,13 +608,19 @@ void reduce_by_rule() {
     look_ahead = pop_T_NT(evaluation_stack);
 
     if (look_ahead->is_non_term == true) {
-        used_rule = arithm_R(i);
+        if (first_call == false) {
+            used_rule = arithm_R();
+        }
+        else {
+            fprintf(stderr, "Arithmetics not allowed before assignment\n");
+            error_exit(SYNT_ERR);
+        }
     }
     else {
         if (get_term_type(&(look_ahead->data.Term)) == ID) {
-            used_rule = id_or_function_R(i);
-            right_order[i] = '7';
-            printf("7");
+            used_rule = id_or_function_R();
+            
+            printf("7"); // TODO: function call
         }
         else if (get_term_type(&(look_ahead->data.Term)) == PL) {
             // E
@@ -631,10 +632,11 @@ void reduce_by_rule() {
 
             // $
             look_ahead = pop_T_NT(evaluation_stack);
-            right_order[i] = '6';
+            
             printf("6");
         }
         else {
+            printf("Unexpected token after PSA\n");
             error_exit(INTERNAL_ERR); // Debug 
         }
     }
@@ -644,8 +646,7 @@ void reduce_by_rule() {
     return;
 }
 
-void psa_operation() {
-
+void psa_operation(bool first_call) {
     char table_psa[11][11] = {
     //        | ADD | MUL| SUB| DIV|IDIV| PL | PR | ID | FNC| CM | END|
     //        |   + |  * |  - |  / |  \ |  ( |  ) |  i |  f |  , |  $ |
@@ -698,7 +699,7 @@ void psa_operation() {
             // 
             // -------------------Semantic control part-----------------------
             case '>':
-                reduce_by_rule(processing_stack);
+                reduce_by_rule(first_call);
                 break;
             // --------------------End semantic control-----------------------
             // Syntax error
@@ -712,8 +713,21 @@ void psa_operation() {
                 break;
             case '\0':
                 if ((index_input == END) && (index_stack_top == END)) {
-                    if (pop_T_NT(processing_stack)->is_non_term == false)
-                    psa_finished = true;
+                    pop_T_NT(processing_stack);
+                    if (processing_stack->popped->is_non_term == true) {
+                        pop_T_NT(processing_stack);
+                        if (processing_stack->popped->is_non_term == false) {
+                            psa_finished = true;
+                        }
+                        else {
+                            fprintf(stderr, "Stack is not free at the end\n");
+                            error_exit(INTERNAL_ERR);
+                        }
+                    }
+                    else {
+                        fprintf(stderr, "Result not found\n");
+                        error_exit(INTERNAL_ERR);
+                    }
                 }
                 else {
                     error_exit(SYNT_ERR);
