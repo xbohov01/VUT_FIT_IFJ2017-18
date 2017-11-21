@@ -11,7 +11,7 @@ void free_sources() //funkcia uvolnuje pouzite zdroje
 	fclose(file);
 }
 
-T_token_type get_key(char *str) //funkcia zistuje ci retazec znakov v bufferi je klucove slovo
+T_token_type get_key() //funkcia zistuje ci retazec znakov v bufferi je klucove slovo
 {
 	if (strcmp(buffer.content, "as") == 0)
 	{

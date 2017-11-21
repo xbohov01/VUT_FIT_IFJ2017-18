@@ -20,7 +20,7 @@ hash_table_type *sym_tab_init(unsigned size)
 
 	hash_table->table_size = size;
 
-	for (int i = 0; i < (hash_table -> table_size) ; ++i)
+	for (unsigned int i = 0; i < (hash_table -> table_size) ; ++i)
 	{
 
 
@@ -109,7 +109,7 @@ void hash_table_destroy(hash_table_type *hash_table) {
 
 		hash_tab_symbol_type *tmp;
 
-	for (int i = 0; i < (hash_table -> table_size) ; ++i)
+	for (unsigned int i = 0; i < (hash_table -> table_size) ; ++i)
 	{
 		tmp = hash_table -> list_items[i];
 
