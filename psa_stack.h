@@ -7,8 +7,13 @@
 #ifndef PSA_STACK_HEADER
 #define PSA_STACK_HEADER
 
+<<<<<<< HEAD
 //#include <stdlib.h>
 //#include "ifj2017.h"
+=======
+#include <stdlib.h>
+#include "ifj2017.h"
+>>>>>>> origin/scanner_expr_handler
 #include "errors.h"
 
 
@@ -28,7 +33,11 @@ typedef enum non_term_types {
 
     NT_ID,  // 7: E -> id
     NT_FN,  // 8: E -> id(eps/E/E,...E)
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> origin/scanner_expr_handler
     STOPPER // '<'
 } N_T_rules;
 
@@ -115,4 +124,8 @@ T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_n
 // =======================
 // End of stack file
 
+<<<<<<< HEAD
 #endif // PSA_STACK_HEADER include
+=======
+#endif // PSA_STACK_HEADER include
+>>>>>>> origin/scanner_expr_handler

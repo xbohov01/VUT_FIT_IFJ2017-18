@@ -254,9 +254,13 @@ T_NT_item *set_next_T_NT(T_NT_stack *s);
 bool active_T_NT(T_NT_stack *s);
 T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
 
+// =========PSA_STACK_TESTS===========
+void print_stack(T_NT_stack *T_NT_s);
+
 //====PSA===
 void eval_expr();
 void psa_operation(bool first_call);
+void reduce_by_rule(bool first_call);
 void get_reversed_rule();
 
 // TODO: create operations
@@ -269,8 +273,6 @@ Data_NTerm *arithm_R();
 void push_start_term(T_NT_stack *s);
 T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
 void insert_stopper(T_NT_stack *s);
-void psa_compare(Data_Term *tok, T_NT_stack *s);
-void reduce_by_rule(bool first_call);
 Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
 
 extern Data_Term currentToken;

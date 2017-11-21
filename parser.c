@@ -901,6 +901,11 @@ int start_parsing(){
 
   str_init(&params);
 
+  extern T_NT_stack *processing_stack;
+  extern T_NT_stack *evaluation_stack;
+  processing_stack = NULL; // Init psa_parser stacks to NULL for
+  evaluation_stack = NULL; // correct error exit (if needed)
+
   //get first token
   get_token();
   /*if (get_token() != SUCCESS){
