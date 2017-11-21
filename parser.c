@@ -562,6 +562,7 @@ int statement(){
         cond_label++;
       }
 
+      //has end
       //check end if
       CHECKT(IF_KEY);
       get_token();
