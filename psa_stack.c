@@ -158,7 +158,7 @@ T_NT_item *pop_T_NT(T_NT_stack *s) {
         s->popped = NULL;
     }
     if (s->active == s->top) {
-        s->active == NULL;
+        s->active = NULL;
     }
     if (s->top == NULL) {
         return NULL;
@@ -217,7 +217,7 @@ T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_n
     return item_after;
 }
 
-// TODO: extend this function 
+// TODO: extend this function
 void error_exit(int code) {
     extern T_NT_stack *processing_stack;
     extern T_NT_stack *evaluation_stack;

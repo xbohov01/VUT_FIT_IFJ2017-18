@@ -31,84 +31,11 @@ void hard_exit(int code){
   if (var_table != NULL){
     hash_table_destroy(var_table);
   }
-  /*
-  if (file != NULL){
-    fclose(file);
-  }
-*/
+
   //TODO destroy all stacks
 
   exit(code);
 }
-
-//prints current token
-void print_curr_token(){
-  //array of all tokens
-  const char *tokenList[] = {
-    "+",
-    "lex err",
-    "-",
-    "*",
-    "/",
-    "mod",
-    "<",
-    ">",
-    "<=",
-    ">=",
-    "=",
-    "<>",
-    ")",
-    "(",
-    ",",
-    ";",
-    "as",
-    "asc",
-    "declare",
-    "dim",
-    "do",
-    "double",
-    "else",
-    "end",
-    "chr",
-    "function",
-    "input",
-    "integer",
-    "length",
-    "loop",
-    "print",
-    "return",
-    "scope",
-    "string",
-    "substr",
-    "then",
-    "while",
-    "and",
-    "boolean",
-    "continue",
-    "elseif",
-    "exit",
-    "false",
-    "for",
-    "next",
-    "not",
-    "or",
-    "shared",
-    "static",
-    "true",
-    "if",
-    "double_val",
-    "integer_val",
-    "string_val",
-    "identifier",
-    "UNDEFINED",
-    "ERROR",
-    "end of line",
-    "end of file",
-  };
-
-  printf("Current token -> %s\n", tokenList[currentToken.token_type]);
-}
-
 
 void synt_error_print(int given, int expected){
   //array of all tokens
@@ -264,9 +191,10 @@ int var_declr(){
     free(var_id);
     return end_of_lines();
   } else if (currentToken.token_type == EQ_O){
-    free(var_id);
+    //free(var_id);
     //evaluate expression
     eval_expr();
+    free(var_id);
   } else {
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
     free(var_id);
@@ -934,6 +862,27 @@ int main(int argc, char *argv[]){
 
   //start scanner
   start_scanner(argv[1]);
+
+  //add built-in functions to symtable
+  tmp_func_item = hash_table_insert(func_table, "length");
+  tmp_func_item->param_types = malloc(strlen("s")*sizeof(char)+1);
+  strcpy(tmp_func_item->param_types, "s");
+  tmp_func_item->value_type = 0;
+
+  tmp_func_item = hash_table_insert(func_table, "substr");
+  tmp_func_item->param_types = malloc(strlen("sin")*sizeof(char)+1);
+  strcpy(tmp_func_item->param_types, "sin");
+  tmp_func_item->value_type = 2;
+
+  tmp_func_item = hash_table_insert(func_table, "asc");
+  tmp_func_item->param_types = malloc(strlen("si")*sizeof(char)+1);
+  strcpy(tmp_func_item->param_types, "si");
+  tmp_func_item->value_type = 0;
+
+  tmp_func_item = hash_table_insert(func_table, "chr");
+  tmp_func_item->param_types = malloc(strlen("i")*sizeof(char)+1);
+  strcpy(tmp_func_item->param_types, "i");
+  tmp_func_item->value_type = 2;
 
   //start parsing
   result = start_parsing();
