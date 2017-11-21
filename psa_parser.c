@@ -15,14 +15,22 @@ int main() {
     // printf("symbol name: %s\n", hash_table_search(tmp, "new_id")->symbol_name);
     // hash_table_destroy(tmp);
 
-    // test();
-    // +++++++++++++++
-    right_order = malloc(100);
-    memset(right_order, 0, 100);
+
+    // Started
+    start_scanner("hard_test_with_seg_fault.txt"); // TODO: delete -- test
+    right_order = malloc(100); // Tests
+    memset(right_order, 0, 100); // Tests
+
+    // Parser did it work
+    get_token();
+
     eval_expr();
-    printf("\n");
-    printf("right_order: %s\n", right_order);
-    printf("Result: 0\n");
+    // Parser continues
+    // End
+    free_sources();
+    printf("\n"); // Tests
+    printf("right_order: %s\n", right_order); // Tests
+    printf("Result: 0\n"); // Tests
     return 0;
 }
 
@@ -63,89 +71,96 @@ void eval_expr() {
     extern T_NT_stack *evaluation_stack;
     processing_stack = init_T_NT_stack();
     evaluation_stack = init_T_NT_stack();
-    start_scanner("hard_test_with_seg_fault.txt"); // TODO: delete -- test
-
-    // TODO: delete -- test
-    // id
-    get_token();
-    // =
-    get_token();
-    // smth
-    get_token();
-    // TODO: delete -- test ^
 
     // <PSA>
-    psa_operation();
-    // --END-- <PSA>
-
-    // <PSA_second>
-    relational_op = get_term_type(&currentToken);
-
-    // <PSA_second> -> epsilon
-    if (relational_op == END) {
-        free_sources(); // TODO: delete -- test
-        destroy_T_NT_stack(processing_stack);
-        destroy_T_NT_stack(evaluation_stack);
+    // id already there
+    // = or id 
+    get_token();
+    if (currentToken.token_type == EQ_O) {
+        // id
+        get_token();
+        psa_operation();
+        if (get_term_type(&currentToken) != END) {
+            error_exit(SYNT_ERR);
+        }
+        printf("PSA done\n");
         return;
     }
-    // --END-- <PSA_second> -> epsilon
-    // ++++++++++++++++++++++++++++++++++
-    // <PSA_second> -> <rel> <PSA>
     else {
-        if (relational_op > END)
-        get_token();
-        // <PSA>
         psa_operation();
-        // --END-- <PSA>
+        relational_op = get_term_type(&currentToken);
 
-        // <rel>
-        switch (relational_op) {
+        // <PSA_second>
 
-            // <rel> -> '<'
-            case LT:
-                // TODO: add instruction
-                break;
-            // ++++++++++++++++++++++++++
-            // <rel> -> '>'
-            case GT:
-                // TODO: add instruction
-                break;
-            // ++++++++++++++++++++++++++
-            // <rel> -> '<='
-            case LTE:
-                // TODO: add instruction
-                break;
-            // ++++++++++++++++++++++++++
-            // <rel> -> '>='
-            case GTE:
-                // TODO: add instruction
-                break;
-            // ++++++++++++++++++++++++++
-            // <rel> -> '='
-            case EQ:
-                // TODO: add instruction
-                break;
-            // ++++++++++++++++++++++++++
-            // <rel> -> '<>'
-            case NEQ:
-                // TODO: add instruction
-                break;
-            default:
-                break;
+        // <PSA_second> -> epsilon
+        if (relational_op == END) {
+            destroy_T_NT_stack(processing_stack);
+            destroy_T_NT_stack(evaluation_stack);
+            // TODO: Maybe get_token needed
+            // TODO: Compare to zero 
+            return;
         }
-        // --END-- <rel>
+        // --END-- <PSA_second> -> epsilon
+        // ++++++++++++++++++++++++++++++++++
+        // <PSA_second> -> <rel> <PSA>
+        else {
+            get_token();
+            // <PSA>
+            psa_operation();
+            if (get_term_type(&currentToken) != END) {
+                fprintf(stderr, "More than one relational operator in expression\n");
+                error_exit(SYNT_ERR);
+            }
+            // --END-- <PSA>
+
+            // <rel>
+            switch (relational_op) {
+
+                // <rel> -> '<'
+                case LT:
+                    // TODO: add instruction
+                    break;
+                // ++++++++++++++++++++++++++
+                // <rel> -> '>'
+                case GT:
+                    // TODO: add instruction
+                    break;
+                // ++++++++++++++++++++++++++
+                // <rel> -> '<='
+                case LTE:
+                    // TODO: add instruction
+                    break;
+                // ++++++++++++++++++++++++++
+                // <rel> -> '>='
+                case GTE:
+                    // TODO: add instruction
+                    break;
+                // ++++++++++++++++++++++++++
+                // <rel> -> '='
+                case EQ:
+                    // TODO: add instruction
+                    break;
+                // ++++++++++++++++++++++++++
+                // <rel> -> '<>'
+                case NEQ:
+                    // TODO: add instruction
+                    break;
+                default:
+                    fprintf(stderr, "Bad relational operator after psa\n");
+                    error_exit(INTERNAL_ERR);
+                    break;
+            }
+            // --END-- <rel>
+
+            destroy_T_NT_stack(processing_stack);
+            destroy_T_NT_stack(evaluation_stack);
+            return;
+        }
+        // --END-- <PSA_second> -> <rel> <PSA>
+
+        // --END-- <PSA_second>
     }
-    // --END-- <PSA_second> -> <rel> <PSA>
-
-    // --END-- <PSA_second>
-
-
-    // Final free
-    free_sources(); // TODO: delete -- test
-    destroy_T_NT_stack(processing_stack);
-    destroy_T_NT_stack(evaluation_stack);
-    
-    return;
+    // --END-- <PSA>
 }
 // --END-- <expr> -> <PSA> <PSA_second>
 

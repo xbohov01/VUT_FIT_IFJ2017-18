@@ -27,6 +27,7 @@ typedef struct {
 int str_init(tString *str);
 void delstr(tString *str);
 int addchar(char n_char, tString *str);
+void free_string(tString *str);
 
 //====SCANNER====
 #define N_KEYWORDS 35
