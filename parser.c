@@ -573,6 +573,7 @@ int statement(){
       get_token();
       //expecting while
       CHECKT(WHILE_KEY);
+      get_token();
       //TODO expression eval
       eval_expr();
       // do {
