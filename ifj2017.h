@@ -255,7 +255,7 @@ bool active_T_NT(T_NT_stack *s);
 T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
 
 // =========PSA_STACK_TESTS===========
-void print_stack(T_NT_stack *T_NT_s);
+void ps(T_NT_stack *T_NT_s); // Print stack for debug
 
 //====PSA===
 void eval_expr();

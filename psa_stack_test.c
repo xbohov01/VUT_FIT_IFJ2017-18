@@ -8,7 +8,7 @@
 
 #include "ifj2017.h"
 
-void print_stack(T_NT_stack *s) {
+void ps(T_NT_stack *s) {
     static int call_num = 1;
     char non_term_type_names[10][10] = {
     "NT_ADD", // 1: E + E
