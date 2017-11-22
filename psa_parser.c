@@ -128,6 +128,7 @@ void eval_cond_expr(int label_num) {
         }
     }
     printf("# Condition evaluation\n");
+    printf("PUSHS bool@true\n");
     printf("JUMPIFNEQS $condition%d$end\n", label_num);
     printf("\n");
 
@@ -208,9 +209,6 @@ void eval_expr() {
                 break;
             case VAR_DEFINITION:
             // <VAR_DEFINITION> -> <PSA_EXPR>
-                psa_operation(false); // Finish reading result variable
-                check_psa_completion();
-                clean_stack_TAC();
                 clear_stack(processing_stack);
                 // Read next after '='
                 get_token();
