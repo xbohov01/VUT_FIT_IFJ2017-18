@@ -130,3 +130,7 @@ void arithm_TAC(PSA_Term_type op) {
     return;
 }
 
+void create_label(char *name) {
+    printf("LABEL %s\n", name);
+    return;
+}
