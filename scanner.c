@@ -203,7 +203,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				token_state = POS_LIN_COMMENT;
 			}
 
-			else if (isalpha(n_char))
+			else if (isalpha(n_char) || n_char == '_')
 			{
 				n_char = tolower(n_char);
 				delstr(&buffer);
