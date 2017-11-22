@@ -79,7 +79,7 @@ void check_psa_completion() {
 // <cond_expr> -> <expr> <cond_expr_2>
 // <cond_expr2> -> eps
 // <cond_expr_2> -> <rel> <expr>
-void eval_cond_expr(int label_num) {
+void eval_cond_expr(bool is_do_while, int label_num) {
 
     PSA_Term_type relational_op;
     extern T_NT_stack *processing_stack;
@@ -127,9 +127,8 @@ void eval_cond_expr(int label_num) {
                 break;
         }
     }
-    printf("# Condition evaluation\n");
-    printf("PUSHS bool@true\n");
-    printf("JUMPIFNEQS $condition%d$end\n", label_num);
+    
+    cond_jump(is_do_while, label_num);
     printf("\n");
 
     destroy_T_NT_stack(processing_stack);
@@ -483,7 +482,6 @@ Data_NTerm *arithm_R() {
                         }
                         used_rule = create_non_term(NT_SUB, DOUBLE_NT);
                         
-                        swap_stack();
                         arithm_TAC(SUB);
                         // printf("2")
                         break;
@@ -524,7 +522,6 @@ Data_NTerm *arithm_R() {
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
                         
-                        swap_stack();
                         arithm_TAC(DIV);
                         // printf("4")
                         break;
@@ -581,7 +578,6 @@ Data_NTerm *arithm_R() {
                             error_exit(SEM_ERR);
                         }
 
-                        swap_stack();
                         arithm_TAC(SUB);
                         // printf("2")
                         break;
@@ -629,7 +625,6 @@ Data_NTerm *arithm_R() {
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
                         
-                        swap_stack();
                         arithm_TAC(DIV);
                         // printf("4")
                         break;
@@ -647,7 +642,6 @@ Data_NTerm *arithm_R() {
                         }
                         used_rule = create_non_term(NT_IDIV, INTEGER_NT);
                         
-                        swap_stack();
                         arithm_TAC(IDIV);
                         // printf("5")
                         break;

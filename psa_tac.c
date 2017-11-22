@@ -134,3 +134,13 @@ void create_label(char *name) {
     printf("LABEL %s\n", name);
     return;
 }
+
+void cond_jump(bool is_while, int num) {
+    printf("# Condition evaluation\n");
+    printf("PUSHS bool@true\n");
+    if (is_while) {
+        printf("JUMPIFNEQS $end$while%d$label\n", num);
+    } else {
+        printf("JUMPIFNEQS $condition%d$end\n", num);
+    }
+}

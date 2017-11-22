@@ -448,7 +448,7 @@ int statement(){
       // do {
       //   get_token();
       // } while (currentToken.token_type != THEN_KEY);
-      eval_cond_expr(cond_label);
+      eval_cond_expr(false, cond_label);
 
       //get_token();
       CHECKT(THEN_KEY);
@@ -464,7 +464,7 @@ int statement(){
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
           //elseif condition
-          eval_cond_expr(cond_label);
+          eval_cond_expr(false, cond_label);
 
           //get_token();
           //expecting then
@@ -506,7 +506,7 @@ int statement(){
       CHECKT(WHILE_KEY);
       get_token();
       printf("LABEL $while%d$label\n", while_cnt);
-      eval_cond_expr(cond_label);
+      eval_cond_expr(true, while_cnt);
       // do {
       //   get_token();
       //   printf("IGNORING EXPR\n");
@@ -521,7 +521,7 @@ int statement(){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
-      printf("JUMP while%dlabel\n", while_cnt);
+      printf("JUMP $while%d$label\n", while_cnt);
       printf("LABEL $end$while%d$label\n", while_cnt);
       while_cnt++;
 
