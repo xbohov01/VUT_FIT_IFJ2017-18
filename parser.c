@@ -521,7 +521,9 @@ int statement(){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
+      printf("JUMP while%dlabel\n", while_cnt);
       printf("LABEL $end$while%d$label\n", while_cnt);
+      while_cnt++;
 
       //expecting loop
       //removed to fix multiple if stat blocks
