@@ -431,7 +431,7 @@ int statement(){
         } else if (currentToken.token_type == DOUBLE){
           printf("WRTIE float@%f\n", currentToken.value_double);
         } else if (currentToken.token_type == STRING){
-          printf("WRTIE string@%s\n", currentToken.value_string);
+          printf("WRITE string@%s\n", currentToken.value_string);
         }
         //has thing to print, move to next token
         get_token();
