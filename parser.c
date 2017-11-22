@@ -480,6 +480,8 @@ int statement(){
       }
       //else block
       if (currentToken.token_type == ELSE_KEY){
+        printf("LABEL $condition%d$end\n", cond_label);
+        cond_label++;
         if (if_statements() != SUCCESS){
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
