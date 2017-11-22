@@ -191,9 +191,9 @@ int var_declr(){
     free(var_id);
     return end_of_lines();
   } else if (currentToken.token_type == EQ_O){
-    //free(var_id);
     //evaluate expression
     eval_expr();
+    printf("POPS LF@%s\n", var_id);
     free(var_id);
   } else {
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
@@ -447,7 +447,7 @@ int statement(){
       // do {
       //   get_token();
       // } while (currentToken.token_type != THEN_KEY);
-      eval_expr();
+      eval_cond_expr();
 
       //get_token();
       CHECKT(THEN_KEY);
@@ -463,7 +463,7 @@ int statement(){
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
           //elseif condition
-          eval_expr();
+          eval_cond_expr();
 
           //get_token();
           //expecting then
@@ -503,7 +503,7 @@ int statement(){
       CHECKT(WHILE_KEY);
       get_token();
       //TODO expression eval
-      eval_expr();
+      eval_cond_expr();
       // do {
       //   get_token();
       //   printf("IGNORING EXPR\n");
@@ -555,7 +555,6 @@ int fnc_stats(){
 //<fnc> -> <fncdef>
 //<fncdeclr>-> function <id> ( <paramlist> ) as	<type> <endline>
 //<fncdef>	function	<id>	(	<paramlist>	) 	as	<type>	<endline>	<fncstats>	end	function
-//TODO add to symtable
 int functions(){
   char *identifier;
   int return_type;
