@@ -10,6 +10,7 @@
 #endif
 
 int cond_label = 0;
+int while_cnt = 0;
 //condition label format
 //printf("LABEL $condition%d$end\n", cond_label);
 
@@ -504,7 +505,7 @@ int statement(){
       //expecting while
       CHECKT(WHILE_KEY);
       get_token();
-      //TODO expression eval
+      printf("LABEL $while%d$label\n", while_cnt);
       eval_cond_expr(cond_label);
       // do {
       //   get_token();
@@ -520,6 +521,7 @@ int statement(){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
+      printf("LABEL $end$while%d$label\n", while_cnt);
 
       //expecting loop
       //removed to fix multiple if stat blocks
