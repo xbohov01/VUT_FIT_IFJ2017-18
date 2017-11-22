@@ -77,6 +77,11 @@ T_NT_stack *init_T_NT_stack() {
     return s;
 }
 
+void clear_stack(T_NT_stack *s) {
+    while(pop_T_NT(s) != NULL);
+    return;
+}
+
 void destroy_T_NT_stack(T_NT_stack *s) {
 
     if (s != NULL) {

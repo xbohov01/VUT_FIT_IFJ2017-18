@@ -27,6 +27,7 @@ typedef struct {
 int str_init(tString *str);
 void delstr(tString *str);
 int addchar(char n_char, tString *str);
+void free_string(tString *str);
 
 //====SCANNER====
 #define N_KEYWORDS 35
@@ -176,8 +177,8 @@ typedef enum non_term_types {
 } N_T_rules;
 
 typedef enum {
-    DOUBLE_NT,
     INTEGER_NT,
+    DOUBLE_NT,
     STRING_NT,
     NONE_NT
 } N_T_types;
@@ -196,6 +197,7 @@ typedef enum psa_term_type{
     END,
 
     // Relational operators
+    // Index is greater than END
     LT,
     GT,
     LTE,
@@ -244,6 +246,7 @@ void error_exit(int code);
 PSA_Term_type get_term_type(Data_Term *in_term);
 
 T_NT_stack *init_T_NT_stack();
+void clear_stack(T_NT_stack *s);
 void destroy_T_NT_stack(T_NT_stack *s);
 T_NT_item *push_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
 T_NT_item *pop_T_NT(T_NT_stack *s); // Returns item for easy search
@@ -259,14 +262,14 @@ void ps(T_NT_stack *T_NT_s); // Print stack for debug
 
 //====PSA===
 void eval_expr();
-void psa_operation(bool first_call);
-void reduce_by_rule(bool first_call);
+void eval_cond_expr(int label_num);
+void psa_operation(bool stop_on_first_sign);
+void reduce_by_rule();
 void get_reversed_rule();
 
 // TODO: create operations
 Data_NTerm *id_or_function_R();
 Data_NTerm *function_R();
-Data_NTerm *parenthesis_R();
 Data_NTerm *arithm_R();
 
 
@@ -282,6 +285,16 @@ T_NT_stack *evaluation_stack;
 // TODO: to be deleted
 // For test, simulate rule usage and shows order
 N_T_rules *right_order;
+
+// =======PSA_TAC========
+
+void init_TAC_stack();
+void swap_stack();
+void push_var_id(char *name);
+void push_const_id(Data_Term *item);
+void retype_stack(bool second_operand, bool int2fl, bool round_to_even);
+void pop_to_result(char *res_name);
+void clean_stack_TAC();
 
 //====SYMTABLE====
 
@@ -303,7 +316,7 @@ typedef struct hash_tab_symbol hash_tab_symbol_type;
 struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
 
-	//bool is_function;  // false = variable     true = function
+	bool is_function;  // false = variable     true = function
 	bool is_defined;
 
 	int value_type;  // 0 = integer     1 = float     2 = string

@@ -11,11 +11,11 @@
 void ps(T_NT_stack *s) {
     static int call_num = 1;
     char non_term_type_names[10][10] = {
-    "NT_ADD", // 1: E + E
+    "NT_ADD",     // 1: E + E
     "NT_SUB",     // 2: E - E
     "NT_MUL",     // 3: E * E
     "NT_DIV",     // 4: E / E
-    "NT_IDIV",     // 5: E \ E
+    "NT_IDIV",    // 5: E \ E
     "NT_PAR",     // 6: (E)
     "NT_ID",      // 7: id
     "NT_FN",      // 8: function
