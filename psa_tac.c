@@ -43,7 +43,7 @@ void push_const_id(Data_Term *item) {
     return;
 }
 
-void retype_stack(bool second_operand, bool int2fl, bool round_to_even) {
+void retype_stack(bool second_operand, bool int2fl) {
     printf("# Retype start\n");
     if (second_operand == true) {
         printf("POPS GF@$_stack_temp_1\n");
@@ -52,15 +52,11 @@ void retype_stack(bool second_operand, bool int2fl, bool round_to_even) {
     if (int2fl == true) {
         printf("INT2FLOATS\n");
     } else {
-        if (round_to_even == true) {
-            printf("FLOAT2R2EINTS\n");
-        } else {
-            printf("FLOAT2INTS\n");
-        }
+        printf("FLOAT2INTS\n");
     }
 
-    if (second_operand = true) {
-        printf("PUSHS GF@_stack_temp_1\n");
+    if (second_operand == true) {
+        printf("PUSHS GF@$_stack_temp_1\n");
     }
     printf("\n");
     return;
@@ -81,6 +77,29 @@ void clean_stack_TAC() {
     printf("CLEARS\n");
 }
 
+void init_var(N_T_types type, char* name) {
+    if (name == NULL) {
+        fprintf(stderr, "NAME FOR INIT NOT SPECIFIED\n");
+        error_exit(INTERNAL_ERR);
+    }
+
+    switch(type) {
+        case DOUBLE_NT:
+            printf("MOVE LF@%s float@0.0\n", name);
+            break;
+        case INTEGER_NT:
+            printf("MOVE LF@%s int@0\n", name);
+            break;
+        case STRING_NT:
+            printf("MOVE LF@%s string@!\"\"\n", name);
+            break;
+        default:
+            fprintf(stderr, "BAD VAR INIT TYPE\n");
+            error_exit(INTERNAL_ERR);
+    }
+    return;
+}
+
 void arithm_TAC(PSA_Term_type op) {
     printf("# Arithmetics:\n");
     switch (op) {
@@ -94,11 +113,11 @@ void arithm_TAC(PSA_Term_type op) {
             printf("MULS\n");
             break;
         case DIV:
-            printf("DIV\n");
+            printf("DIVS\n");
             break;
         case IDIV:
-            printf("DIV\n");
-            retype_stack(false, false, true);
+            printf("DIVS\n");
+            retype_stack(false, false);
             break;
 
         case LT:

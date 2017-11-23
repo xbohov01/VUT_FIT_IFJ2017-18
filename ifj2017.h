@@ -162,16 +162,23 @@ void get_token();
 // Possible types for non_terminals
 // Used after rule application
 typedef enum non_term_types {
-    NT_ADD, // 1: E -> E + E
-    NT_SUB, // 2: E -> E - E
-    NT_MUL, // 3: E -> E * E
-    NT_DIV, // 4: E -> E / E
+    NT_ADD,  // 1: E -> E + E
+    NT_SUB,  // 2: E -> E - E
+    NT_MUL,  // 3: E -> E * E
+    NT_DIV,  // 4: E -> E / E
     NT_IDIV, // 5: E -> E \ E
 
-    NT_PAR, // 6: E -> (E)
+    NT_PAR,  // 6: E -> (E)
 
-    NT_ID,  // 7: E -> id
-    NT_FN,  // 8: E -> id(eps/E/E,...E)
+    NT_ID,   // 7: E -> id
+    NT_FN,   // 8: E -> id(eps/E/E,...E)
+
+    NT_LT, 	//  9: E -> E <  E
+    NT_GT, 	// 10: E -> E >  E
+    NT_LTE,	// 11: E -> E <= E
+    NT_GTE,	// 12: E -> E >= E
+    NT_EQ, 	// 13: E -> E =  E
+    NT_NEQ,	// 14: E -> E <> E
 
     STOPPER // '<'
 } N_T_rules;
@@ -183,7 +190,7 @@ typedef enum {
     NONE_NT
 } N_T_types;
 
-typedef enum psa_term_type{
+typedef enum psa_term_type {
     ADD,
     MUL,
     SUB,
@@ -194,10 +201,8 @@ typedef enum psa_term_type{
     ID,
     FNC,
     CM,
-    END,
 
     // Relational operators
-    // Index is greater than END
     LT,
     GT,
     LTE,
@@ -205,7 +210,9 @@ typedef enum psa_term_type{
     EQ,
     NEQ,
 
-    PSA_ERR
+    // End operator
+    END
+
 } PSA_Term_type;
 
 
@@ -262,8 +269,8 @@ void ps(T_NT_stack *T_NT_s); // Print stack for debug
 
 //====PSA===
 void eval_expr();
-void eval_cond_expr(int label_num);
-void psa_operation(bool stop_on_first_sign);
+void eval_cond_expr(bool is_do_while, int label_num);
+void psa_operation();
 void reduce_by_rule();
 void get_reversed_rule();
 
@@ -295,6 +302,7 @@ void push_const_id(Data_Term *item);
 void retype_stack(bool second_operand, bool int2fl, bool round_to_even);
 void pop_to_result(char *res_name);
 void clean_stack_TAC();
+void init_var(N_T_types type, char* name);
 
 //====SYMTABLE====
 
