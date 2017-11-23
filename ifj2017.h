@@ -262,7 +262,7 @@ void ps(T_NT_stack *T_NT_s); // Print stack for debug
 
 //====PSA===
 void eval_expr();
-void eval_cond_expr(int label_num);
+void eval_cond_expr(bool is_do_while, int label_num);
 void psa_operation(bool stop_on_first_sign);
 void reduce_by_rule();
 void get_reversed_rule();
