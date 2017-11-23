@@ -111,21 +111,7 @@ void eval_cond_expr(bool is_do_while, int label_num) {
             fprintf(stderr, "More than one relational operator in expression\n");
             error_exit(SYNT_ERR);
         }
-        // <rel>
-        switch (relational_op) {
-            case LT:
-            case GT:
-            case LTE:
-            case GTE:
-            case EQ:
-            case NEQ:
-                arithm_TAC(relational_op);
-                break;
-            default:
-                fprintf(stderr, "Bad relational operator after psa\n");
-                error_exit(INTERNAL_ERR);
-                break;
-        }
+        
     }
     
     cond_jump(is_do_while, label_num);
@@ -317,7 +303,7 @@ Data_NTerm *id_or_function_R() {
         ID_OR_FUNC,
         VAR_FOUND,
         FUNC_FOUND,
-        END_CONTROL_ID, // TODO: delete
+        END_CONTROL_ID,
         FINISHED_ID_OR_FUNC
     } id_or_f_state;
 
@@ -403,6 +389,40 @@ Data_NTerm *function_R() {
     return create_non_term(NT_FN, INTEGER_NT);
 }
 
+N_T_rules map_NT_rule(PSA_Term_type in_psa_term) {
+    switch(in_psa_term) {
+        case ADD:
+            return NT_ADD;
+        case MUL:
+            return NT_MUL;
+        case SUB:
+            return NT_SUB;
+        case DIV:
+            return NT_DIV;
+        case IDIV:
+            return NT_IDIV;
+        case ID:
+            return NT_ID;
+        case FNC:
+            return NT_FN;
+        case LT:
+            return NT_LT;
+        case GT:
+            return NT_GT;
+        case LTE:
+            return NT_LTE;
+        case GTE:
+            return NT_GTE;
+        case EQ:
+            return NT_EQ;
+        case NEQ:
+            return NT_NEQ;
+        default:
+            fprintf(stderr, "Bad map value for map_NT_rule\n");
+            fprintf(stderr, "Bad programmer error\n");
+            error_exit(INTERNAL_ERR);
+    }
+}
 
 Data_NTerm *arithm_R() {
 
@@ -443,14 +463,14 @@ Data_NTerm *arithm_R() {
                 break;
             case DOUBLE_AR_PSA:
                 look_ahead = pop_T_NT(evaluation_stack);
-                switch (get_term_type(&look_ahead->data.Term)) {
+                arithm_operand = get_term_type(&look_ahead->data.Term);
+                switch (arithm_operand) {
                     case ADD:
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
-                            // TODO: int to float stack second
                             // second_operand, int2fl, round_to_even
-                            retype_stack(false, true, false);
+                            retype_stack(false, true);
                             arithm_state = AR_END_PSA;
                         }
                         else if (E->type == DOUBLE_NT) {
@@ -469,8 +489,7 @@ Data_NTerm *arithm_R() {
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
-                            // TODO: int to float stack second
-                            retype_stack(false, true, false);
+                            retype_stack(false, true);
                             arithm_state = AR_END_PSA;
                         }
                         else if (E->type == DOUBLE_NT) {
@@ -489,8 +508,7 @@ Data_NTerm *arithm_R() {
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
-                            // TODO: int to float stack second
-                            retype_stack(false, true, false);
+                            retype_stack(false, true);
                             arithm_state = AR_END_PSA;
                         }
                         else if (E->type == DOUBLE_NT) {
@@ -509,8 +527,7 @@ Data_NTerm *arithm_R() {
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
-                            // TODO: int to float stack second
-                            retype_stack(false, true, false);
+                            retype_stack(false, true);
                             arithm_state = AR_END_PSA;
                         }
                         else if (E->type == DOUBLE_NT) {
@@ -525,18 +542,41 @@ Data_NTerm *arithm_R() {
                         arithm_TAC(DIV);
                         // printf("4")
                         break;
+                    case LT:
+                    case GT:
+                    case LTE:
+                    case GTE:
+                    case EQ:
+                    case NEQ:
+                        look_ahead = pop_T_NT(evaluation_stack);
+                        E = &(look_ahead->data.NTerm);
+                        if (E->type == INTEGER_NT) {
+                            retype_stack(false, true);
+                        }
+                        else if (E->type == DOUBLE_NT) {
+                            ;
+                        }
+                        // Unexpected string type
+                        else {
+                            error_exit(SEM_ERR);
+                        }
+                        used_rule = create_non_term(map_NT_rule(arithm_operand), DOUBLE_NT);
+                        arithm_TAC(arithm_operand);
+                        arithm_state = AR_END_PSA;
+                        break;
                     case IDIV:
                         error_exit(TYPE_ERR);
                         break;
                     default:
-                        printf("UNEXPECTED SIGN AFTER PSA\n");
-                        error_exit(SEM_ERR);
+                        fprintf(stderr, "UNEXPECTED SIGN AFTER PSA\n");
+                        error_exit(INTERNAL_ERR);
                         break;
                 }
                 break;
             case INT_AR_PSA:
                 look_ahead = pop_T_NT(evaluation_stack);
-                switch(get_term_type(&look_ahead->data.Term)) {
+                arithm_operand = get_term_type(&look_ahead->data.Term);
+                switch(arithm_operand) {
                     case ADD:
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
@@ -545,8 +585,7 @@ Data_NTerm *arithm_R() {
                             used_rule = create_non_term(NT_ADD, INTEGER_NT);
                         }
                         else if (E->type == DOUBLE_NT) {
-                            // TODO: int to float stack first
-                            retype_stack(false, true, false);
+                            retype_stack(true, true);
                             arithm_state = AR_END_PSA;
                             used_rule = create_non_term(NT_ADD, DOUBLE_NT);
                         }
@@ -562,18 +601,14 @@ Data_NTerm *arithm_R() {
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
-                            // TODO: generate stack sub
                             arithm_state = AR_END_PSA;
                             used_rule = create_non_term(NT_SUB, INTEGER_NT);
                         }
                         else if (E->type == DOUBLE_NT) {
-                            // TODO: int to float stack first
-                            retype_stack(false, true, false);
-                            // TODO: generate stack sub
+                            retype_stack(true, true);
                             arithm_state = AR_END_PSA;
                             used_rule = create_non_term(NT_SUB, DOUBLE_NT);
                         }
-                        // Unexpected string type
                         else {
                             error_exit(SEM_ERR);
                         }
@@ -585,14 +620,11 @@ Data_NTerm *arithm_R() {
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
-                            // TODO: generate stack mul
                             arithm_state = AR_END_PSA;
                             used_rule = create_non_term(NT_MUL, INTEGER_NT);
                         }
                         else if (E->type == DOUBLE_NT) {
-                            // TODO: int to float stack first
-                            retype_stack(false, true, false);
-                            // TODO: generate stack mul
+                            retype_stack(true, true);
                             arithm_state = AR_END_PSA;
                             used_rule = create_non_term(NT_MUL, DOUBLE_NT);
                         }
@@ -608,15 +640,11 @@ Data_NTerm *arithm_R() {
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
-                            // TODO: int to float stack first
-                            retype_stack(true, true, false);
-                            // TODO: int to float stack second
-                            retype_stack(false, true, false);
-                            // TODO: generate stack float div
+                            retype_stack(true, true);
+                            retype_stack(false, true);
                             arithm_state = AR_END_PSA;
                         }
                         else if (E->type == DOUBLE_NT) {
-                            // TODO: int to float stack first
                             arithm_state = AR_END_PSA;
                         }
                         // Unexpected string type
@@ -629,45 +657,80 @@ Data_NTerm *arithm_R() {
                         // printf("4")
                         break;
                     case IDIV:
-                        printf("OK IDIV\n");
+                        look_ahead = pop_T_NT(evaluation_stack);
+                        E = &(look_ahead->data.NTerm);
+                        if (E->type != INTEGER_NT) {
+                            error_exit(TYPE_ERR);
+                        }
+
+                        used_rule = create_non_term(NT_IDIV, INTEGER_NT);
+                        arithm_TAC(IDIV);
+                        arithm_state = AR_END_PSA;
+                        // printf("5")
+                        break;
+                    case LT:
+                    case GT:
+                    case LTE:
+                    case GTE:
+                    case EQ:
+                    case NEQ:
                         look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type == INTEGER_NT) {
-                            // TODO: generate stack integer div
-                            arithm_state = AR_END_PSA;
+                            ;
                         }
-                        // Unexpected double or string type
+                        else if (E->type == DOUBLE_NT) {
+                            retype_stack(true, true);
+                        }
+                        // Unexpected string type
                         else {
-                            error_exit(TYPE_ERR);
+                            error_exit(SEM_ERR);
                         }
-                        used_rule = create_non_term(NT_IDIV, INTEGER_NT);
                         
-                        arithm_TAC(IDIV);
-                        // printf("5")
+                        used_rule = create_non_term(map_NT_rule(arithm_operand), E->type);
+                        arithm_TAC(arithm_operand);
+                        arithm_state = AR_END_PSA;
                         break;
                     default:
-                        printf("UNEXPECTED SIGN AFTER PSA\n");
-                        error_exit(SEM_ERR);
+                        fprintf(stderr, "UNEXPECTED SIGN AFTER PSA\n");
+                        error_exit(INTERNAL_ERR);
+                        break;
                 }
                 break;
             case STRING_AR_PSA:
                 look_ahead = pop_T_NT(evaluation_stack);
-                if (get_term_type(&look_ahead->data.Term) == ADD) {
-                    look_ahead = pop_T_NT(evaluation_stack);
-                    E = &(look_ahead->data.NTerm);
-                    if (E->type == STRING_NT) {
-                        // TODO: Concat str_result str_temp_1 str_temp_2 
-                        arithm_state = AR_END_PSA;
-                    }
-                    else {
-                        error_exit(TYPE_ERR);
-                    }
+                arithm_operand = get_term_type(&look_ahead->data.Term);
+                look_ahead = pop_T_NT(evaluation_stack);
+                E = &(look_ahead->data.NTerm);
+                switch(arithm_operand) {
+                    case ADD:
+                    case LT:
+                    case GT:
+                    case LTE:
+                    case GTE:
+                    case EQ:
+                    case NEQ:
+                        if (E->type != STRING_NT) {
+                            error_exit(TYPE_ERR);
+                        }
+                        break;
+                    case SUB:
+                    case MUL:
+                    case DIV:
+                    case IDIV:
+                        fprintf(stderr, "UNEXPECTED OPERATION. MAYBE YOU MENT '+'?\n");
+                        error_exit(SYNT_ERR);
+                        break;
+                    default:
+                        fprintf(stderr, "UNEXPECTED SIGN AFTER PSA\n");
+                        error_exit(INTERNAL_ERR);
+                        break;
+
                 }
-                else {
-                    error_exit(SEM_ERR);
-                }
-                used_rule = create_non_term(NT_ADD, STRING_NT);
                 
+                arithm_TAC(arithm_operand);
+                used_rule = create_non_term(map_NT_rule(arithm_operand), STRING_NT);
+                arithm_state = AR_END_PSA;
                 // printf("1")
                 break;
             case AR_END_PSA:
@@ -746,33 +809,35 @@ void reduce_by_rule() {
     return;
 }
 
-void psa_operation(bool needed_definition) {
-    char table_psa[11][11] = { \
-        //        | ADD | MUL| SUB| DIV|IDIV| PL | PR | ID | FNC| CM | END|
-        //        |   + |  * |  - |  / |  \ |  ( |  ) |  i |  f |  , |  $ |
-        //----------------------------------------------------------------    
-    {   /* ADD| + |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>' }, 
-    {   /* MUL| * |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
-    {   /* SUB| - |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>' }, 
-    {   /* DIV| / |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
-    {   /* IDI| \ |*/'>', '<', '>', '<', '>', '<', '>', '<', '<', '>', '>' }, 
-    {   /* PL | ( |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#' }, 
-    {   /* PR | ) |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>' }, 
-    {   /* ID | i |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>' }, 
-    {   /* FNC| f |*/'#', '#', '#', '#', '#', '=', '#', '#', '#', '#', '#' }, 
-    {   /* CM | , |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#' }, 
-    {   /* END| $ |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '\0'}
+void psa_operation() {
+    char table_psa[17][17] = { 
+        //        | ADD | MUL| SUB| DIV|IDIV| PL | PR | ID | FNC| CM | LT | GT | LTE| GTE| EQ | NEQ| END|
+        //        |   + |  * |  - |  / |  \ |  ( |  ) |  i |  f |  , |  < |  > | <= | >= |  = | <> |   $|
+        //-----------------------------------------------------------------------------------------------
+    {   /* ADD| + |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
+    {   /* MUL| * |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
+    {   /* SUB| - |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
+    {   /* DIV| / |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
+    {   /* IDI| \ |*/'>', '<', '>', '<', '>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
+    {   /* PL | ( |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#', '#', '#', '#', '#', '#', '#' }, 
+    {   /* PR | ) |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>', '>', '>', '>', '>', '>', '>' }, 
+    {   /* ID | i |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>', '>', '>', '>', '>', '>', '>' }, 
+    {   /* FNC| f |*/'#', '#', '#', '#', '#', '=', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' }, 
+    {   /* CM | , |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#', '#', '#', '#', '#', '#', '#' }, 
+    {   /* LT | < |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
+    {   /* GT | > |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
+    {   /* LTE|<= |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
+    {   /* GTE|>= |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
+    {   /* EQ | = |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
+    {   /* NEQ|<> |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
+    {   /* END| $ |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '<', '<', '<', '<', '<', '<', '\0'},
     };
-
+    
     PSA_Term_type index_stack_top;
     PSA_Term_type index_input;
     Data_Term first_term_data;
     bool use_push;
-    // In case of relational operator will be set on true
-
     bool psa_finished;
-
-    // Main logic
 
     psa_finished = false;
 
@@ -798,10 +863,7 @@ void psa_operation(bool needed_definition) {
             // 
             // -------------------Semantic control part-----------------------
             case '>':
-                if (needed_definition == true) {
-                    return; // Temporary stop for variable reading
-                }
-                reduce_by_rule(needed_definition);
+                reduce_by_rule();
                 break;
             // --------------------End semantic control-----------------------
             // Syntax error

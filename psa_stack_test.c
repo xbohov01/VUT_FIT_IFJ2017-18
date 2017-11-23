@@ -33,7 +33,6 @@ void ps(T_NT_stack *s) {
         "i",    // "ID",
         "f",    // "FNC",
         ",",    // "CM",
-        "$",    // "END",
 
         "<",    // "LT",
         ">",    // "GT",
@@ -41,7 +40,8 @@ void ps(T_NT_stack *s) {
         ">=",   // "GTE",
         "<>",   // "EQ",
         "==",   // "NEQ",
-        "ER",   // "PSA_ERR"
+
+        "$"     // "END"
     };
 
     if (s == NULL) {

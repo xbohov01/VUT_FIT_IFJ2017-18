@@ -188,6 +188,8 @@ int var_declr(){
     //generate TAC
     printf("DEFVAR LF@_%s\n", var_id);
 
+    init_var(tmp_var_item->value_type, var_id);
+
     //free and return
     free(var_id);
     return end_of_lines();
@@ -377,7 +379,6 @@ int statement(){
 
       return end_of_lines();
 
-    case PRINT_KEY :
       get_token();
 
       //expecting value or identifier
@@ -506,7 +507,7 @@ int statement(){
       CHECKT(WHILE_KEY);
       get_token();
       printf("LABEL $while%d$label\n", while_cnt);
-      eval_cond_expr(true, while_cnt);
+      eval_cond_expr(true, cond_label);
       // do {
       //   get_token();
       //   printf("IGNORING EXPR\n");
@@ -521,7 +522,7 @@ int statement(){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
-      printf("JUMP $while%d$label\n", while_cnt);
+      printf("JUMP while%dlabel\n", while_cnt);
       printf("LABEL $end$while%d$label\n", while_cnt);
       while_cnt++;
 

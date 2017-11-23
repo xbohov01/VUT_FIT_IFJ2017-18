@@ -30,15 +30,9 @@ PSA_Term_type get_term_type(Data_Term *in_term) {
         case INTEGER:
         case STRING:
         case IDENTIFICATOR:
-            // TODO: can be const or function or variable,
-            // should look in hash_table
             return ID;
         case COM:
             return CM;
-        case ENDL:
-        case SEM:
-        case THEN_KEY:
-            return END;
 
         /*---------------------
         * Relational operators */
@@ -55,6 +49,12 @@ PSA_Term_type get_term_type(Data_Term *in_term) {
             return EQ;
         case NE_O:
             return NEQ;
+        /*---------------------
+        * End operators */
+        case ENDL:
+        case SEM:
+        case THEN_KEY:
+            return END;
         default:
             error_exit(SYNT_ERR);
     }
@@ -102,7 +102,6 @@ void copy_term(Data_Term *from, Data_Term *to) {
             to->value_double = from->value_double;
             break;
         case STRING:
-            // TODO: delete after string implementation
             to->value_string = malloc(strlen(from->value_string) + 1);
             if (to->value_string == NULL) {
                 error_exit(INTERNAL_ERR);
@@ -110,14 +109,11 @@ void copy_term(Data_Term *from, Data_Term *to) {
             strcpy(to->value_string, from->value_string);
             break;
         case IDENTIFICATOR:
-            // TODO: delete after string implementation
             to->id = malloc(strlen(from->id) + 1);
             if (to->id == NULL) {
                 error_exit(INTERNAL_ERR);
             }
             strcpy(to->id, from->id);
-            // TODO:
-            // Hash search and value copy
         default:
             break;
     }
@@ -156,7 +152,7 @@ T_NT_item *pop_T_NT(T_NT_stack *s) {
                 free(s->popped->data.Term.id);
             }
             if (s->popped->data.Term.token_type == STRING) {
-                free(s->popped->data.Term.value_string); // TODO: use string lib
+                free(s->popped->data.Term.value_string);
             }
         }
         free(s->popped);
