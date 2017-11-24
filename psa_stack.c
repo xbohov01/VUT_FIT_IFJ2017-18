@@ -111,6 +111,21 @@ N_T_types map_NT_type(T_token_type in_token_type) {
             return NONE_NT;
     }
 }
+
+N_T_types map_arg_type(char arg_type) {
+    switch(arg_type) {
+        case 'd':
+            return DOUBLE_NT;
+        case 'i':
+            return INTEGER_NT;
+        case 's':
+            return STRING_NT;
+        default:
+            fprintf(stderr, "Bad argument type\n");
+            error_exit(INTERNAL_ERR);
+            return NONE_NT;
+    }
+}
 // =======================
 
 
