@@ -396,7 +396,7 @@ int statement(){
       //get_token();
 
       eval_expr();
-      save_result("stack_temp");
+      save_to_temp();
 
       printf("WRITE GF@_stack_temp\n");
 
@@ -430,7 +430,7 @@ int statement(){
       while (currentToken.token_type == SEM){
         //get_token();
         eval_expr();
-        save_result("stack_temp");
+        save_to_temp();
 
         printf("WRITE GF@_stack_temp\n");
         /*
