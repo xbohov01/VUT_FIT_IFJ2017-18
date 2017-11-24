@@ -289,6 +289,9 @@ Data_NTerm *id_R(hash_tab_symbol_type *found_var) {
             error_exit(INTERNAL_ERR);
     }
 
+    look_ahead = pop_T_NT(evaluation_stack);
+    T = &(look_ahead->data.Term);
+
     if (get_term_type(T) != END) {
         printf("UNEXPECTED ITEM AFTER PSA\n"); // Debug
         error_exit(INTERNAL_ERR);
@@ -526,18 +529,23 @@ void reduce_by_rule() {
     }
     else {
         if (get_term_type(T) == ID) {
-            found_var = hash_table_search(var_table, T->id);
-            found_func = hash_table_search(func_table, T->id);
-            if ((found_var == NULL) && (found_func == NULL)) {
-                printf("Variable was not declared\n");
-                error_exit(UNDEF_ERR);
-            }
-            else if (found_var != NULL) {
-                used_rule = id_R(found_var);
-                // printf("7") // TODO: function call
+            if (T->token_type == IDENTIFICATOR) {
+                found_var = hash_table_search(var_table, T->id);
+                found_func = hash_table_search(func_table, T->id);
+                if ((found_var == NULL) && (found_func == NULL)) {
+                    printf("Variable was not declared\n");
+                    error_exit(UNDEF_ERR);
+                }
+                else if (found_var != NULL) {
+                    used_rule = id_R(found_var);
+                    // printf("7") // TODO: function call
+                }
+                else {
+                    used_rule = function_R(found_func);
+                }
             }
             else {
-                used_rule = function_R(found_func);
+                used_rule = id_R(NULL);
             }
         }
         else if (get_term_type(T) == PL) {
@@ -601,7 +609,7 @@ void psa_operation(bool allow_bool) {
         first_term_data = find_first_term(processing_stack, &use_push)->data.Term;
         index_stack_top = get_term_type(&first_term_data);
         index_input = get_term_type(&currentToken);
-        if (allow_bool == true) {
+        if (allow_bool == false) {
             switch(index_input) {
                 case LT:
                 case GT:

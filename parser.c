@@ -514,7 +514,7 @@ int statement(){
       CHECKT(WHILE_KEY);
       get_token();
       printf("LABEL $while%d$label\n", while_cnt);
-      eval_cond_expr(true, cond_label);
+      eval_cond_expr(true, while_cnt);
       // do {
       //   get_token();
       //   printf("IGNORING EXPR\n");
@@ -529,7 +529,7 @@ int statement(){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
-      printf("JUMP while%dlabel\n", while_cnt);
+      printf("JUMP $while%d$label\n", while_cnt);
       printf("LABEL $end$while%d$label\n", while_cnt);
       while_cnt++;
 
