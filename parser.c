@@ -379,9 +379,12 @@ int statement(){
       //tac
       printf("READ LF@_%s %s\n", currentToken.id, types[tmp_var_item->value_type]);
 
+      //get next for correct end
+      get_token();
+
       return end_of_lines();
 
-    case PRINT_KEY :      
+    case PRINT_KEY :
 
       get_token();
 
