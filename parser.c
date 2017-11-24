@@ -100,6 +100,7 @@ void synt_error_print(int given, int expected){
     "ERROR",
     "end of line",
     "end of file",
+    "function",
   };
 
   fprintf(stderr, "Syntax Error: %s was expected but %s was given.\n", tokenList[expected], tokenList[given]);
@@ -727,7 +728,7 @@ int functions(){
 
     //tac
     printf("POPFRAME\n");
-    printf("RETURN\n");
+    printf("RETURN\n\n\n");
 
     //destroy variable table
     hash_table_destroy(var_table);
