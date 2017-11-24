@@ -5,25 +5,74 @@
 
 #include "ifj2017.h"
 
+// Init commands
+// ========================================
 void init_TAC_stack() {
     static bool was_init = false;
     if (!was_init) {
-        printf("DEFVAR GF@$_stack_temp_1\n");
-        printf("DEFVAR GF@$_stack_temp_2\n");
+        printf("DEFVAR GF@$_stack_temp\n");
         was_init = true;
     }
     return;
 }
 
-void swap_stack() {
-    printf("# Swap\n");
-    printf("POPS GF@$_stack_temp_1\n");
-    printf("POPS GF@$_stack_temp_2\n");
-    printf("PUSHS GF@$_stack_temp_1\n");
-    printf("PUSHS GF@$_stack_temp_2\n");
-    printf("\n");
+void init_var(N_T_types type, char* name) {
+    if (name == NULL) {
+        fprintf(stderr, "NAME FOR INIT NOT SPECIFIED\n");
+        error_exit(INTERNAL_ERR);
+    }
+    printf("# Var %s init\n", name);
+
+    switch(type) {
+        case DOUBLE_NT:
+            printf("MOVE LF@_%s float@0.0\n", name);
+            break;
+        case INTEGER_NT:
+            printf("MOVE LF@_%s int@0\n", name);
+            break;
+        case STRING_NT:
+            printf("MOVE LF@_%s string@!\"\"\n", name);
+            break;
+        default:
+            fprintf(stderr, "BAD VAR INIT TYPE\n");
+            error_exit(INTERNAL_ERR);
+    }
+    return;
 }
 
+void create_label(char *name) {
+    printf("LABEL %s\n", name);
+    return;
+}
+
+// =========================================
+
+// Answer handlers
+// =========================================
+
+void save_result(char *res_name) {
+    printf("# Save final result\n");
+    if (res_name == NULL) {
+        fprintf(stderr, "Cant save variable to nothing\n");
+        error_exit(INTERNAL_ERR);
+    } else {
+        printf("MOVE LF@_%s GF@$_stack_temp\n", res_name);
+    }  
+    printf("\n");
+    return;
+}
+
+void temporary_save() {
+    printf("# Save result to temp\n");
+    printf("POPS GF@$_stack_temp\n");
+    printf("\n");
+    return;
+}
+
+// =========================================
+
+// Number arithmetics
+// =========================================
 void push_var_id(char *name) {
     printf("PUSHS LF@_%s\n", name);
     return;
@@ -46,7 +95,7 @@ void push_const_id(Data_Term *item) {
 void retype_stack(bool second_operand, bool int2fl) {
     printf("# Retype start\n");
     if (second_operand == true) {
-        printf("POPS GF@$_stack_temp_1\n");
+        printf("POPS GF@$_stack_temp\n");
     }
 
     if (int2fl == true) {
@@ -56,52 +105,14 @@ void retype_stack(bool second_operand, bool int2fl) {
     }
 
     if (second_operand == true) {
-        printf("PUSHS GF@$_stack_temp_1\n");
+        printf("PUSHS GF@$_stack_temp\n");
     }
     printf("\n");
     return;
 }
 
-void pop_to_result(char *res_name) {
-    printf("# Save result\n");
-    if (res_name == NULL) {
-        printf("POPS GF@$_stack_temp_1\n");
-    } else {
-        printf("POPS LF@_%s\n", res_name);
-    }
-    printf("\n");
-    return;
-}
-
-void clean_stack_TAC() {
-    printf("CLEARS\n");
-}
-
-void init_var(N_T_types type, char* name) {
-    if (name == NULL) {
-        fprintf(stderr, "NAME FOR INIT NOT SPECIFIED\n");
-        error_exit(INTERNAL_ERR);
-    }
-
-    switch(type) {
-        case DOUBLE_NT:
-            printf("MOVE LF@%s float@0.0\n", name);
-            break;
-        case INTEGER_NT:
-            printf("MOVE LF@%s int@0\n", name);
-            break;
-        case STRING_NT:
-            printf("MOVE LF@%s string@!\"\"\n", name);
-            break;
-        default:
-            fprintf(stderr, "BAD VAR INIT TYPE\n");
-            error_exit(INTERNAL_ERR);
-    }
-    return;
-}
-
-void arithm_TAC(PSA_Term_type op) {
-    printf("# Arithmetics:\n");
+void arithm_stack(PSA_Term_type op) {
+    printf("# Stack arithmetics:\n");
     switch (op) {
         case ADD:
             printf("ADDS\n");
@@ -149,11 +160,14 @@ void arithm_TAC(PSA_Term_type op) {
     return;
 }
 
-void create_label(char *name) {
-    printf("LABEL %s\n", name);
-    return;
+void clean_stack_TAC() {
+    printf("CLEARS\n");
 }
 
+// =========================================
+
+// Jumps or function calls
+// =========================================
 void cond_jump(bool is_while, int num) {
     printf("# Condition evaluation\n");
     printf("PUSHS bool@true\n");
@@ -162,4 +176,6 @@ void cond_jump(bool is_while, int num) {
     } else {
         printf("JUMPIFNEQS $condition%d$end\n", num);
     }
+    printf("\n");
 }
+// =========================================

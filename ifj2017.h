@@ -161,7 +161,7 @@ void get_token();
 
 // Possible types for non_terminals
 // Used after rule application
-typedef enum non_term_types {
+typedef enum non_term_rules {
     NT_ADD,  // 1: E -> E + E
     NT_SUB,  // 2: E -> E - E
     NT_MUL,  // 3: E -> E * E
@@ -251,6 +251,8 @@ typedef struct t_nt_item {
 
 void error_exit(int code);
 PSA_Term_type get_term_type(Data_Term *in_term);
+N_T_rules map_NT_rule(PSA_Term_type in_psa_term);
+N_T_types map_NT_type(T_token_type in_token_type);
 
 T_NT_stack *init_T_NT_stack();
 void clear_stack(T_NT_stack *s);
@@ -266,43 +268,6 @@ T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_n
 
 // =========PSA_STACK_TESTS===========
 void ps(T_NT_stack *T_NT_s); // Print stack for debug
-
-//====PSA===
-void eval_expr();
-void eval_cond_expr(bool is_do_while, int label_num);
-void psa_operation();
-void reduce_by_rule();
-void get_reversed_rule();
-
-// TODO: create operations
-Data_NTerm *id_or_function_R();
-Data_NTerm *function_R();
-Data_NTerm *arithm_R();
-
-
-void push_start_term(T_NT_stack *s);
-T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
-void insert_stopper(T_NT_stack *s);
-Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
-
-extern Data_Term currentToken;
-T_NT_stack *processing_stack;
-T_NT_stack *evaluation_stack;
-
-// TODO: to be deleted
-// For test, simulate rule usage and shows order
-N_T_rules *right_order;
-
-// =======PSA_TAC========
-
-void init_TAC_stack();
-void swap_stack();
-void push_var_id(char *name);
-void push_const_id(Data_Term *item);
-void retype_stack(bool second_operand, bool int2fl, bool round_to_even);
-void pop_to_result(char *res_name);
-void clean_stack_TAC();
-void init_var(N_T_types type, char* name);
 
 //====SYMTABLE====
 
@@ -355,6 +320,47 @@ hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbo
 hash_tab_symbol_type *hash_table_search(hash_table_type *hash_table, char *entry_key);
 void hash_table_destroy(hash_table_type *hash_table);
 
+//====PSA===
+void eval_expr();
+void eval_cond_expr(bool is_do_while, int label_num);
+void psa_operation(bool allow_bool);
+void reduce_by_rule();
+void get_reversed_rule();
+
+// TODO: create operations
+Data_NTerm *id_R(hash_tab_symbol_type *var);
+Data_NTerm *function_R(hash_tab_symbol_type *func);
+Data_NTerm *arithm_R();
+
+
+void push_start_term(T_NT_stack *s);
+T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
+void insert_stopper(T_NT_stack *s);
+Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
+
+extern Data_Term currentToken;
+T_NT_stack *processing_stack;
+T_NT_stack *evaluation_stack;
+
+// TODO: to be deleted
+// For test, simulate rule usage and shows order
+N_T_rules *right_order;
+
+// =======PSA_TAC========
+
+void init_TAC_stack();
+void init_var(N_T_types type, char* name);
+void clean_stack_TAC();
+
+void push_var_id(char *name);
+void push_const_id(Data_Term *item);
+void arithm_stack(PSA_Term_type operator);
+void retype_stack(bool second_operand, bool int2fl);
+
+void temporary_save();
+void save_result(char *res_name);
+
+void cond_jump(bool is_while, int num);
 
 //====PARSER====
 tToken currentToken;

@@ -198,6 +198,7 @@ int var_declr(){
     //free(var_id);
     //evaluate expression
     eval_expr();
+    save_result(var_id);
     free(var_id);
   } else {
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");

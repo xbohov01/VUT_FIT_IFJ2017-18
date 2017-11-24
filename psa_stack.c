@@ -57,6 +57,58 @@ PSA_Term_type get_term_type(Data_Term *in_term) {
             return END;
         default:
             error_exit(SYNT_ERR);
+            return END;
+    }
+}
+
+N_T_rules map_NT_rule(PSA_Term_type in_psa_term) {
+    switch(in_psa_term) {
+        case ADD:
+            return NT_ADD;
+        case MUL:
+            return NT_MUL;
+        case SUB:
+            return NT_SUB;
+        case DIV:
+            return NT_DIV;
+        case IDIV:
+            return NT_IDIV;
+        case ID:
+            return NT_ID;
+        case FNC:
+            return NT_FN;
+        case LT:
+            return NT_LT;
+        case GT:
+            return NT_GT;
+        case LTE:
+            return NT_LTE;
+        case GTE:
+            return NT_GTE;
+        case EQ:
+            return NT_EQ;
+        case NEQ:
+            return NT_NEQ;
+        default:
+            fprintf(stderr, "Bad map value for map_NT_rule\n");
+            fprintf(stderr, "Bad programmer error\n");
+            error_exit(INTERNAL_ERR);
+            return NT_NEQ;
+    }
+}
+
+N_T_types map_NT_type(T_token_type in_token_type) {
+    switch(in_token_type) {
+        case INTEGER:
+            return INTEGER_NT;
+        case DOUBLE:
+            return DOUBLE_NT;
+        case STRING:
+            return STRING_NT;
+        default:
+            fprintf(stderr, "Bad input token type for N_T_rules map\n");
+            error_exit(INTERNAL_ERR);
+            return NONE_NT;
     }
 }
 // =======================
@@ -93,7 +145,6 @@ void destroy_T_NT_stack(T_NT_stack *s) {
 
 void copy_term(Data_Term *from, Data_Term *to) {
     T_token_type input_type = from->token_type;
-    size_t alloc_len;
     switch(input_type) {
         case INTEGER:
             to->value_int = from->value_int;
