@@ -744,50 +744,6 @@ int scope(){
   CHECKT(ENDL);
   get_token();
 
-  //inbuilt function
-  printf("LABEL $substring\n");
-  printf("PUSHFRAME\n\
-DEFVAR LF@int0\n\
-DEFVAR LF@bool0\n\
-DEFVAR LF@bool1\n\
-DEFVAR LF@bool2\n\
-DEFVAR LF@bool3\n\
-DEFVAR LF@strl\n\
-DEFVAR LF@char0\n\
-DEFVAR LF@string0\n\
-\
-STRLEN LF@strl LF@$_arg_0\n\
-\
-LT LF@bool1 LF@_arg_2 int@1\n\
-\
-JUMPIFEQ $$konec0 LF@bool1 bool@TRUE\n\
-\
-EQ LF@bool1 LF@strl int@0\n\
-JUMPIFEQ $$konec0 LF@bool1 bool@TRUE\n\
-\
-LT LF@bool1 LF@_arg_3 int@0\n\
-JUMPIFEQ $$konec1 LF@bool1 bool@TRUE \n\
-\
-LABEL $$cyklus1\n\
-EQ LF@bool0 LF@_arg_2 LF@_arg_2\n\
-LT LF@bool1 LF@_arg_1 LF@strl\n\
-\
-OR LF@bool3 LF@bool0 LF@bool1\n\
-\
-JUMPIFEQ $$cyklus0 LF@bool3 bool@TRUE\n\
-\
-GETCHAR LF@char0 LF@_arg_0 LF@_arg_2\n\
-CONCAT LF@string0 LF@string0 LF@char0\n\
-\
-MUL LF@vysl LF@vysl LF@a\n\
-ADD LF@_arg_2 LF@_arg_2 int@1\n\
-\
-JUMP $$cyklus1\n\
-\
-LABEL $$cyklus0\n\
-\
-LABEL $$konec0\n\n\n");
-
   //tac
   printf("LABEL $$main\n");
   printf("CREATEFRAME\n");
@@ -849,6 +805,50 @@ int start(){
   printf(".IFJcode17\n");
   //jump to main
   printf("JUMP $$main\n");
+
+  //inbuilt function
+  printf("LABEL $substring\n");
+  printf("PUSHFRAME\n\
+DEFVAR LF@int0\n\
+DEFVAR LF@bool0\n\
+DEFVAR LF@bool1\n\
+DEFVAR LF@bool2\n\
+DEFVAR LF@bool3\n\
+DEFVAR LF@strl\n\
+DEFVAR LF@char0\n\
+DEFVAR LF@string0\n\
+\
+STRLEN LF@strl LF@$_arg_0\n\
+\
+LT LF@bool1 LF@_arg_2 int@1\n\
+\
+JUMPIFEQ $$konec0 LF@bool1 bool@TRUE\n\
+\
+EQ LF@bool1 LF@strl int@0\n\
+JUMPIFEQ $$konec0 LF@bool1 bool@TRUE\n\
+\
+LT LF@bool1 LF@_arg_3 int@0\n\
+JUMPIFEQ $$konec1 LF@bool1 bool@TRUE \n\
+\
+LABEL $$cyklus1\n\
+EQ LF@bool0 LF@_arg_2 LF@_arg_2\n\
+LT LF@bool1 LF@_arg_1 LF@strl\n\
+\
+OR LF@bool3 LF@bool0 LF@bool1\n\
+\
+JUMPIFEQ $$cyklus0 LF@bool3 bool@TRUE\n\
+\
+GETCHAR LF@char0 LF@_arg_0 LF@_arg_2\n\
+CONCAT LF@string0 LF@string0 LF@char0\n\
+\
+MUL LF@vysl LF@vysl LF@a\n\
+ADD LF@_arg_2 LF@_arg_2 int@1\n\
+\
+JUMP $$cyklus1\n\
+\
+LABEL $$cyklus0\n\
+\
+LABEL $$konec0\n\n\n");
 
   int result = 0;
 
