@@ -288,7 +288,9 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
         switch(func_state) {
             case START_FUNC:
                 // Get number of function arguments
-                for (; func->param_types[arg_pos] != 0; arg_pos++);
+                if (func->param_types != NULL) {
+                    for (; func->param_types[arg_pos] != 0; arg_pos++);
+                }
                 // '('
                 look_ahead = pop_T_NT(evaluation_stack);
                 create_frame();

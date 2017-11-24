@@ -693,9 +693,7 @@ int functions(){
       strcpy(tmp_func_item->param_types, params.content);
       addchar('\0', tmp_func_item->param_types);
     } else {
-      tmp_func_item->param_types = malloc(sizeof(char)+1);
-      memcpy(tmp_func_item->param_types, '\0', 1);
-      //tmp_func_item->param_types = NULL;
+      tmp_func_item->param_types = NULL;
     }
   } else {
     fprintf(stderr, "Syntax error: Function %s is already defined\n", identifier);
