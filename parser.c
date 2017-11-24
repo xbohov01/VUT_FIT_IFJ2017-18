@@ -570,7 +570,6 @@ int fnc_stats(){
 //<fnc> -> <fncdef>
 //<fncdeclr>-> function <id> ( <paramlist> ) as	<type> <endline>
 //<fncdef>	function	<id>	(	<paramlist>	) 	as	<type>	<endline>	<fncstats>	end	function
-//TODO add to symtable
 int functions(){
   char *identifier;
   int return_type;
@@ -600,7 +599,7 @@ int functions(){
     printf("PUSHFRAME\n");
 
     //return value room
-    printf("DEFVAR @LF%cRETVAL\n", '%');
+    printf("DEFVAR LF@$_RETVAL\n");
   }
 
   get_token();
