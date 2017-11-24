@@ -380,6 +380,8 @@ int statement(){
 
       return end_of_lines();
 
+    case PRINT_KEY :      
+
       get_token();
 
       //expecting value or identifier
