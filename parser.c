@@ -335,6 +335,8 @@ int if_statements(){
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
 int statement(){
+  int if_cnt = cond_label;
+
   //expecting one of the above
   switch (currentToken.token_type) {
     case ENDL :
@@ -453,11 +455,9 @@ int statement(){
 
       //has if
       get_token();
-      //TODO check if expression
-      // do {
-      //   get_token();
-      // } while (currentToken.token_type != THEN_KEY);
+
       eval_cond_expr(false, cond_label);
+      //creates jump to else
 
       //get_token();
       CHECKT(THEN_KEY);
@@ -469,6 +469,8 @@ int statement(){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
+
+      printf("JUMP $end$%dif\n", if_cnt);
       //else if block
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
@@ -500,6 +502,8 @@ int statement(){
         printf("LABEL $condition%d$end\n", cond_label);
         cond_label++;
       }
+
+      printf("LABEL $end$%dif\n", if_cnt);
 
       //has end
       //check end if
