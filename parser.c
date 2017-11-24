@@ -393,8 +393,14 @@ int statement(){
 
     case PRINT_KEY :
 
-      get_token();
+      //get_token();
 
+      eval_expr();
+      save_result("stack_temp");
+
+      printf("WRITE GF@_stack_temp\n");
+
+      /*
       //expecting value or identifier
       if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
           && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
@@ -418,11 +424,16 @@ int statement(){
       } else if (currentToken.token_type == STRING){
         printf("WRITE string@%s\n", currentToken.value_string);
       }
-
+      */
       get_token();
       //expecting ; or ENDL
       while (currentToken.token_type == SEM){
-        get_token();
+        //get_token();
+        eval_expr();
+        save_result("stack_temp");
+
+        printf("WRITE GF@_stack_temp\n");
+        /*
         //expecting value or identifier or EOL
         if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
             && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
@@ -450,7 +461,7 @@ int statement(){
           printf("WRITE string@%s\n", currentToken.value_string);
         }
         //has thing to print, move to next token
-        get_token();
+        get_token();*/
       }
       //ENDLs
       return end_of_lines();
@@ -922,10 +933,6 @@ int start_parsing(){
 
 int main(int argc, char *argv[]){
   int result;
-  if (argc != 2){
-    fprintf(stderr, "Too few arguments.\n");
-    return INTERNAL_ERR;
-  }
 
   //init symtables
   func_table = sym_tab_init(64);
@@ -958,8 +965,6 @@ int main(int argc, char *argv[]){
   //start parsing
   result = start_parsing();
 
-  //close file
-  fclose(file);
   //destroy function table
   hash_table_destroy(func_table);
   //free buffer

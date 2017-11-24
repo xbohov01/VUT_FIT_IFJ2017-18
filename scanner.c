@@ -8,9 +8,9 @@
 void free_sources() //funkcia uvolnuje pouzite zdroje
 {
 	free(buffer.content);
-	if (file != NULL){
-			fclose(file);
-	}
+	// if (file != NULL){
+	// 		fclose(file);
+	// }
 
 }
 
@@ -119,7 +119,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 
 	while (currentToken.token_type == UNDEFINED)
 	{
-		n_char = fgetc(file); //nacitanie znaku
+		n_char = fgetc(stdin); //nacitanie znaku
 
 		switch (token_state)
 		{
@@ -227,7 +227,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 				else
 				{
-					ungetc(n_char, file);
+					ungetc(n_char, stdin);
 					currentToken.token_type = LT_O;
 					token_state = BEGIN;
 				}
@@ -242,7 +242,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 				else
 				{
-					ungetc(n_char, file);
+					ungetc(n_char, stdin);
 					currentToken.token_type = GT_O;
 					token_state = BEGIN;
 				}
@@ -257,7 +257,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
+				ungetc(n_char, stdin);
 				currentToken.token_type = DIV_O;
 				token_state = BEGIN;
 			}
@@ -280,7 +280,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			case POS_LIN_COMMENT:
 			if (n_char == '\n')
 			{
-				ungetc(n_char, file);
+				ungetc(n_char, stdin);
 				token_state = BEGIN;
 			}
 			break;
@@ -362,10 +362,10 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				}
 				else if (isdigit(n_char))
 				{
-					ungetc(n_char, file);
+					ungetc(n_char, stdin);
 					for (int i_e = 0; i_e <= 2; i_e++)
 					{
-						n_char = fgetc(file);
+						n_char = fgetc(stdin);
 						if (isdigit(n_char))
 						{
 							addchar(n_char, &buffer);
@@ -412,7 +412,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
+				ungetc(n_char, stdin);
 				currentToken.token_type = INTEGER;
 				currentToken.value_int = atoi(buffer.content);
 				token_state = BEGIN;
@@ -439,7 +439,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
+				ungetc(n_char, stdin);
 				currentToken.token_type = DOUBLE;
 				currentToken.value_double = atoi(buffer.content);
 				token_state = BEGIN;
@@ -471,7 +471,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
-				ungetc(n_char, file);
+				ungetc(n_char, stdin);
 				currentToken.token_type = DOUBLE;
 				currentToken.value_double = atoi(buffer.content);
 				token_state = BEGIN;
@@ -481,7 +481,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			case ID_OR_KEY:
 			if ((n_char != '_') && (!isalnum(n_char)))
 			{
-				ungetc(n_char, file);
+				ungetc(n_char, stdin);
 				currentToken.token_type = get_key(buffer.content);
 				if (currentToken.token_type == IDENTIFICATOR)
 				{
@@ -508,19 +508,19 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 
 int start_scanner(char *filename)
 {
-	if (filename != NULL)
-	{
-		file = fopen(filename, "r");
-		if (file == NULL)
-		{
-			fprintf(stderr, "File %s cannot be opened.\n", filename);
-			hard_exit(INTERNAL_ERR);
-		}
-	}
+	// if (filename != NULL)
+	// {
+	// 	file = fopen(filename, "r");
+	// 	if (file == NULL)
+	// 	{
+	// 		fprintf(stderr, "File %s cannot be opened.\n", filename);
+	// 		hard_exit(INTERNAL_ERR);
+	// 	}
+	// }
 
 	if (str_init(&buffer) != SUCCESS)
 	{
-		fclose(file);
+		//fclose(file);
 		hard_exit(INTERNAL_ERR);
 	}
 
