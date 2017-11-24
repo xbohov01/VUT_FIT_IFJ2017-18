@@ -8,7 +8,10 @@
 void free_sources() //funkcia uvolnuje pouzite zdroje
 {
 	free(buffer.content);
-	fclose(file);
+	if (file != NULL){
+			fclose(file);
+	}
+
 }
 
 T_token_type get_key() //funkcia zistuje ci retazec znakov v bufferi je klucove slovo
