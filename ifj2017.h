@@ -274,20 +274,6 @@ void ps(T_NT_stack *T_NT_s); // Print stack for debug
 
 //====SYMTABLE====
 
-/*
-
- typedef struct {
-	symTab_hashTable_t *global;
-	symTab_hashTable_t *local;
-
-	//internal
-	char *typeStringBuffer;
-	size_t typeStringBufferSize;
-	size_t typeStringBufferSizeWrittenChars;
-} symTab_t;
-*/
-
-
 typedef struct hash_tab_symbol hash_tab_symbol_type;
 struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
@@ -302,8 +288,6 @@ struct hash_tab_symbol {
 	char *value_string;
 
 	char *param_types;
-	//int num_parameters;
-	//int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
 	char symbol_name[];	    // meno funkcie / premennej
 
 };
