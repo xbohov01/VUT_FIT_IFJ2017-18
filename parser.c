@@ -753,7 +753,9 @@ int scope(){
   printf("LABEL $$main\n");
   printf("CREATEFRAME\n");
   printf("PUSHFRAME\n");
+  //init global stack
   init_TAC_stack();
+
   //init var_table
   var_table = sym_tab_init(64);
 
@@ -875,6 +877,7 @@ LABEL $$konec0\n\n\n");
         //tac
         printf("POPFRAME\n");
         hash_table_destroy(var_table);
+        break;
       case ENDF:
         //<s> -> EOF
         return SUCCESS;
