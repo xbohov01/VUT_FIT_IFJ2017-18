@@ -16,6 +16,10 @@ void init_TAC_stack() {
     return;
 }
 
+void create_frame() {
+    printf("CREATEFRAME\n");
+}
+
 void init_var(N_T_types type, char* name) {
     if (name == NULL) {
         fprintf(stderr, "NAME FOR INIT NOT SPECIFIED\n");
@@ -56,15 +60,8 @@ void save_result(char *res_name) {
         fprintf(stderr, "Cant save variable to nothing\n");
         error_exit(INTERNAL_ERR);
     } else {
-        printf("MOVE LF@_%s GF@$_stack_temp\n", res_name);
+        printf("POPS LF@_%s\n", res_name);
     }  
-    printf("\n");
-    return;
-}
-
-void temporary_save() {
-    printf("# Save result to temp\n");
-    printf("POPS GF@$_stack_temp\n");
     printf("\n");
     return;
 }
@@ -180,5 +177,19 @@ void cond_jump(bool is_while, int num) {
         printf("JUMPIFNEQS $condition%d$end\n", num);
     }
     printf("\n");
+}
+
+void push_arg(int arg_num) {
+    printf("# Add %d argument\n", arg_num);
+    printf("POPS TF@$_arg_%d\n", arg_num);
+    printf("\n");
+    return;
+}
+
+void f_call(char *name) {
+    printf("# Calling %s", name);
+    printf("CALL $_%s\n", name);
+    printf("\n");
+    return;
 }
 // =========================================

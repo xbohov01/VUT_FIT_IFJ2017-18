@@ -5,29 +5,6 @@
 
 #include "ifj2017.h"
 
-
-// int main() {
-//     // Tests
-//     // +++++++++++++++
-//     // hash_table_type *tmp = NULL;
-//     // tmp = sym_tab_init(20);
-//     // hash_table_insert(tmp, "new_id");
-//     // printf("symbol name: %s\n", hash_table_search(tmp, "new_id")->symbol_name);
-//     // hash_table_destroy(tmp);
-
-
-//     // Started
-//     start_scanner("hard_test_with_seg_fault.txt"); // TODO: delete -- test
-//     // Parser did its work
-//     get_token();
-
-//     eval_expr();
-//     // Parser continues
-//     // End
-//     free_sources();
-//     return 0;
-// }
-
 // Feeds non terminal
 Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
     Data_NTerm *temp_non_term_data = malloc(sizeof(Data_NTerm));
@@ -89,10 +66,10 @@ void eval_cond_expr(bool is_do_while, int label_num) {
     init_TAC_stack();
     push_start_term(processing_stack);
     psa_operation(true);
-    check_psa_completion();
     
     cond_jump(is_do_while, label_num);
 
+    check_psa_completion();
     destroy_T_NT_stack(processing_stack);
     destroy_T_NT_stack(evaluation_stack);
     return;
@@ -108,7 +85,6 @@ void eval_expr() {
         VAR_INIT,
         VAR_DEFINITION,
         CALC_PSA,
-        FUNC_CALL,
         END_CHECK,
         FINISHED_EXPR
     } eval_ex_state;
@@ -116,7 +92,6 @@ void eval_expr() {
     extern T_NT_stack *processing_stack;
     extern T_NT_stack *evaluation_stack;
     hash_tab_symbol_type *result_variable;
-    hash_tab_symbol_type *function_variable;
     processing_stack = init_T_NT_stack();
     evaluation_stack = init_T_NT_stack();
     init_TAC_stack();
@@ -128,13 +103,8 @@ void eval_expr() {
             case CHECK_START_SYM:
                 if (currentToken.token_type == IDENTIFICATOR) {
                     result_variable = hash_table_search(var_table, currentToken.id);
-                    function_variable = hash_table_search(func_table, currentToken.id); 
-                    if ((result_variable == NULL) && (function_variable == NULL)) {
+                    if (result_variable == NULL) {
                         error_exit(UNDEF_ERR);
-                    }
-                    // <CHECK_START_SYM> -> 'func'
-                    else if (function_variable != NULL) {
-                        eval_ex_state = FUNC_CALL;
                     }
                     // <CHECK_START_SYM> -> 'id'
                     else {
@@ -143,6 +113,10 @@ void eval_expr() {
                 }
                 else if (currentToken.token_type == EQ_O) {
                 // <CHECK_START_SYM> -> '='
+                    eval_ex_state = VAR_INIT;
+                }
+                else if (currentToken.token_type == RETURN_KEY) {
+                // <CHECK_START_SYM> -> RETURN KEY
                     eval_ex_state = VAR_INIT;
                 }
                 else {
@@ -155,7 +129,6 @@ void eval_expr() {
                 get_token();
                 push_start_term(processing_stack);
                 psa_operation(false);
-                temporary_save();
                 check_psa_completion();
                 eval_ex_state = END_CHECK;
                 break;
@@ -170,13 +143,7 @@ void eval_expr() {
                 get_token();
                 push_start_term(processing_stack);
                 psa_operation(false);
-                temporary_save();
                 save_result(result_variable->symbol_name);
-                check_psa_completion();
-                eval_ex_state = END_CHECK;
-                break;
-            case FUNC_CALL:
-                psa_operation(false);
                 check_psa_completion();
                 eval_ex_state = END_CHECK;
                 break;
@@ -301,7 +268,113 @@ Data_NTerm *id_R(hash_tab_symbol_type *found_var) {
 }
 
 Data_NTerm *function_R(hash_tab_symbol_type *func) {
-    // TODO   
+    
+    enum {
+        START_FUNC,
+        ZERO_ARG,
+        ONE_ARG,
+        MORE_ARGS,
+        CALL_FUNC,
+        END_CHECK,
+        FIN_FUNC
+    } func_state;
+
+    int arg_pos = 0;
+    T_NT_item *look_ahead;
+
+    func_state = START_FUNC;
+
+    while (func_state != FIN_FUNC) {
+        switch(func_state) {
+            case START_FUNC:
+                // Get number of function arguments
+                for (; func->param_types[arg_pos] != 0; arg_pos++);
+                // '('
+                look_ahead = pop_T_NT(evaluation_stack);
+                create_frame();
+
+                if (arg_pos == 0) {
+                    func_state = ZERO_ARG;
+                }
+                else if (arg_pos == 1) {
+                    func_state = ONE_ARG;
+                }
+                else {
+                    func_state = MORE_ARGS;
+                }
+                break;
+            case ZERO_ARG:
+                // ')'
+                look_ahead = pop_T_NT(evaluation_stack);
+                if (look_ahead->is_non_term != false) {
+                    fprintf(stderr, "Unexpected argument while calling %s\n", func->symbol_name);
+                    error_exit(TYPE_ERR);
+                }
+                func_state = CALL_FUNC;
+                break;
+            case ONE_ARG:
+                // E
+                look_ahead = pop_T_NT(evaluation_stack);
+                if (look_ahead->is_non_term == false) {
+                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos);
+                    error_exit(TYPE_ERR);
+                }
+                else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos])) {
+                    fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                    error_exit(TYPE_ERR);
+                }
+                push_arg(arg_pos--);
+                func_state = ZERO_ARG;
+                break;
+            case MORE_ARGS:
+                // E
+                look_ahead = pop_T_NT(evaluation_stack);
+                if (look_ahead->is_non_term == false) {
+                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos);
+                    error_exit(TYPE_ERR);
+                }
+                else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos])) {
+                    fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                    error_exit(TYPE_ERR);
+                }
+                // ','
+                look_ahead = pop_T_NT(evaluation_stack);
+                if ((look_ahead->is_non_term == false) && (get_term_type(&(look_ahead->data.Term)) == CM)) {
+                    fprintf(stderr, "Expected ','\n");
+                    error_exit(TYPE_ERR);
+                }
+
+                push_arg(arg_pos--);
+                if (arg_pos > 1) {
+                    func_state = MORE_ARGS;
+                }
+                else {
+                    func_state = ONE_ARG;
+                }
+                break;
+            case CALL_FUNC:
+                f_call(func->symbol_name);
+                func_state = END_CHECK;
+                break;
+            case END_CHECK:
+                look_ahead = pop_T_NT(evaluation_stack);
+                if (look_ahead == NULL) {
+                    fprintf(stderr, "Unexpected stack end\n");
+                    error_exit(INTERNAL_ERR);
+                }
+                else if ((look_ahead->is_non_term == false) && (get_term_type(&look_ahead->data.Term) == END)) {
+                    func_state = FIN_FUNC;
+                }
+                else {
+                    fprintf(stderr, "Unexpected non terminal after psa\n"); // Debug
+                    error_exit(INTERNAL_ERR);
+                }
+                break;
+            default:
+                fprintf(stderr, "Bad function state\n");
+                error_exit(INTERNAL_ERR);
+        }
+    }
     return create_non_term(NT_FN, INTEGER_NT);
 }
 
@@ -417,7 +490,7 @@ Data_NTerm *arithm_R() {
                             retype_stack(false, true);
                         }
                         else if (E->type == DOUBLE_NT) {
-                            arithm_state = AR_END_PSA;
+                            ;
                         }
                         // Unexpected string type
                         else {
@@ -430,12 +503,14 @@ Data_NTerm *arithm_R() {
                         arithm_state = AR_END_PSA;
                         break;
                     case IDIV:
-                        look_ahead = pop_T_NT(evaluation_stack);
                         E = &(look_ahead->data.NTerm);
                         if (E->type != INTEGER_NT) {
                             error_exit(TYPE_ERR);
                         }
-
+                        else {
+                            retype_stack(true, true);
+                            retype_stack(false, true);
+                        }
                         used_rule = create_non_term(NT_IDIV, INTEGER_NT);
                         // printf("5")
                         arithm_stack(IDIV);
@@ -481,8 +556,6 @@ Data_NTerm *arithm_R() {
                         break;
 
                 }
-                
-                
                 break;
             case AR_END_PSA:
                 look_ahead = pop_T_NT(evaluation_stack);

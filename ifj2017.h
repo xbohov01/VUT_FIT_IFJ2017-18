@@ -253,6 +253,7 @@ void error_exit(int code);
 PSA_Term_type get_term_type(Data_Term *in_term);
 N_T_rules map_NT_rule(PSA_Term_type in_psa_term);
 N_T_types map_NT_type(T_token_type in_token_type);
+N_T_types map_arg_type(char arg_type);
 
 T_NT_stack *init_T_NT_stack();
 void clear_stack(T_NT_stack *s);
@@ -348,19 +349,28 @@ N_T_rules *right_order;
 
 // =======PSA_TAC========
 
+// Init commands
 void init_TAC_stack();
+void create_frame();
 void init_var(N_T_types type, char* name);
-void clean_stack_TAC();
+void create_label(char *name);
 
+// Answer handlers
+void save_result(char *res_name);
+void temporary_save();
+
+// Number arithmetics
 void push_var_id(char *name);
 void push_const_id(Data_Term *item);
-void arithm_stack(PSA_Term_type operator);
 void retype_stack(bool second_operand, bool int2fl);
+void arithm_stack(PSA_Term_type op);
+void clean_stack_TAC();
 
-void temporary_save();
-void save_result(char *res_name);
-
+// Jumps or function calls
 void cond_jump(bool is_while, int num);
+void push_arg(int arg_num);
+void f_call(char *name);
+// =========================================
 
 //====PARSER====
 tToken currentToken;
