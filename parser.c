@@ -188,8 +188,7 @@ int var_declr(){
     //generate TAC
     printf("DEFVAR LF@_%s\n", var_id);
 
-    init_var(tmp_var_item->value_type, var_id
-    );
+    init_var(tmp_var_item->value_type, var_id);
 
     //free and return
     free(var_id);
@@ -197,6 +196,7 @@ int var_declr(){
   } else if (currentToken.token_type == EQ_O){
     //free(var_id);
     //evaluate expression
+    printf("DEFVAR LF@_%s\n", var_id);
     eval_expr();
     save_result(var_id);
     free(var_id);
