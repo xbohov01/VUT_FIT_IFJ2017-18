@@ -131,6 +131,10 @@ void eval_expr() {
             case VAR_INIT:
                 // set expr_start
                 get_token();
+                if (get_term_type(&(currentToken.token_type)) == END) {
+                    fprintf(stderr, "Expression zero length\n");
+                    error_exit(SYNT_ERR);
+                }
                 push_start_term(processing_stack);
                 psa_operation(false);
                 check_psa_completion();

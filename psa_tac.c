@@ -50,6 +50,12 @@ void create_label(char *name) {
 // Answer handlers
 // =========================================
 
+void save_to_temp() {
+    printf("# Saving to temp for print statement\n");
+    printf("POPS GF@_stack_temp\n");
+    printf("\n");
+}
+
 void save_result(char *res_name) {
     printf("# Save final result\n");
     if (res_name == NULL) {
