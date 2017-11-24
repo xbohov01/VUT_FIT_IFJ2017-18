@@ -294,6 +294,7 @@ int fnc_arglist(){
     if (currentToken.token_type == PAR_R){
       return SUCCESS;
     } else if (currentToken.token_type == COM){
+      get_token();
       continue;
     } else {
       fprintf(stderr, "Invalid parameter2\n");
