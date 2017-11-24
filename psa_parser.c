@@ -165,7 +165,7 @@ void eval_expr() {
 T_NT_item *find_first_term(T_NT_stack *s, bool *is_first) {
     set_first_T_NT(s);
     if (!active_T_NT(s)) {
-        printf("List has no items\n");
+        fprintf(stderr, "List has no items\n");
         error_exit(INTERNAL_ERR);
     }
     *is_first = false;
@@ -187,7 +187,7 @@ T_NT_item *find_first_term(T_NT_stack *s, bool *is_first) {
     }
 
     if (found == false) {
-        printf("List contains zero terminals\n");
+        fprintf(stderr, "List contains zero terminals\n");
         error_exit(INTERNAL_ERR);
     }
 
@@ -250,7 +250,7 @@ Data_NTerm *id_R(hash_tab_symbol_type *found_var) {
             used_rule = create_non_term(NT_ID, found_var->value_type);
             break;
         default:
-            printf("UNEXPECTED TOKEN AFTER PSA");
+            fprintf(stderr, "UNEXPECTED TOKEN AFTER PSA");
             error_exit(INTERNAL_ERR);
     }
 
@@ -258,7 +258,7 @@ Data_NTerm *id_R(hash_tab_symbol_type *found_var) {
     T = &(look_ahead->data.Term);
 
     if (get_term_type(T) != END) {
-        printf("UNEXPECTED ITEM AFTER PSA\n"); // Debug
+        fprintf(stderr, "UNEXPECTED ITEM AFTER PSA\n"); // Debug
         error_exit(INTERNAL_ERR);
     }
 
@@ -499,7 +499,6 @@ Data_NTerm *arithm_R() {
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
                         
-                        // printf("4")
                         arithm_stack(DIV);
                         arithm_state = AR_END_PSA;
                         break;
@@ -513,7 +512,6 @@ Data_NTerm *arithm_R() {
                             retype_stack(false, true);
                         }
                         used_rule = create_non_term(NT_IDIV, INTEGER_NT);
-                        // printf("5")
                         arithm_stack(IDIV);
                         arithm_state = AR_END_PSA;
                         break;
@@ -564,12 +562,12 @@ Data_NTerm *arithm_R() {
                     arithm_state = FINISHED_ARITHM_PSA;
                 }
                 else {
-                    printf("UNEXPECTED ITEM AFTER PSA\n"); // Debug
+                    fprintf(stderr, "Unexpected item after PSA\n"); // Debug
                     error_exit(INTERNAL_ERR);
                 }
                 break;
             default: // Debug
-                printf("UNKNOWN STATE ARITHM"); // Debug
+                fprintf(stderr, "UNKNOWN STATE ARITHM"); // Debug
                 error_exit(INTERNAL_ERR);
                 break;
         }
@@ -626,10 +624,9 @@ void reduce_by_rule() {
             // $
             look_ahead = pop_T_NT(evaluation_stack);
             
-            // printf("6")
         }
         else {
-            printf("Unexpected token after PSA\n");
+            fprintf(stderr, "Unexpected token after PSA\n");
             error_exit(INTERNAL_ERR); // Debug 
         }
     }
@@ -690,7 +687,7 @@ void psa_operation(bool allow_bool) {
                 currentToken.token_type = FUNCTION;
             }
             else {
-                printf("Variable was not declared\n");
+                fprintf(stderr, "Variable was not declared\n");
                 error_exit(UNDEF_ERR);
             }
         }
