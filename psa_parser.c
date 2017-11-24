@@ -604,22 +604,15 @@ void reduce_by_rule() {
         if (get_term_type(T) == ID) {
             if (T->token_type == IDENTIFICATOR) {
                 found_var = hash_table_search(var_table, T->id);
-                found_func = hash_table_search(func_table, T->id);
-                if ((found_var == NULL) && (found_func == NULL)) {
-                    printf("Variable was not declared\n");
-                    error_exit(UNDEF_ERR);
-                }
-                else if (found_var != NULL) {
-                    used_rule = id_R(found_var);
-                    // printf("7") // TODO: function call
-                }
-                else {
-                    used_rule = function_R(found_func);
-                }
+                used_rule = id_R(found_var);
             }
             else {
                 used_rule = id_R(NULL);
             }
+        }
+        else if (get_term_type(T) == FNC) {
+            found_func = hash_table_search(func_table, T->id);
+            used_rule = function_R(found_func);
         }
         else if (get_term_type(T) == PL) {
             // E
@@ -672,6 +665,8 @@ void psa_operation(bool allow_bool) {
     PSA_Term_type index_stack_top;
     PSA_Term_type index_input;
     Data_Term first_term_data;
+    hash_tab_symbol_type *found_func;
+    hash_tab_symbol_type *found_var;
     char what_to_do;
     bool use_push;
     bool psa_finished;
@@ -682,6 +677,23 @@ void psa_operation(bool allow_bool) {
         first_term_data = find_first_term(processing_stack, &use_push)->data.Term;
         index_stack_top = get_term_type(&first_term_data);
         index_input = get_term_type(&currentToken);
+
+        if ((index_input == ID) && (currentToken.token_type == IDENTIFICATOR)) {
+            found_func = hash_table_search(func_table, currentToken.id);
+            found_var = hash_table_search(var_table, currentToken.id);
+            if (found_var != NULL) {
+                ;
+            }
+            else if (found_func != NULL) {
+                index_input = FNC;
+                currentToken.token_type = FUNCTION;
+            }
+            else {
+                printf("Variable was not declared\n");
+                error_exit(UNDEF_ERR);
+            }
+        }
+
         if (allow_bool == false) {
             switch(index_input) {
                 case LT:
