@@ -293,7 +293,6 @@ int fnc_arglist(){
     //get_token();
     //expecting PAR_R or a comma
     if (currentToken.token_type == PAR_R){
-      addchar('\0', tmp_var_item->param_types);
       return SUCCESS;
     } else if (currentToken.token_type == COM){
       get_token();
@@ -692,6 +691,7 @@ int functions(){
       tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
       //TODO add malloc check
       strcpy(tmp_func_item->param_types, params.content);
+      addchar('\0', tmp_func_item->param_types);
     } else {
       tmp_func_item->param_types = NULL;
     }
