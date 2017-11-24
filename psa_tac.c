@@ -85,6 +85,9 @@ void push_const_id(Data_Term *item) {
     else if (item->token_type == DOUBLE) {
         printf("PUSHS float@%lf\n", item->value_double);
     }
+    else if (item->token_type == STRING) {
+        printf("PUSHS string@%s\n", item->value_string);
+    }
     else {
         fprintf(stderr, "Item is not constant, cant push\n");
         error_exit(INTERNAL_ERR);
