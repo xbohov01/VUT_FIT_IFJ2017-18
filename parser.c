@@ -694,7 +694,7 @@ int functions(){
       addchar('\0', tmp_func_item->param_types);
     } else {
       tmp_func_item->param_types = malloc(sizeof(char));
-      addchar('\0', tmp_func_item->param_types);
+      strcpy(tmp_func_item->param_types, '\0');
       //tmp_func_item->param_types = NULL;
     }
   } else {
