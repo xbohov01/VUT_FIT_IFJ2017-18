@@ -580,6 +580,9 @@ int functions(){
   bool definition = true;
   func_definition = true;
 
+  //init variable table
+  var_table = sym_tab_init(64);
+
   //if function is being declared one more NEXTT has to be called
   if (currentToken.token_type == DECLARE_KEY){
     get_token();
@@ -634,8 +637,6 @@ int functions(){
     }
 
   } else if (currentToken.token_type == IDENTIFICATOR){
-    //init variable table
-    var_table = sym_tab_init(64);
     //expecting argument declaration
     if (fnc_arglist() != SUCCESS){
       hard_exit(SYNT_ERR);
@@ -742,6 +743,50 @@ int scope(){
   get_token();
   CHECKT(ENDL);
   get_token();
+
+  //inbuilt function
+  printf("LABEL $substring\n");
+  printf("DEFVAR LF@int0\n
+          DEFVAR LF@bool0\n
+          DEFVAR LF@bool1\n
+          DEFVAR LF@bool2\n
+          DEFVAR LF@bool3\n
+          DEFVAR LF@strl\n
+          DEFVAR LF@char0\n
+          DEFVAR LF@string0\n
+
+          STRLEN LF@strl LF@$_arg_0\n
+
+          LT LF@bool1 LF@_arg_2 1  \n
+          JUMPIFEQ $$konec0 LF@bool1 TRUE\n
+
+          EQ bool1 strl 0\n
+          JUMPIFEQ $$konec0 bool1 TRUE\n
+
+          LT bool1 n 0\n
+          JUMPIFEQ $$konec1 bool1 TRUE\n
+
+
+          $$cyklus1\n
+          EQ bool0 i n\n
+          LT bool1 i strl\n
+
+          OR bool3 bool0 bool1\n
+
+          JUMPIFEQ $$cyklus0 bool3 TRUE\n
+
+          GETCHAR char0 s i\n
+          CONCAT string0 string0 char0\n
+
+          MUL vysl vysl a\n
+          ADD i i 1\n
+
+          JUMP cyklus1\n
+
+          $$cyklus0\n
+
+          LABEL $$konec0\n
+          RETURN\n ");
 
   //tac
   printf("LABEL $$main\n");
