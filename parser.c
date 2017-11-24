@@ -293,6 +293,7 @@ int fnc_arglist(){
     //get_token();
     //expecting PAR_R or a comma
     if (currentToken.token_type == PAR_R){
+      addchar('\0', tmp_var_item->param_types);
       return SUCCESS;
     } else if (currentToken.token_type == COM){
       get_token();
