@@ -131,7 +131,7 @@ void eval_expr() {
             case VAR_INIT:
                 // set expr_start
                 get_token();
-                if (get_term_type(&(currentToken.token_type)) == END) {
+                if (get_term_type(&(currentToken)) == END) {
                     fprintf(stderr, "Expression zero length\n");
                     error_exit(SYNT_ERR);
                 }
