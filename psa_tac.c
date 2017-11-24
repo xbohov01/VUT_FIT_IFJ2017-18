@@ -52,7 +52,7 @@ void create_label(char *name) {
 
 void save_to_temp() {
     printf("# Saving to temp for print statement\n");
-    printf("POPS GF@$_stack_temp\n");
+    printf("POPS GF@_stack_temp\n");
     printf("\n");
 }
 

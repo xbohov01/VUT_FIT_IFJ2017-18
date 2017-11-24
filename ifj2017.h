@@ -359,8 +359,7 @@ void create_label(char *name);
 
 // Answer handlers
 void save_result(char *res_name);
-void save_to_temp();
-void save_to_temp();
+void temporary_save();
 
 // Number arithmetics
 void push_var_id(char *name);
