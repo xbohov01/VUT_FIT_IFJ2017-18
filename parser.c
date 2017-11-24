@@ -690,8 +690,8 @@ int functions(){
     if (params.len != 0){
       tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
       //TODO add malloc check
+      addchar('\0', &params);
       strcpy(tmp_func_item->param_types, params.content);
-      addchar('\0', tmp_func_item->param_types);
     } else {
       tmp_func_item->param_types = NULL;
     }
