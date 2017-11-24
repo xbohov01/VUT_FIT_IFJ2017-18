@@ -212,7 +212,7 @@ int var_declr(){
 }
 
 //<fncarg> -> <id>	as 	<type>
-int fnc_arg(){
+int fnc_arg(int pos){
   //copy identifier for later
   char *var_id = malloc(strlen(currentToken.id)*sizeof(char)+1);
   memcpy(var_id, currentToken.id, strlen(currentToken.id)+1);
@@ -256,6 +256,7 @@ int fnc_arg(){
     //tac
     if (func_definition == true){
       printf("DEFVAR LF@%s\n", var_id);
+      printf("MOVE LF@%s LF@$_arg_%d\n", var_id, pos);
     }
 
     free(var_id);
@@ -273,6 +274,7 @@ int fnc_arg(){
 //<paramlist2> ->	,	<fncarg>	<paramlist2>
 //<paramlist2> ->	)
 int fnc_arglist(){
+  static int arg_pos = 0;
 
   //already has (
   //no arguments
@@ -285,7 +287,7 @@ int fnc_arglist(){
     //get_token();
     //expecting identifier
     CHECKT(IDENTIFICATOR);
-    if (fnc_arg() != SUCCESS){
+    if (fnc_arg(arg_pos++) != SUCCESS){
       fprintf(stderr, "Invalid parameter1\n");
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
@@ -293,6 +295,7 @@ int fnc_arglist(){
     //get_token();
     //expecting PAR_R or a comma
     if (currentToken.token_type == PAR_R){
+      arg_pos = 0;
       return SUCCESS;
     } else if (currentToken.token_type == COM){
       get_token();
@@ -607,7 +610,7 @@ int functions(){
     printf("PUSHFRAME\n");
 
     //return value room
-    printf("DEFVAR LF@$_RETVAL\n");
+    //printf("DEFVAR LF@$_RETVAL\n");
   }
 
   get_token();

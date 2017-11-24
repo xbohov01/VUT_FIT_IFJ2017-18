@@ -101,12 +101,12 @@ typedef enum {
 	INTEGER,
 	STRING,
 	IDENTIFICATOR,
-	
+
 	UNDEFINED,
 	ERROR,
 	ENDL,
 	ENDF,
-	
+
 	FUNCTION
 
 } T_token_type;
@@ -383,7 +383,7 @@ int start();
 int scope();
 int end_of_lines();
 int var_declr();
-int fnc_arg();
+int fnc_arg(int pos);
 int fnc_arglist();
 int fnc_stats();
 int if_statements();
