@@ -456,7 +456,6 @@ Data_NTerm *arithm_R() {
                         arithm_state = AR_END_PSA;
                         break;
                     case IDIV:
-                        fprintf(stderr, "Integer division can be only on integers\n");
                         error_exit(TYPE_ERR);
                         break;
                     default:
@@ -481,11 +480,11 @@ Data_NTerm *arithm_R() {
                     case EQ:
                     case NEQ:
                         if (E->type == INTEGER_NT) {
-                            used_rule = create_non_term(map_NT_rule(arithm_operand), INTEGER_NT);
+                            used_rule = create_non_term(NT_MUL, INTEGER_NT);
                         }
                         else if (E->type == DOUBLE_NT) {
                             retype_stack(true, true);
-                            used_rule = create_non_term(map_NT_rule(arithm_operand), DOUBLE_NT);
+                            used_rule = create_non_term(NT_MUL, DOUBLE_NT);
                         }
                         // Unexpected string type
                         else {
@@ -539,24 +538,24 @@ Data_NTerm *arithm_R() {
                 switch(arithm_operand) {
                     case ADD:
                     case NEQ:
+                        if (E->type != STRING_NT) {
+                            error_exit(TYPE_ERR);
+                        }
+                        used_rule = create_non_term(map_NT_rule(arithm_operand), STRING_NT);
+                        // printf("1")
+                        arithm_stack(arithm_operand);
+                        arithm_state = AR_END_PSA;
+                        break;
                     case LT:
                     case GT:
                     case LTE:
                     case GTE:
                     case EQ:
-                        if (E->type != STRING_NT) {
-                            fprintf(stderr, "Expeced string literal\n");
-                            error_exit(TYPE_ERR);
-                        }
-                        used_rule = create_non_term(map_NT_rule(arithm_operand), STRING_NT);
-                        arithm_stack(arithm_operand);
-                        arithm_state = AR_END_PSA;
-                        break;
                     case SUB:
                     case MUL:
                     case DIV:
                     case IDIV:
-                        fprintf(stderr, "UNEXPECTED OPERATION. MAYBE YOU MEANT '+'?\n");
+                        fprintf(stderr, "UNEXPECTED OPERATION. MAYBE YOU MENT '+'?\n");
                         error_exit(SYNT_ERR);
                         break;
                     default:
