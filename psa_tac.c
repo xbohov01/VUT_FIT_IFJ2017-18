@@ -8,11 +8,7 @@
 // Init commands
 // ========================================
 void init_TAC_stack() {
-    static bool was_init = false;
-    if (!was_init) {
-        printf("DEFVAR GF@$_stack_temp\n");
-        was_init = true;
-    }
+    printf("DEFVAR GF@$_stack_temp\n");
     return;
 }
 
@@ -181,6 +177,7 @@ void cond_jump(bool is_while, int num) {
 
 void push_arg(int arg_num) {
     printf("# Add %d argument\n", arg_num);
+    printf("DEFVAR TF@$_arg_%d\n", arg_num);
     printf("POPS TF@$_arg_%d\n", arg_num);
     printf("\n");
     return;

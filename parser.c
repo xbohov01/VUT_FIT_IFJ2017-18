@@ -255,8 +255,8 @@ int fnc_arg(int pos){
 
     //tac
     if (func_definition == true){
-      printf("DEFVAR LF@%s\n", var_id);
-      printf("MOVE LF@%s LF@$_arg_%d\n", var_id, pos);
+      printf("DEFVAR LF@_%s\n", var_id);
+      printf("MOVE LF@_%s LF@$_arg_%d\n", var_id, pos);
     }
 
     free(var_id);
