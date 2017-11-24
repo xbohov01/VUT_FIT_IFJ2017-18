@@ -188,7 +188,8 @@ int var_declr(){
     //generate TAC
     printf("DEFVAR LF@_%s\n", var_id);
 
-    init_var(tmp_var_item->value_type, var_id);
+    init_var(tmp_var_item->value_type, var_id
+    );
 
     //free and return
     free(var_id);
