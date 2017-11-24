@@ -63,7 +63,6 @@ void eval_cond_expr(bool is_do_while, int label_num) {
     processing_stack = init_T_NT_stack();
     evaluation_stack = init_T_NT_stack();
 
-    init_TAC_stack();
     push_start_term(processing_stack);
     psa_operation(true);
     
@@ -94,7 +93,6 @@ void eval_expr() {
     hash_tab_symbol_type *result_variable;
     processing_stack = init_T_NT_stack();
     evaluation_stack = init_T_NT_stack();
-    init_TAC_stack();
 
     eval_ex_state = CHECK_START_SYM;
 
@@ -321,11 +319,11 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                     fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos);
                     error_exit(TYPE_ERR);
                 }
-                else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos])) {
+                else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos-1])) {
                     fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
                     error_exit(TYPE_ERR);
                 }
-                push_arg(arg_pos--);
+                push_arg(--arg_pos);
                 func_state = ZERO_ARG;
                 break;
             case MORE_ARGS:
@@ -335,7 +333,7 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                     fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos);
                     error_exit(TYPE_ERR);
                 }
-                else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos])) {
+                else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos-1])) {
                     fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
                     error_exit(TYPE_ERR);
                 }
@@ -346,7 +344,7 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                     error_exit(TYPE_ERR);
                 }
 
-                push_arg(arg_pos--);
+                push_arg(--arg_pos);
                 if (arg_pos > 1) {
                     func_state = MORE_ARGS;
                 }
@@ -377,7 +375,7 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                 error_exit(INTERNAL_ERR);
         }
     }
-    return create_non_term(NT_FN, INTEGER_NT);
+    return create_non_term(NT_FN, func->value_type);
 }
 
 Data_NTerm *arithm_R() {
