@@ -753,6 +753,8 @@ int scope(){
   printf("LABEL $$main\n");
   printf("CREATEFRAME\n");
   printf("PUSHFRAME\n");
+  //init global stack
+  init_TAC_stack();
 
   //init var_table
   var_table = sym_tab_init(64);
