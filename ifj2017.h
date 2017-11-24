@@ -101,11 +101,13 @@ typedef enum {
 	INTEGER,
 	STRING,
 	IDENTIFICATOR,
-
+	
 	UNDEFINED,
 	ERROR,
 	ENDL,
-	ENDF
+	ENDF,
+	
+	FUNCTION
 
 } T_token_type;
 

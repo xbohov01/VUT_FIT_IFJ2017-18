@@ -31,6 +31,8 @@ PSA_Term_type get_term_type(Data_Term *in_term) {
         case STRING:
         case IDENTIFICATOR:
             return ID;
+        case FUNCTION:
+            return FNC;
         case COM:
             return CM;
 
@@ -175,11 +177,13 @@ void copy_term(Data_Term *from, Data_Term *to) {
             strcpy(to->value_string, from->value_string);
             break;
         case IDENTIFICATOR:
+        case FUNCTION:
             to->id = malloc(strlen(from->id) + 1);
             if (to->id == NULL) {
                 error_exit(INTERNAL_ERR);
             }
             strcpy(to->id, from->id);
+            break;
         default:
             break;
     }
@@ -296,7 +300,7 @@ void error_exit(int code) {
     if (evaluation_stack != NULL) {
         destroy_T_NT_stack(evaluation_stack);
     }
-    printf("Result: %d\n", code);
+    fprintf(stderr, "Result: %d\n", code);
     exit(code);
 }
 
