@@ -1,0 +1,13 @@
+scope
+  dim a as integer
+  dim b as integer
+  dim c as integer
+
+  a = 1
+  b = 2
+
+  c = a + b
+  
+  print c
+
+end scope
