@@ -187,7 +187,7 @@ void push_arg(int arg_num) {
 }
 
 void f_call(char *name) {
-    printf("# Calling %s", name);
+    printf("# Calling %s\n", name);
     printf("CALL $_%s\n", name);
     printf("\n");
     return;
