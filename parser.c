@@ -595,7 +595,7 @@ int functions(){
 
   if (definition){
     //tac
-    printf("LABEL %s\n", identifier);
+    printf("LABEL $_%s\n", identifier);
     printf("PUSHFRAME\n");
 
     //return value room
