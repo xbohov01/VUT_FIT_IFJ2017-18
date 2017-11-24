@@ -117,6 +117,12 @@ void eval_expr() {
                 // <CHECK_START_SYM> -> RETURN KEY
                     eval_ex_state = VAR_INIT;
                 }
+                else if (currentToken.token_type == PRINT_KEY) {
+                    eval_ex_state = VAR_INIT;
+                }
+                else if (currentToken.token_type == SEM) {
+                    eval_ex_state = VAR_INIT;
+                }
                 else {
                     fprintf(stderr, "Bad variable on input of eval_expr\n");
                     error_exit(INTERNAL_ERR);
