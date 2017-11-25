@@ -712,6 +712,7 @@ int functions(){
       //printf("after copy param_types %s\n", tmp_func_item->param_types);
     } else {
       tmp_func_item->param_types = NULL;
+      //addchar('\0', &params);
     }
   } else {
     if (tmp_func_item->is_defined == true){
@@ -724,9 +725,11 @@ int functions(){
       free(identifier);
       hard_exit(UNDEF_ERR);
     }
-    if (strcmp(tmp_func_item->param_types, params.content) != 0){
-      fprintf(stderr, "Function definition is different from declaration.\n");
-      hard_exit(UNDEF_ERR);
+    if (params.len != 0){
+      if (strcmp(tmp_func_item->param_types, params.content) != 0){
+        fprintf(stderr, "Function definition is different from declaration.\n");
+        hard_exit(UNDEF_ERR);
+      }
     }
   }
 
