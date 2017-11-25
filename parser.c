@@ -718,13 +718,13 @@ int functions(){
       //TODO add malloc check
       addchar('\0', &params);
       //check param types
+      strcpy(tmp_func_item->param_types, params.content);
       if (definition == true && was_declared == true){
         if (strcmp(tmp_func_item->param_types, params.content) != 0){
           fprintf(stderr, "Function definition is different from declaration.\n");
           hard_exit(UNDEF_ERR);
         }
       }
-      strcpy(tmp_func_item->param_types, params.content);
     } else {
       tmp_func_item->param_types = NULL;
     }

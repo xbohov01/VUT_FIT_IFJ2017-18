@@ -198,11 +198,6 @@ typedef enum psa_term_type {
     SUB,
     DIV,
     IDIV,
-    PL,
-    PR,
-    ID,
-    FNC,
-    CM,
 
     // Relational operators
     LT,
@@ -211,6 +206,12 @@ typedef enum psa_term_type {
     GTE,
     EQ,
     NEQ,
+    
+    PL,
+    PR,
+    ID,
+    FNC,
+    CM,
 
     // End operator
     END

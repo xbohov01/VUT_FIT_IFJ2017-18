@@ -289,6 +289,7 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
 
     int arg_pos = 0;
     T_NT_item *look_ahead;
+    Data_NTerm *used_rule;
 
     func_state = START_FUNC;
 
@@ -296,8 +297,10 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
         switch(func_state) {
             case START_FUNC:
                 // Get number of function arguments
-                if (func->param_types != NULL) {
-                    for (; func->param_types[arg_pos] != 0; arg_pos++);
+                if ((func->param_types != NULL) && (func->param_types[0] != '\0')) {
+                    while(func->param_types[arg_pos] != 0) {
+                        arg_pos++;
+                    }
                 }
                 // '('
                 look_ahead = pop_T_NT(evaluation_stack);
@@ -326,11 +329,11 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                 // E
                 look_ahead = pop_T_NT(evaluation_stack);
                 if (look_ahead->is_non_term == false) {
-                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos);
+                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos-1);
                     error_exit(TYPE_ERR);
                 }
                 else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos-1])) {
-                    fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                    fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos-1);
                     error_exit(TYPE_ERR);
                 }
                 push_arg(--arg_pos);
@@ -340,11 +343,11 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                 // E
                 look_ahead = pop_T_NT(evaluation_stack);
                 if (look_ahead->is_non_term == false) {
-                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos);
+                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos-1);
                     error_exit(TYPE_ERR);
                 }
                 else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos-1])) {
-                    fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                    fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos-1);
                     error_exit(TYPE_ERR);
                 }
                 // ','
@@ -385,7 +388,22 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                 error_exit(INTERNAL_ERR);
         }
     }
-    return create_non_term(NT_FN, func->value_type);
+
+    switch(func->value_type) {
+        case 0:
+            used_rule = create_non_term(NT_FN, INTEGER_NT);
+            break;
+        case 1:
+            used_rule = create_non_term(NT_FN, DOUBLE_NT);
+            break;
+        case 2:
+            used_rule = create_non_term(NT_FN, STRING_NT);
+            break;
+        default:
+            fprintf(stderr, "Unknown function return value type\n");
+    }
+
+    return used_rule;
 }
 
 Data_NTerm *arithm_R() {
@@ -400,6 +418,28 @@ Data_NTerm *arithm_R() {
 
         FINISHED_ARITHM_PSA
     } arithm_state;
+
+    static char op_types[4][8] = {
+        "integer",
+        "float",
+        "string",
+        "none"
+    };
+
+    static char oper_types[12][3] = {
+        "+",
+        "-",
+        "*",
+        "/",
+        "\\",
+        "<",
+        ">",
+        "<=",
+        ">=",
+        "=",
+        "<>",
+        "??"
+    };
 
     extern T_NT_stack *evaluation_stack;
     T_NT_item *look_ahead;
@@ -421,8 +461,12 @@ Data_NTerm *arithm_R() {
                 else if (E->type == INTEGER_NT) {
                     arithm_state = INT_AR_PSA;
                 }
-                else {
+                else if (E->type == STRING_NT) {
                     arithm_state = STRING_AR_PSA;
+                }
+                else {
+                    fprintf(stderr, "\"Void\" type is unsupported\n");
+                    error_exit(TYPE_ERR);
                 }
                 break;
             case DOUBLE_AR_PSA:
@@ -449,13 +493,15 @@ Data_NTerm *arithm_R() {
                         }
                         // Unexpected string type
                         else {
-                            error_exit(SEM_ERR);
+                            fprintf(stderr, "1) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                            error_exit(TYPE_ERR);
                         }
                         used_rule = create_non_term(map_NT_rule(arithm_operand), DOUBLE_NT);
                         arithm_stack(arithm_operand);
                         arithm_state = AR_END_PSA;
                         break;
                     case IDIV:
+                        fprintf(stderr, "Integer division works only with integers\n");
                         error_exit(TYPE_ERR);
                         break;
                     default:
@@ -480,15 +526,16 @@ Data_NTerm *arithm_R() {
                     case EQ:
                     case NEQ:
                         if (E->type == INTEGER_NT) {
-                            used_rule = create_non_term(NT_MUL, INTEGER_NT);
+                            used_rule = create_non_term(map_NT_rule(arithm_operand), INTEGER_NT);
                         }
                         else if (E->type == DOUBLE_NT) {
                             retype_stack(true, true);
-                            used_rule = create_non_term(NT_MUL, DOUBLE_NT);
+                            used_rule = create_non_term(map_NT_rule(arithm_operand), DOUBLE_NT);
                         }
                         // Unexpected string type
                         else {
-                            error_exit(SEM_ERR);
+                            fprintf(stderr, "2) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                            error_exit(TYPE_ERR);
                         }
                         
                         arithm_stack(arithm_operand);
@@ -500,11 +547,12 @@ Data_NTerm *arithm_R() {
                             retype_stack(false, true);
                         }
                         else if (E->type == DOUBLE_NT) {
-                            ;
+                            retype_stack(false, true);
                         }
                         // Unexpected string type
                         else {
-                            error_exit(SEM_ERR);
+                            fprintf(stderr, "3) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                            error_exit(TYPE_ERR);
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
                         
@@ -514,6 +562,7 @@ Data_NTerm *arithm_R() {
                     case IDIV:
                         E = &(look_ahead->data.NTerm);
                         if (E->type != INTEGER_NT) {
+                            fprintf(stderr, "Integer division works only with integers, got \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
                             error_exit(TYPE_ERR);
                         }
                         else {
@@ -538,25 +587,25 @@ Data_NTerm *arithm_R() {
                 switch(arithm_operand) {
                     case ADD:
                     case NEQ:
-                        if (E->type != STRING_NT) {
-                            error_exit(TYPE_ERR);
-                        }
-                        used_rule = create_non_term(map_NT_rule(arithm_operand), STRING_NT);
-                        // printf("1")
-                        arithm_stack(arithm_operand);
-                        arithm_state = AR_END_PSA;
-                        break;
                     case LT:
                     case GT:
                     case LTE:
                     case GTE:
                     case EQ:
+                        if (E->type != STRING_NT) {
+                            fprintf(stderr, "Expected string, got \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                            error_exit(TYPE_ERR);
+                        }
+                        used_rule = create_non_term(map_NT_rule(arithm_operand), STRING_NT);
+                        arithm_stack(arithm_operand);
+                        arithm_state = AR_END_PSA;
+                        break;
                     case SUB:
                     case MUL:
                     case DIV:
                     case IDIV:
-                        fprintf(stderr, "UNEXPECTED OPERATION. MAYBE YOU MENT '+'?\n");
-                        error_exit(SYNT_ERR);
+                        fprintf(stderr, "Unexpected string operand '%s'\n", oper_types[arithm_operand]);
+                        error_exit(TYPE_ERR);
                         break;
                     default:
                         fprintf(stderr, "UNEXPECTED SIGN AFTER PSA\n");
@@ -646,27 +695,27 @@ void reduce_by_rule() {
 }
 
 void psa_operation(bool allow_bool) {
-    char table_psa[17][17] = { 
-        //        | ADD | MUL| SUB| DIV|IDIV| PL | PR | ID | FNC| CM | LT | GT | LTE| GTE| EQ | NEQ| END|
-        //        |   + |  * |  - |  / |  \ |  ( |  ) |  i |  f |  , |  < |  > | <= | >= |  = | <> |   $|
+    static char table_psa[17][17] = { 
+        //        | ADD | MUL| SUB| DIV|IDIV| LT | GT | LTE| GTE| EQ | NEQ| PL | PR | ID | FNC| CM | END|
+        //        |   + |  * |  - |  / |  \ |  < |  > | <= | >= |  = | <> |  ( |  ) |  i |  f |  , |   $|
         //-----------------------------------------------------------------------------------------------
-    {   /* ADD| + |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
-    {   /* MUL| * |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
-    {   /* SUB| - |*/'>', '<', '>', '<', '<', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
-    {   /* DIV| / |*/'>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
-    {   /* IDI| \ |*/'>', '<', '>', '<', '>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '>' }, 
-    {   /* PL | ( |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#', '#', '#', '#', '#', '#', '#' }, 
-    {   /* PR | ) |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>', '>', '>', '>', '>', '>', '>' }, 
-    {   /* ID | i |*/'>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>', '>', '>', '>', '>', '>', '>' }, 
-    {   /* FNC| f |*/'#', '#', '#', '#', '#', '=', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' }, 
-    {   /* CM | , |*/'<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#', '#', '#', '#', '#', '#', '#' }, 
-    {   /* LT | < |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
-    {   /* GT | > |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
-    {   /* LTE|<= |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
-    {   /* GTE|>= |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
-    {   /* EQ | = |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
-    {   /* NEQ|<> |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '#', '#', '#', '#', '#', '#', '>' },
-    {   /* END| $ |*/'<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '<', '<', '<', '<', '<', '<', '\0'},
+    {   /* ADD| + |*/'>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
+    {   /* MUL| * |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
+    {   /* SUB| - |*/'>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
+    {   /* DIV| / |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
+    {   /* IDI| \ |*/'>', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
+    {   /* LT | < |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
+    {   /* GT | > |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
+    {   /* LTE|<= |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
+    {   /* GTE|>= |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
+    {   /* EQ | = |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
+    {   /* NEQ|<> |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
+    {   /* PL | ( |*/'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#' }, 
+    {   /* PR | ) |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>' }, 
+    {   /* ID | i |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>' }, 
+    {   /* FNC| f |*/'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '=', '#', '#', '#', '#', '#' }, 
+    {   /* CM | , |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '=', '<', '<', '=', '#' }, 
+    {   /* END| $ |*/'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '\0'},
     };
     
     PSA_Term_type index_stack_top;
@@ -689,9 +738,16 @@ void psa_operation(bool allow_bool) {
             found_func = hash_table_search(func_table, currentToken.id);
             found_var = hash_table_search(var_table, currentToken.id);
             if (found_var != NULL) {
-                ;
+                if (found_func != NULL) {
+                    fprintf(stderr, "Function %s redefinition by variable\n", found_func->symbol_name);
+                    error_exit(UNDEF_ERR);
+                }
             }
             else if (found_func != NULL) {
+                if (found_var != NULL) {
+                    fprintf(stderr, "Variable %s redefinition by function\n", found_var->symbol_name);
+                    error_exit(UNDEF_ERR);
+                }
                 index_input = FNC;
                 currentToken.token_type = FUNCTION;
             }

@@ -93,7 +93,6 @@ N_T_rules map_NT_rule(PSA_Term_type in_psa_term) {
             return NT_NEQ;
         default:
             fprintf(stderr, "Bad map value for map_NT_rule\n");
-            fprintf(stderr, "Bad programmer error\n");
             error_exit(INTERNAL_ERR);
             return NT_NEQ;
     }
