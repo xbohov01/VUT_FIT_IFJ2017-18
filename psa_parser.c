@@ -13,7 +13,7 @@ Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
         "STRING_NT",
         "NONE_NT"
     };
-    fprintf(stderr, "INPUT TYPE IS: %s (%d)\n", x[input_type], input_type);
+
     Data_NTerm *temp_non_term_data = malloc(sizeof(Data_NTerm));
     if (temp_non_term_data == NULL) {
         error_exit(INTERNAL_ERR);
@@ -21,7 +21,6 @@ Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
 
     temp_non_term_data->rule = input_rule;
     temp_non_term_data->type = input_type;
-    fprintf(stderr, "OUT TYPE IS: %s (%d)\n", x[temp_non_term_data->type], temp_non_term_data->type);
 
     return temp_non_term_data;
 }
@@ -592,6 +591,10 @@ Data_NTerm *arithm_R() {
                 arithm_operand = get_term_type(&(look_ahead->data.Term));
                 look_ahead = pop_T_NT(evaluation_stack);
                 E = &(look_ahead->data.NTerm);
+                if (E->type != STRING_NT) {
+                    fprintf(stderr, "Expected string, got \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                    error_exit(TYPE_ERR);
+                }
                 switch(arithm_operand) {
                     case ADD:
                     case NEQ:
@@ -600,12 +603,8 @@ Data_NTerm *arithm_R() {
                     case LTE:
                     case GTE:
                     case EQ:
-                        if (E->type != STRING_NT) {
-                            fprintf(stderr, "Expected string, got \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
-                            error_exit(TYPE_ERR);
-                        }
                         used_rule = create_non_term(map_NT_rule(arithm_operand), STRING_NT);
-                        arithm_stack(arithm_operand);
+                        str_arithm(arithm_operand);
                         arithm_state = AR_END_PSA;
                         break;
                     case SUB:
@@ -640,7 +639,6 @@ Data_NTerm *arithm_R() {
         }
         
     }
-    fprintf(stderr, "RETURN TYPE IS: %d\n", used_rule->type);
     return used_rule;
 }
 
@@ -658,7 +656,6 @@ void reduce_by_rule() {
 
     extern T_NT_stack *evaluation_stack;
     
-    ps(processing_stack);
     push_start_term(evaluation_stack);
     get_reversed_rule();
     look_ahead = pop_T_NT(evaluation_stack);
@@ -700,9 +697,7 @@ void reduce_by_rule() {
     }
     push_T_NT(processing_stack, NULL, used_rule);
     free(used_rule);
-    fprintf(stderr, "IN THE END: %d\n",processing_stack->top->data.NTerm.type);
 
-    fprintf(stderr, "---------------------------------------------\n");
     return;
 }
 

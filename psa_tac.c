@@ -9,6 +9,8 @@
 // ========================================
 void init_TAC_stack() {
     printf("DEFVAR GF@$_stack_temp\n");
+    printf("DEFVAR GF@$_str_temp_1\n");
+    printf("DEFVAR GF@$_str_temp_2\n");
     return;
 }
 
@@ -155,10 +157,47 @@ void arithm_stack(PSA_Term_type op) {
             printf("NOTS\n");
             break;
         default:
-            printf("Bad operator for TAC\n");
+            printf("Bad operator for stack\n");
             break;
     }
     printf("\n");
+    return;
+}
+
+void str_arithm(PSA_Term_type op) {
+    printf("# String arithmetics\n");
+    switch(op) {
+        case ADD:
+            printf("POPS GF@_str_temp_2\n");
+            printf("POPS GF@_str_temp_1\n");
+            printf("CONCAT GF@_str_temp_1 GF@_str_temp_1 GF@_str_temp_2\n");
+            printf("PUSHS GF@_str_temp_1\n");
+            break;
+        case LT:
+            printf("LTS\n");
+            break;
+        case GT:
+            printf("GTS\n");
+            break;
+        case EQ:
+            printf("EQS\n");
+            break;
+        case NEQ:
+            printf("EQS\n");
+            printf("NOTS\n");
+            break;
+        case LTE:
+            printf("GTS\n");
+            printf("NOTS\n");
+            break;
+        case GTE:
+            printf("LTS\n");
+            printf("NOTS\n");
+            break;
+        default:
+            printf("Bad operator for TAC\n");
+            break;
+    }
     return;
 }
 

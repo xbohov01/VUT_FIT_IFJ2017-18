@@ -358,6 +358,9 @@ void retype_stack(bool second_operand, bool int2fl);
 void arithm_stack(PSA_Term_type op);
 void clean_stack_TAC();
 
+//String arithmetics
+void str_arithm(PSA_Term_type op);
+
 // Jumps or function calls
 void cond_jump(bool is_while, int num);
 void push_arg(int arg_num);
