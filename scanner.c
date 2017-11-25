@@ -452,7 +452,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 				ungetc(n_char, stdin);
 				currentToken.token_type = DOUBLE;
-				currentToken.value_double = atoi(buffer.content);
+				currentToken.value_double = atof(buffer.content);
 				token_state = BEGIN;
 			}
 			break;
@@ -517,12 +517,11 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 	}
 }
 
-int start_scanner(char *filename)
+int start_scanner()
 {
 
 	if (str_init(&buffer) != SUCCESS)
 	{
-		//fclose(file);
 		hard_exit(INTERNAL_ERR);
 	}
 

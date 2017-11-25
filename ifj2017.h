@@ -156,7 +156,7 @@ int esc;
 
 //function declarations
 void free_sources();
-int start_scanner(char *filename);
+int start_scanner();
 void get_token();
 
 //====PSA_STACK====
@@ -206,7 +206,7 @@ typedef enum psa_term_type {
     GTE,
     EQ,
     NEQ,
-    
+
     PL,
     PR,
     ID,

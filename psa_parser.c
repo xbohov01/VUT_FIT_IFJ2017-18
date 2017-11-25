@@ -1,4 +1,4 @@
-/* 
+/*
 ** Precedense syntax parser implementation
 ** Author: Danil Grigorev, xgrigo02
 */
@@ -72,7 +72,7 @@ void eval_cond_expr(bool is_do_while, int label_num) {
 
     push_start_term(processing_stack);
     psa_operation(true);
-    
+
     cond_jump(is_do_while, label_num);
 
     check_psa_completion();
@@ -170,7 +170,7 @@ void eval_expr() {
                 break;
             default:
                 fprintf(stderr, "State machine error.\n");
-                break;   
+                break;
         }
     }
 
@@ -283,7 +283,7 @@ Data_NTerm *id_R(hash_tab_symbol_type *found_var) {
 }
 
 Data_NTerm *function_R(hash_tab_symbol_type *func) {
-    
+
     enum {
         START_FUNC,
         ZERO_ARG,
@@ -544,7 +544,7 @@ Data_NTerm *arithm_R() {
                             fprintf(stderr, "2) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
                             error_exit(TYPE_ERR);
                         }
-                        
+
                         arithm_stack(arithm_operand);
                         arithm_state = AR_END_PSA;
                         break;
@@ -562,7 +562,7 @@ Data_NTerm *arithm_R() {
                             error_exit(TYPE_ERR);
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
-                        
+
                         arithm_stack(DIV);
                         arithm_state = AR_END_PSA;
                         break;
@@ -637,7 +637,7 @@ Data_NTerm *arithm_R() {
                 error_exit(INTERNAL_ERR);
                 break;
         }
-        
+
     }
     return used_rule;
 }
@@ -655,7 +655,7 @@ void reduce_by_rule() {
     hash_tab_symbol_type *found_func;
 
     extern T_NT_stack *evaluation_stack;
-    
+
     push_start_term(evaluation_stack);
     get_reversed_rule();
     look_ahead = pop_T_NT(evaluation_stack);
@@ -688,11 +688,11 @@ void reduce_by_rule() {
 
             // $
             look_ahead = pop_T_NT(evaluation_stack);
-            
+
         }
         else {
             fprintf(stderr, "Unexpected token after PSA\n");
-            error_exit(INTERNAL_ERR); // Debug 
+            error_exit(INTERNAL_ERR); // Debug
         }
     }
     push_T_NT(processing_stack, NULL, used_rule);
@@ -702,29 +702,29 @@ void reduce_by_rule() {
 }
 
 void psa_operation(bool allow_bool) {
-    static char table_psa[17][17] = { 
+    static char table_psa[17][17] = {
         //        | ADD | MUL| SUB| DIV|IDIV| LT | GT | LTE| GTE| EQ | NEQ| PL | PR | ID | FNC| CM | END|
         //        |   + |  * |  - |  / |  \ |  < |  > | <= | >= |  = | <> |  ( |  ) |  i |  f |  , |   $|
         //-----------------------------------------------------------------------------------------------
-    {   /* ADD| + |*/'>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
-    {   /* MUL| * |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
-    {   /* SUB| - |*/'>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
-    {   /* DIV| / |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
-    {   /* IDI| \ |*/'>', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' }, 
+    {   /* ADD| + |*/'>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' },
+    {   /* MUL| * |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' },
+    {   /* SUB| - |*/'>', '<', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' },
+    {   /* DIV| / |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' },
+    {   /* IDI| \ |*/'>', '<', '>', '<', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '<', '>', '>' },
     {   /* LT | < |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
     {   /* GT | > |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
     {   /* LTE|<= |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
     {   /* GTE|>= |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
     {   /* EQ | = |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
     {   /* NEQ|<> |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '>', '<', '<', '#', '>' },
-    {   /* PL | ( |*/'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#' }, 
-    {   /* PR | ) |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>' }, 
-    {   /* ID | i |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>' }, 
-    {   /* FNC| f |*/'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '=', '#', '#', '#', '#', '#' }, 
-    {   /* CM | , |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '=', '<', '<', '=', '#' }, 
+    {   /* PL | ( |*/'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '=', '<', '<', '=', '#' },
+    {   /* PR | ) |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>' },
+    {   /* ID | i |*/'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '#', '>', '#', '#', '>', '>' },
+    {   /* FNC| f |*/'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '=', '#', '#', '#', '#', '#' },
+    {   /* CM | , |*/'<', '<', '<', '<', '<', '#', '#', '#', '#', '#', '#', '<', '=', '<', '<', '=', '#' },
     {   /* END| $ |*/'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '#', '<', '<', '#', '\0'},
     };
-    
+
     PSA_Term_type index_stack_top;
     PSA_Term_type index_input;
     Data_Term first_term_data;
@@ -781,7 +781,7 @@ void psa_operation(bool allow_bool) {
         } else {
             what_to_do = table_psa[index_stack_top][index_input];
         }
-        
+
         // Syntax control part:
         // ----------------------------------------------
         switch(what_to_do) {
@@ -792,7 +792,7 @@ void psa_operation(bool allow_bool) {
                 get_token();
                 break;
             // Reduce by rule
-            // 
+            //
             // -------------------Semantic control part-----------------------
             case '>':
                 reduce_by_rule();

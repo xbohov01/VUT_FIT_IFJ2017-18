@@ -11,6 +11,7 @@
 
 int cond_label = 0;
 int while_cnt = 0;
+bool returned = false;
 //condition label format
 //printf("LABEL $condition%d$end\n", cond_label);
 
@@ -18,9 +19,7 @@ int while_cnt = 0;
 void hard_exit(int code){
   fprintf(stderr, "HARD EXIT\n");
   //free resources
-  #ifndef DEBUG
   free_sources();
-  #endif
 
   free(currentToken.id);
   free(currentToken.value_string);
@@ -42,7 +41,6 @@ void synt_error_print(int given, int expected){
   //array of all tokens
   const char *tokenList[] = {
     "+",
-    "lex err",
     "-",
     "*",
     "/",
@@ -366,6 +364,10 @@ int statement(){
     case STRING :
     case IDENTIFICATOR:
     case RETURN_KEY :
+      //implicit return handle
+      if (currentToken.token_type == RETURN_KEY){
+        returned = true;
+      }
       //resolve expression or function call or return
       eval_expr();
       // do {
@@ -377,6 +379,9 @@ int statement(){
       get_token();
       //expecting identifier
       CHECKT(IDENTIFICATOR);
+
+      //print the !"? "
+      printf("WRITE string@?\\032\n");
 
       //check if symbol exists
       tmp_var_item = hash_table_search(var_table, currentToken.id);
@@ -400,46 +405,20 @@ int statement(){
 
     case PRINT_KEY :
 
-      get_token();
+      eval_expr();
+      save_to_temp();
 
-      //eval_expr();
-      //save_to_temp();
+      printf("WRITE GF@$_stack_temp\n");
 
-      //printf("WRITE GF@_stack_temp\n");
-
-
-      //expecting value or identifier
-      if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
-          && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
-            fprintf(stderr, "Identifier or expression expected\n");
-            hard_exit(SYNT_ERR);
-            //return SYNT_ERR;
-          }
-
-      //tac
-      if (currentToken.token_type == IDENTIFICATOR){
-        tmp_var_item = hash_table_search(var_table, currentToken.id);
-        if (tmp_var_item == NULL){
-          fprintf(stderr, "Syntax error: Variable %s not declared.\n", currentToken.id);
-          hard_exit(UNDEF_ERR);
-        }
-        printf("WRITE LF@_%s\n", currentToken.id);
-      } else if (currentToken.token_type == INTEGER){
-        printf("WRITE int@%d\n", currentToken.value_int);
-      } else if (currentToken.token_type == DOUBLE){
-        printf("WRITE float@%g\n", currentToken.value_double);
-      } else if (currentToken.token_type == STRING){
-        printf("WRITE string@%s\n", currentToken.value_string);
-      }
-
-      get_token();
       //expecting ; or ENDL
+      //TODO add eval expr for the loop part
       while (currentToken.token_type == SEM){
         get_token();
-      //  eval_expr();
-        //save_to_temp();
 
+        //eval_expr();
+        //save_to_temp();
         //printf("WRITE GF@_stack_temp\n");
+
 
         //expecting value or identifier or EOL
         if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
@@ -471,7 +450,9 @@ int statement(){
         get_token();
       }
       //ENDLs
-      return end_of_lines();
+      //return end_of_lines();
+      fprintf(stderr, "Syntax error: Expecting ; after expression in Print statement.\n");
+      hard_exit(SYNT_ERR);
 
     case IF_KEY :
 
@@ -600,8 +581,10 @@ int functions(){
   char *identifier;
   int return_type;
   bool definition = true;
-  bool was_declared = true;
   func_definition = true;
+
+  //necessary to check if implicit return is needed
+  returned = false;
 
   //init variable table
   var_table = sym_tab_init(64);
@@ -736,51 +719,6 @@ int functions(){
   //delete params
   delstr(&params);
 
-/*
-  //no entry found
-  if (tmp_func_item == NULL){
-    was_declared = false;
-  }
-  if (tmp_func_item == NULL || (tmp_func_item != NULL && tmp_func_item->is_defined == false)){
-    //add entry into functions table
-    //tmp_func_item points to new table item
-    tmp_func_item = hash_table_insert(func_table, identifier);
-    //set return type
-    tmp_func_item->value_type = return_type;
-    //is defined
-    if (definition){
-      tmp_func_item->is_defined = true;
-    } else {
-      tmp_func_item->is_defined = false;
-    }
-
-    printf("declaration or definition params %s\n", params.content);
-
-    //set parameter types
-    if (params.len != 0){
-      tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
-      //TODO add malloc check
-      addchar('\0', &params);
-      //memcpy(tmp_func_item->param_types, "\0", strlen("\0")+1);
-      //check param types
-      if (definition == true && was_declared == true){
-        printf("sym: %s params: %s\n",tmp_func_item->param_types, params.content);
-        if (strcmp(tmp_func_item->param_types, params.content) != 0){
-          fprintf(stderr, "Function definition is different from declaration.\n");
-          hard_exit(UNDEF_ERR);
-        }
-      }
-      memcpy(tmp_func_item->param_types, params.content, strlen(params.content)+1);
-      printf("after copy param_types %s\n", tmp_func_item->param_types);
-    } else {
-      tmp_func_item->param_types = NULL;
-    }
-  } else {
-    fprintf(stderr, "Syntax error: Function %s is already defined\n", identifier);
-    free(identifier);
-    hard_exit(UNDEF_ERR);
-  }
-*/
   //if function is only declared
   //expecting ENDL(s) before next statement
   if (definition == false){
@@ -799,6 +737,21 @@ int functions(){
   } else {
     if (fnc_stats() != SUCCESS){
       hard_exit(SYNT_ERR);
+    }
+
+    //implicit return is required
+    if (returned == false){
+      switch (tmp_func_item->value_type) {
+        case 0 :
+          printf("PUSHS int@0\n");
+          break;
+        case 1 :
+          printf("PUSHS float@0.0\n");
+          break;
+        case 2 :
+          printf("PUSHS string@\n");
+          break;
+      }
     }
     //has end expecting function
     get_token();
@@ -866,6 +819,10 @@ int scope(){
       case ENDL :
         get_token();
         continue;
+
+      case RETURN_KEY :
+        fprintf(stderr, "Syntax error: Return outside of function.\n");
+        hard_exit(SYNT_ERR);
 
       default :
         //expecting statement
@@ -985,10 +942,13 @@ int start_parsing(){
 
   //get first token
   get_token();
-  /*if (get_token() != SUCCESS){
-    printf("sss\n");
-    return LEX_ERR;
-  }*/
+
+  //check if empty program
+  if (currentToken.token_type == ENDF){
+    fprintf(stderr, "Empty file on input\n");
+    hard_exit(SYNT_ERR);
+  }
+
   //begin parsing
   result = start();
 
@@ -998,7 +958,7 @@ int start_parsing(){
 
 }
 
-int main(int argc, char *argv[]){
+int main(){
   int result;
 
   //init symtables
@@ -1006,7 +966,7 @@ int main(int argc, char *argv[]){
   //TODO check for correct init
 
   //start scanner
-  start_scanner(argv[1]);
+  start_scanner();
 
   //add built-in functions to symtable
   tmp_func_item = hash_table_insert(func_table, "length");
