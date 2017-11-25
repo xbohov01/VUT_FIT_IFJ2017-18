@@ -718,13 +718,13 @@ int functions(){
       //TODO add malloc check
       addchar('\0', &params);
       //check param types
-      strcpy(tmp_func_item->param_types, params.content);
       if (definition == true && was_declared == true){
         if (strcmp(tmp_func_item->param_types, params.content) != 0){
           fprintf(stderr, "Function definition is different from declaration.\n");
           hard_exit(UNDEF_ERR);
         }
       }
+      memcpy(tmp_func_item->param_types, params.content, strlen(params.content)+1);
     } else {
       tmp_func_item->param_types = NULL;
     }
@@ -964,22 +964,22 @@ int main(int argc, char *argv[]){
   //add built-in functions to symtable
   tmp_func_item = hash_table_insert(func_table, "length");
   tmp_func_item->param_types = malloc(strlen("s")*sizeof(char)+1);
-  strcpy(tmp_func_item->param_types, "s");
+  memcpy(tmp_func_item->param_types, "s", strlen("s")*sizeof(char)+1);
   tmp_func_item->value_type = 0;
 
   tmp_func_item = hash_table_insert(func_table, "substr");
   tmp_func_item->param_types = malloc(strlen("sin")*sizeof(char)+1);
-  strcpy(tmp_func_item->param_types, "sin");
+  memcpy(tmp_func_item->param_types, "sin", strlen("sin")*sizeof(char)+1);
   tmp_func_item->value_type = 2;
 
   tmp_func_item = hash_table_insert(func_table, "asc");
   tmp_func_item->param_types = malloc(strlen("si")*sizeof(char)+1);
-  strcpy(tmp_func_item->param_types, "si");
+  memcpy(tmp_func_item->param_types, "si", strlen("si")*sizeof(char)+1);
   tmp_func_item->value_type = 0;
 
   tmp_func_item = hash_table_insert(func_table, "chr");
   tmp_func_item->param_types = malloc(strlen("i")*sizeof(char)+1);
-  strcpy(tmp_func_item->param_types, "i");
+  memcpy(tmp_func_item->param_types, "i", strlen("i")*sizeof(char)+1);
   tmp_func_item->value_type = 2;
 
   //start parsing
