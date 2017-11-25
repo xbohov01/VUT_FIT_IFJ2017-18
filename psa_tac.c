@@ -1,4 +1,4 @@
-/* 
+/*
 ** PSA TAC commands
 ** Author: Danil Grigorev, xgrigo02
 */
@@ -31,7 +31,7 @@ void init_var(N_T_types type, char* name) {
             printf("MOVE LF@_%s int@0\n", name);
             break;
         case STRING_NT:
-            printf("MOVE LF@_%s string@!\"\"\n", name);
+            printf("MOVE LF@_%s string@\n", name);
             break;
         default:
             fprintf(stderr, "BAD VAR INIT TYPE\n");
@@ -63,7 +63,7 @@ void save_result(char *res_name) {
         error_exit(INTERNAL_ERR);
     } else {
         printf("POPS LF@_%s\n", res_name);
-    }  
+    }
     printf("\n");
     return;
 }

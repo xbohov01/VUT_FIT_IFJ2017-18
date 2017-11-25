@@ -124,96 +124,101 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 		switch (token_state)
 		{
 			case BEGIN:
-			if (n_char == ' ')
-			{
-				continue;
-			}
+				if (n_char == ' ')
+				{
+					continue;
+				}
 
-			//operatory a specialne znaky
-			else if (n_char == EOF)
-			{
-			  currentToken.token_type = ENDF;
-			}
-			else if (n_char == '\n')
-			{
-			  currentToken.token_type = ENDL;
-			}
-			else if (n_char == '+')
-			{
-			  currentToken.token_type = ADD_O;
-			}
-			else if (n_char == '-')
-			{
-			  currentToken.token_type = SUB_O;
-			}
-			else if (n_char == '*')
-			{
-			  currentToken.token_type = MUL_O;
-			}
-			else if (n_char == '/')
-			{
-			  token_state = COM_OR_DIV;
-			}
-			else if (n_char == '\\')
-			{
-				currentToken.token_type = MOD_O;
-			}
-			else if (n_char == '<')
-			{
-				token_state = POS_LT;
-			}
-			else if (n_char == '>')
-			{
-			  token_state = POS_GT;
-			}
-			else if (n_char == '=')
-			{
-			  currentToken.token_type = EQ_O;
-			}
-			else if (n_char == ')')
-			{
-			  currentToken.token_type = PAR_R;
-			}
-			else if (n_char == '(')
-			{
-			  currentToken.token_type = PAR_L;
-			}
-			else if (n_char == ',')
-			{
-			  currentToken.token_type = COM;
-			}
-			else if (n_char == ';')
-			{
-			  currentToken.token_type = SEM;
-			}
+				//operatory a specialne znaky
+				else if (n_char == EOF)
+				{
+				  currentToken.token_type = ENDF;
+				}
+				else if (n_char == '\n')
+				{
+				  currentToken.token_type = ENDL;
+				}
+				else if (n_char == '+')
+				{
+				  currentToken.token_type = ADD_O;
+				}
+				else if (n_char == '-')
+				{
+				  currentToken.token_type = SUB_O;
+				}
+				else if (n_char == '*')
+				{
+				  currentToken.token_type = MUL_O;
+				}
+				else if (n_char == '/')
+				{
+				  token_state = COM_OR_DIV;
+				}
+				else if (n_char == '\\')
+				{
+					currentToken.token_type = MOD_O;
+				}
+				else if (n_char == '<')
+				{
+					token_state = POS_LT;
+				}
+				else if (n_char == '>')
+				{
+				  token_state = POS_GT;
+				}
+				else if (n_char == '=')
+				{
+				  currentToken.token_type = EQ_O;
+				}
+				else if (n_char == ')')
+				{
+				  currentToken.token_type = PAR_R;
+				}
+				else if (n_char == '(')
+				{
+				  currentToken.token_type = PAR_L;
+				}
+				else if (n_char == ',')
+				{
+				  currentToken.token_type = COM;
+				}
+				else if (n_char == ';')
+				{
+				  currentToken.token_type = SEM;
+				}
 
-			//cislo
-			else if (isdigit(n_char))
-			{
-				delstr(&buffer);
-				addchar(n_char, &buffer);
-				token_state = POS_INT;
-			}
+				//cislo
+				else if (isdigit(n_char))
+				{
+					delstr(&buffer);
+					addchar(n_char, &buffer);
+					token_state = POS_INT;
+				}
 
 
-			else if (n_char == '!')
-			{
-				token_state = POS_BEG_STRING;
-			}
+				else if (n_char == '!')
+				{
+					token_state = POS_BEG_STRING;
+				}
 
-			else if (n_char == '\'')
-			{
-				token_state = POS_LIN_COMMENT;
-			}
+				else if (n_char == '\'')
+				{
+					token_state = POS_LIN_COMMENT;
+				} else if (n_char == '/'){
+					token_state = POS_BL_COMMENT;
+				}
 
-			else if (isalpha(n_char) || n_char == '_')
-			{
-				n_char = tolower(n_char);
-				delstr(&buffer);
-				addchar(n_char, &buffer);
-				token_state = ID_OR_KEY;
-			}
-			break;
+				else if (isalpha(n_char) || n_char == '_')
+				{
+					n_char = tolower(n_char);
+					delstr(&buffer);
+					addchar(n_char, &buffer);
+					token_state = ID_OR_KEY;
+				} else if (n_char == '@' || n_char == '&' || n_char == '.'){
+				 hard_exit(LEX_ERR);
+				}
+
+				break;
 
 			case POS_LT:
 			{
@@ -267,6 +272,9 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			if (n_char == '\'')
 			{
 				token_state = POS_BL_END_COMMENT;
+			} else if (n_char == EOF){
+				fprintf(stderr, "Unexpected end of file\n");
+				hard_exit(LEX_ERR);
 			}
 			break;
 
@@ -473,7 +481,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 				ungetc(n_char, stdin);
 				currentToken.token_type = DOUBLE;
-				currentToken.value_double = atoi(buffer.content);
+				currentToken.value_double = atof(buffer.content);
 				token_state = BEGIN;
 			}
 			break;

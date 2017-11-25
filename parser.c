@@ -233,9 +233,16 @@ int fnc_arg(int pos){
     //check for redefinition
     tmp_var_item = hash_table_search(var_table, var_id);
     if (tmp_var_item != NULL){
-      fprintf(stderr, "Syntax error: Variable %s previously declared.\n", var_id);
-      hard_exit(SYNT_ERR);
+      fprintf(stderr, "Syntax error: Variable %s was previously declared.\n", var_id);
+      hard_exit(UNDEF_ERR);
     }
+    //check for parameter and function name collisions
+    tmp_func_item = hash_table_search(func_table, var_id);
+    if (tmp_func_item != NULL){
+      fprintf(stderr, "Syntax error: Function %s was previously declared.\n", var_id);
+      hard_exit(UNDEF_ERR);
+    }
+
     //add variable to var_table
     tmp_var_item = hash_table_insert(var_table, var_id);
 
@@ -393,14 +400,14 @@ int statement(){
 
     case PRINT_KEY :
 
-      //get_token();
+      get_token();
 
-      eval_expr();
-      save_to_temp();
+      //eval_expr();
+      //save_to_temp();
 
-      printf("WRITE GF@_stack_temp\n");
+      //printf("WRITE GF@_stack_temp\n");
 
-      /*
+
       //expecting value or identifier
       if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
           && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
@@ -420,20 +427,20 @@ int statement(){
       } else if (currentToken.token_type == INTEGER){
         printf("WRITE int@%d\n", currentToken.value_int);
       } else if (currentToken.token_type == DOUBLE){
-        printf("WRITE float@%f\n", currentToken.value_double);
+        printf("WRITE float@%g\n", currentToken.value_double);
       } else if (currentToken.token_type == STRING){
         printf("WRITE string@%s\n", currentToken.value_string);
       }
-      */
+
       get_token();
       //expecting ; or ENDL
       while (currentToken.token_type == SEM){
-        //get_token();
-        eval_expr();
-        save_to_temp();
+        get_token();
+      //  eval_expr();
+        //save_to_temp();
 
-        printf("WRITE GF@_stack_temp\n");
-        /*
+        //printf("WRITE GF@_stack_temp\n");
+
         //expecting value or identifier or EOL
         if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
             && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
@@ -461,7 +468,7 @@ int statement(){
           printf("WRITE string@%s\n", currentToken.value_string);
         }
         //has thing to print, move to next token
-        get_token();*/
+        get_token();
       }
       //ENDLs
       return end_of_lines();
@@ -593,6 +600,7 @@ int functions(){
   char *identifier;
   int return_type;
   bool definition = true;
+  bool was_declared = true;
   func_definition = true;
 
   //init variable table
@@ -688,6 +696,9 @@ int functions(){
   //check if function is in symtable
   tmp_func_item = hash_table_search(func_table, identifier);
   //no entry found
+  if (tmp_func_item == NULL){
+    was_declared = false;
+  }
   if (tmp_func_item == NULL || (tmp_func_item != NULL && tmp_func_item->is_defined == false)){
     //add entry into functions table
     //tmp_func_item points to new table item
@@ -700,11 +711,19 @@ int functions(){
     } else {
       tmp_func_item->is_defined = false;
     }
+
     //set parameter types
     if (params.len != 0){
       tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
       //TODO add malloc check
       addchar('\0', &params);
+      //check param types
+      if (definition == true && was_declared == true){
+        if (strcmp(tmp_func_item->param_types, params.content) != 0){
+          fprintf(stderr, "Function definition is different from declaration.\n");
+          hard_exit(UNDEF_ERR);
+        }
+      }
       strcpy(tmp_func_item->param_types, params.content);
     } else {
       tmp_func_item->param_types = NULL;
@@ -897,6 +916,7 @@ LABEL $$konec0\n\n\n");
         continue;
       default:
         fprintf(stderr, "Syntax error in start\n");
+        result = SYNT_ERR;
         return result;
     }
     return result;
