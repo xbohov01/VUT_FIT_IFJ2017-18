@@ -733,6 +733,9 @@ int functions(){
     }
   }
 
+  //delete params
+  delstr(&params);
+
 /*
   //no entry found
   if (tmp_func_item == NULL){
