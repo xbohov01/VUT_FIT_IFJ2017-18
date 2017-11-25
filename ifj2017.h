@@ -38,8 +38,7 @@ void free_string(tString *str);
 //enumerator for token types
 typedef enum {
 	//operators begin
-	ADD_O,// +
-	ERR,
+	ADD_O = 0,// +
 	SUB_O,// -
 	MUL_O,// *
 	DIV_O,// /
@@ -106,13 +105,14 @@ typedef enum {
 	ERROR,
 	ENDL,
 	ENDF,
+	ERR,
 
 	FUNCTION
 
 } T_token_type;
 
 typedef enum {
-	BEGIN,
+	BEGIN = 0,
 
 	POS_LT,
 	POS_GT,
@@ -164,7 +164,7 @@ void get_token();
 // Possible types for non_terminals
 // Used after rule application
 typedef enum non_term_rules {
-    NT_ADD,  // 1: E -> E + E
+    NT_ADD = 0,  // 1: E -> E + E
     NT_SUB,  // 2: E -> E - E
     NT_MUL,  // 3: E -> E * E
     NT_DIV,  // 4: E -> E / E
@@ -186,14 +186,14 @@ typedef enum non_term_rules {
 } N_T_rules;
 
 typedef enum {
-    INTEGER_NT,
+    INTEGER_NT = 0,
     DOUBLE_NT,
     STRING_NT,
     NONE_NT
 } N_T_types;
 
 typedef enum psa_term_type {
-    ADD,
+    ADD = 0,
     MUL,
     SUB,
     DIV,
@@ -272,21 +272,9 @@ T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_n
 
 // =========PSA_STACK_TESTS===========
 void ps(T_NT_stack *T_NT_s); // Print stack for debug
+void print_item(T_NT_item *itm);
 
 //====SYMTABLE====
-
-/*
-
- typedef struct {
-	symTab_hashTable_t *global;
-	symTab_hashTable_t *local;
-
-	//internal
-	char *typeStringBuffer;
-	size_t typeStringBufferSize;
-	size_t typeStringBufferSizeWrittenChars;
-} symTab_t;
-*/
 
 
 typedef struct hash_tab_symbol hash_tab_symbol_type;

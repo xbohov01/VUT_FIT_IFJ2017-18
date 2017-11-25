@@ -204,6 +204,7 @@ T_NT_item *push_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term)
     else if (in_term == NULL && in_non_term != NULL) {
         new_top->is_non_term = true;
         new_top->data.NTerm.rule = in_non_term->rule;
+        new_top->data.NTerm.type = in_non_term->type;
     }
     else {
         error_exit(INTERNAL_ERR);

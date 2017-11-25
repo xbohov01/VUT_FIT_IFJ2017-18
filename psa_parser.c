@@ -7,6 +7,13 @@
 
 // Feeds non terminal
 Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
+    char x[4][12] = {
+        "INTEGER_NT",
+        "DOUBLE_NT",
+        "STRING_NT",
+        "NONE_NT"
+    };
+    fprintf(stderr, "INPUT TYPE IS: %s (%d)\n", x[input_type], input_type);
     Data_NTerm *temp_non_term_data = malloc(sizeof(Data_NTerm));
     if (temp_non_term_data == NULL) {
         error_exit(INTERNAL_ERR);
@@ -14,6 +21,7 @@ Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
 
     temp_non_term_data->rule = input_rule;
     temp_non_term_data->type = input_type;
+    fprintf(stderr, "OUT TYPE IS: %s (%d)\n", x[temp_non_term_data->type], temp_non_term_data->type);
 
     return temp_non_term_data;
 }
@@ -428,8 +436,8 @@ Data_NTerm *arithm_R() {
 
     static char oper_types[12][3] = {
         "+",
-        "-",
         "*",
+        "-",
         "/",
         "\\",
         "<",
@@ -471,7 +479,7 @@ Data_NTerm *arithm_R() {
                 break;
             case DOUBLE_AR_PSA:
                 look_ahead = pop_T_NT(evaluation_stack);
-                arithm_operand = get_term_type(&look_ahead->data.Term);
+                arithm_operand = get_term_type(&(look_ahead->data.Term));
                 look_ahead = pop_T_NT(evaluation_stack);
                 E = &(look_ahead->data.NTerm);
                 switch (arithm_operand) {
@@ -512,7 +520,7 @@ Data_NTerm *arithm_R() {
                 break;
             case INT_AR_PSA:
                 look_ahead = pop_T_NT(evaluation_stack);
-                arithm_operand = get_term_type(&look_ahead->data.Term);
+                arithm_operand = get_term_type(&(look_ahead->data.Term));
                 look_ahead = pop_T_NT(evaluation_stack);
                 E = &(look_ahead->data.NTerm);
                 switch(arithm_operand) {
@@ -581,7 +589,7 @@ Data_NTerm *arithm_R() {
                 break;
             case STRING_AR_PSA:
                 look_ahead = pop_T_NT(evaluation_stack);
-                arithm_operand = get_term_type(&look_ahead->data.Term);
+                arithm_operand = get_term_type(&(look_ahead->data.Term));
                 look_ahead = pop_T_NT(evaluation_stack);
                 E = &(look_ahead->data.NTerm);
                 switch(arithm_operand) {
@@ -623,6 +631,7 @@ Data_NTerm *arithm_R() {
                     fprintf(stderr, "Unexpected item after PSA\n"); // Debug
                     error_exit(INTERNAL_ERR);
                 }
+                fprintf(stderr, "switch end for operand '%s'\n",  oper_types[arithm_operand]);
                 break;
             default: // Debug
                 fprintf(stderr, "UNKNOWN STATE ARITHM"); // Debug
@@ -631,7 +640,7 @@ Data_NTerm *arithm_R() {
         }
         
     }
-
+    fprintf(stderr, "RETURN TYPE IS: %d\n", used_rule->type);
     return used_rule;
 }
 
@@ -649,6 +658,7 @@ void reduce_by_rule() {
 
     extern T_NT_stack *evaluation_stack;
     
+    ps(processing_stack);
     push_start_term(evaluation_stack);
     get_reversed_rule();
     look_ahead = pop_T_NT(evaluation_stack);
@@ -688,9 +698,11 @@ void reduce_by_rule() {
             error_exit(INTERNAL_ERR); // Debug 
         }
     }
-
     push_T_NT(processing_stack, NULL, used_rule);
     free(used_rule);
+    fprintf(stderr, "IN THE END: %d\n",processing_stack->top->data.NTerm.type);
+
+    fprintf(stderr, "---------------------------------------------\n");
     return;
 }
 
