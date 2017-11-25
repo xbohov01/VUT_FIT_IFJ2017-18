@@ -695,6 +695,42 @@ int functions(){
 
   //check if function is in symtable
   tmp_func_item = hash_table_search(func_table, identifier);
+
+  if (tmp_func_item == NULL){
+    tmp_func_item = hash_table_insert(func_table, identifier);
+    tmp_func_item->value_type = return_type;
+    if (definition){
+      tmp_func_item->is_defined = true;
+    } else {
+      tmp_func_item->is_defined = false;
+    }
+    if (params.len != 0){
+      tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
+      //TODO add malloc check
+      addchar('\0', &params);
+      memcpy(tmp_func_item->param_types, params.content, strlen(params.content)+1);
+      //printf("after copy param_types %s\n", tmp_func_item->param_types);
+    } else {
+      tmp_func_item->param_types = NULL;
+    }
+  } else {
+    if (tmp_func_item->is_defined == true){
+      fprintf(stderr, "Syntax error: Function %s is already defined\n", identifier);
+      free(identifier);
+      hard_exit(UNDEF_ERR);
+    }
+    if (tmp_func_item->value_type != return_type){
+      fprintf(stderr, "Syntax error: Invalid fuction return type\n");
+      free(identifier);
+      hard_exit(UNDEF_ERR);
+    }
+    if (strcmp(tmp_func_item->param_types, params.content) != 0){
+      fprintf(stderr, "Function definition is different from declaration.\n");
+      hard_exit(UNDEF_ERR);
+    }
+  }
+
+/*
   //no entry found
   if (tmp_func_item == NULL){
     was_declared = false;
@@ -712,19 +748,24 @@ int functions(){
       tmp_func_item->is_defined = false;
     }
 
+    printf("declaration or definition params %s\n", params.content);
+
     //set parameter types
     if (params.len != 0){
       tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
       //TODO add malloc check
       addchar('\0', &params);
+      //memcpy(tmp_func_item->param_types, "\0", strlen("\0")+1);
       //check param types
       if (definition == true && was_declared == true){
+        printf("sym: %s params: %s\n",tmp_func_item->param_types, params.content);
         if (strcmp(tmp_func_item->param_types, params.content) != 0){
           fprintf(stderr, "Function definition is different from declaration.\n");
           hard_exit(UNDEF_ERR);
         }
       }
       memcpy(tmp_func_item->param_types, params.content, strlen(params.content)+1);
+      printf("after copy param_types %s\n", tmp_func_item->param_types);
     } else {
       tmp_func_item->param_types = NULL;
     }
@@ -733,7 +774,7 @@ int functions(){
     free(identifier);
     hard_exit(UNDEF_ERR);
   }
-
+*/
   //if function is only declared
   //expecting ENDL(s) before next statement
   if (definition == false){
