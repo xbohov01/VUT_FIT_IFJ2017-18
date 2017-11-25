@@ -300,6 +300,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			}
 			else
 			{
+				fprintf(stderr, "Invalid character on input -> %c\n", n_char);
 				currentToken.token_type = ERROR;
 				hard_exit(LEX_ERR);
 			}
@@ -340,6 +341,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 
 			case ESCAPE:
 			{
+				esc = 0;
 				if (n_char == '"')
 				{
 					addchar('0', &buffer);
@@ -392,6 +394,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					else
 					{
 						currentToken.token_type = ERROR;
+						fprintf(stderr, "Invalid character -> %c | Current buffer -> %s\n", n_char, buffer.content);
 						hard_exit(LEX_ERR);
 					}
 				}
@@ -494,7 +497,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				if (currentToken.token_type == IDENTIFICATOR)
 				{
 					currentToken.id = realloc(currentToken.id, strlen(buffer.content)*sizeof(char)+1);
-					strcpy(currentToken.id, buffer.content);
+					memcpy(currentToken.id, buffer.content, strlen(buffer.content)+1);
 				}
 				token_state = BEGIN;
 			}
@@ -516,15 +519,6 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 
 int start_scanner(char *filename)
 {
-	// if (filename != NULL)
-	// {
-	// 	file = fopen(filename, "r");
-	// 	if (file == NULL)
-	// 	{
-	// 		fprintf(stderr, "File %s cannot be opened.\n", filename);
-	// 		hard_exit(INTERNAL_ERR);
-	// 	}
-	// }
 
 	if (str_init(&buffer) != SUCCESS)
 	{
