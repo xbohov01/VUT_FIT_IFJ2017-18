@@ -407,5 +407,6 @@ int statement();
 
 tString params;
 t_cond_stack if_stack;
+t_cond_stack while_stack;
 
 //====SCANNER====
