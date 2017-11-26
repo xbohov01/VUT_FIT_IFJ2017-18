@@ -112,6 +112,47 @@ void synt_error_print(int given, int expected){
   } \
 }
 
+//stack and condition operations
+//returns randomly generated label id
+//TODO maybe rework into a pseudo-hash function
+int gen_label_id(){
+  return rand();
+}
+
+void c_stack_init(t_cond_stack *stack){
+  stack->top = NULL;
+}
+
+void c_stack_push(t_cond_stack *stack, int data){
+  t_cond_s_item *tmp_item = malloc(sizeof(t_cond_s_item));
+  if (tmp_item == NULL){
+    hard_exit(INTERNAL_ERR);
+  }
+  tmp_item->data = data;
+  tmp_item->next = s->top;
+  s->top = tmp;
+}
+
+void c_stack_pop(t_cond_stack *stack){
+  t_cond_s_item *tmp;
+  if (stack->top != NULL){
+    tmp = s->top;
+    s->top = tmp->next;
+    free(tmp);
+  }
+}
+
+int c_stack_top(t_cond_stack *stack){
+  
+}
+
+void c_stack_destroy(t_cond_stack *stack){
+  while (stack->top != NULL){
+    c_stack_pop(stack);
+  }
+}
+
+
 int end_of_lines(){
   //get_token();
   //CHECKT(ENDL);
@@ -927,6 +968,8 @@ LABEL $$konec0\n\n\n");
 }
 
 int start_parsing(){
+
+  srand(time(NULL));
 
   int result = SYNT_ERR;
 
