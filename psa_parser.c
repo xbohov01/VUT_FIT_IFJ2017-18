@@ -27,7 +27,7 @@ void control_result_type_conform(int value_type) {
                     // Is ok
                     break;
                 case DOUBLE_NT:
-                    retype_to_even_int();      
+                    retype_to_even_int();
                     break;
                 default:
                     fprintf(stderr, "Unexpected operand type, for int or float result value\n");
@@ -348,7 +348,7 @@ Data_NTerm *id_R(hash_tab_symbol_type *found_var) {
             break;
         default:
             fprintf(stderr, "UNEXPECTED TOKEN AFTER PSA");
-            error_exit(INTERNAL_ERR);
+            error_exit(SYNT_ERR);
     }
 
     look_ahead = pop_T_NT(evaluation_stack);
@@ -773,7 +773,7 @@ void reduce_by_rule() {
         }
         else {
             fprintf(stderr, "Unexpected token after PSA\n");
-            error_exit(INTERNAL_ERR); // Debug
+            error_exit(SYNT_ERR); // Debug
         }
     }
     push_T_NT(processing_stack, NULL, used_rule);
