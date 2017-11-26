@@ -9,11 +9,9 @@
 #include "parser_test.h"
 #endif
 
-int cond_label = 0;
 int while_cnt = 0;
 bool returned = false;
 //condition label format
-//printf("LABEL $condition%d$end\n", cond_label);
 
 //terminates all resources and program for error handling
 void hard_exit(int code){
@@ -394,7 +392,6 @@ int if_statements(){
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
 int statement(){
-  int if_cnt = cond_label;
   int cond_key;
   int while_key;
 
@@ -494,34 +491,14 @@ int statement(){
       printf("JUMP $end%d$if\n", cond_key);
       printf("LABEL $condition%d$end\n", cond_key);
 
-      //else if block
-      if (currentToken.token_type == ELSEIF_KEY){
-        while (currentToken.token_type == ELSEIF_KEY){
-          //elseif condition
-          eval_cond_expr(false, cond_key);
-
-          //get_token();
-          //expecting then
-          CHECKT(THEN_KEY);
-          //checking statements
-          if (if_statements() != SUCCESS){
-            hard_exit(SYNT_ERR);
-            //return SYNT_ERR;
-          }
-          //end of conditional statements
-          cond_label++;
-        }
-      }
       //else block
       if (currentToken.token_type == ELSE_KEY){
-        cond_label++;
         if (if_statements() != SUCCESS){
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
         }
         //end of conditional statements
         //printf("LABEL $condition%d$end\n", c_stack_top(&if_stack));
-        cond_label++;
       }
 
       printf("LABEL $end%d$if\n", cond_key);
