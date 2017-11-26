@@ -973,8 +973,8 @@ int main(){
   tmp_func_item->value_type = 0;
 
   tmp_func_item = hash_table_insert(func_table, "substr");
-  tmp_func_item->param_types = malloc(strlen("sin")*sizeof(char)+1);
-  memcpy(tmp_func_item->param_types, "sin", strlen("sin")*sizeof(char)+1);
+  tmp_func_item->param_types = malloc(strlen("sii")*sizeof(char)+1);
+  memcpy(tmp_func_item->param_types, "sii", strlen("sii")*sizeof(char)+1);
   tmp_func_item->value_type = 2;
 
   tmp_func_item = hash_table_insert(func_table, "asc");
