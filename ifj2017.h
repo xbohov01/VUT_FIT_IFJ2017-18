@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <time.h>
 #include "errors.h"
 
 //====ERRORS====
@@ -375,9 +376,9 @@ tToken currentToken;
 bool func_definition;
 
 //stack for nested conditions
-typedef struct{
+typedef struct stack_item{
 	int data;
-	struct t_cond_s_item *next;
+	struct stack_item *next;
 } t_cond_s_item;
 
 typedef struct{
@@ -405,5 +406,6 @@ int if_statements();
 int statement();
 
 tString params;
+t_cond_stack if_stack;
 
 //====SCANNER====
