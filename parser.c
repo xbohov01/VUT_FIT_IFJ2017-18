@@ -34,6 +34,7 @@ void hard_exit(int code){
 
   //TODO destroy all stacks
   c_stack_destroy(&if_stack);
+  c_stack_destroy(&while_stack);
 
   exit(code);
 }
@@ -395,6 +396,7 @@ int if_statements(){
 int statement(){
   int if_cnt = cond_label;
   int cond_key;
+  int while_key;
 
   //expecting one of the above
   switch (currentToken.token_type) {
@@ -489,6 +491,9 @@ int statement(){
         //return SYNT_ERR;
       }
 
+      printf("JUMP $end%d$if\n", cond_key);
+      printf("LABEL $condition%d$end\n", cond_key);
+
       //else if block
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
@@ -519,6 +524,8 @@ int statement(){
         cond_label++;
       }
 
+      printf("LABEL $end%d$if\n", cond_key);
+
       c_stack_pop(&if_stack);
 
 
@@ -535,15 +542,13 @@ int statement(){
       //expecting while
       CHECKT(WHILE_KEY);
       get_token();
-      printf("LABEL $while%d$label\n", while_cnt);
-      eval_cond_expr(true, while_cnt);
-      // do {
-      //   get_token();
-      //   printf("IGNORING EXPR\n");
-      // } while(currentToken.token_type != ENDL);
+      while_key = gen_label_id();
+      c_stack_push(&while_stack, while_key);
 
-      //expecting ENDL after expr TODO maybe not get next token
-      //get_token();
+      printf("LABEL $while%d$label\n", while_key);
+      eval_cond_expr(true, while_key);
+
+      //expecting ENDL after expr
       CHECKT(ENDL);
 
       //while block
@@ -551,13 +556,9 @@ int statement(){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
-      printf("JUMP $while%d$label\n", while_cnt);
-      printf("LABEL $end$while%d$label\n", while_cnt);
+      printf("JUMP $while%d$label\n", while_key);
+      printf("LABEL $end$while%d$label\n", while_key);
       while_cnt++;
-
-      //expecting loop
-      //removed to fix multiple if stat blocks
-      //CHECKT(LOOP_KEY);
 
       return SUCCESS;
 
@@ -951,6 +952,7 @@ int start_parsing(){
 
   str_init(&params);
   c_stack_init(&if_stack);
+  c_stack_init(&while_stack);
 
   extern T_NT_stack *processing_stack;
   extern T_NT_stack *evaluation_stack;
@@ -971,6 +973,7 @@ int start_parsing(){
 
   free(params.content);
   c_stack_destroy(&if_stack);
+  c_stack_destroy(&while_stack);
 
   return result;
 
