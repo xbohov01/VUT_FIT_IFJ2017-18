@@ -325,18 +325,14 @@ Data_NTerm *function_R(hash_tab_symbol_type *func);
 Data_NTerm *arithm_R();
 
 void push_start_term(T_NT_stack *s);
+void check_psa_completion();
 T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
 void insert_stopper(T_NT_stack *s);
 Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
 void control_result_type_conform(int val_type);
 
-extern Data_Term currentToken;
 T_NT_stack *processing_stack;
 T_NT_stack *evaluation_stack;
-
-// TODO: to be deleted
-// For test, simulate rule usage and shows order
-N_T_rules *right_order;
 
 // =======PSA_TAC========
 
