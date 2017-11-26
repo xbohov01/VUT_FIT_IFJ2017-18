@@ -167,15 +167,12 @@ int var_declr(){
 
   //adds type to params and var_table
   if (currentToken.token_type == INTEGER_KEY){
-    addchar('i', &params);
     tmp_var_item->value_type = 0;
     tmp_var_item->value_int = currentToken.value_int;
   } else if (currentToken.token_type == DOUBLE_KEY){
-    addchar('d', &params);
     tmp_var_item->value_type = 1;
     tmp_var_item->value_float = currentToken.value_double;
   } else {
-    addchar('s', &params);
     tmp_var_item->value_type = 2;
     tmp_var_item->value_string = malloc(strlen(currentToken.value_string)+1);
     memcpy(tmp_var_item->value_string, currentToken.value_string, strlen(currentToken.value_string)+1);

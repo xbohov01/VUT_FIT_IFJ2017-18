@@ -371,6 +371,25 @@ void f_call(char *name);
 tToken currentToken;
 bool func_definition;
 
+//stack for nested conditions
+typedef struct{
+	int data;
+	struct t_cond_s_item *next;
+} t_cond_s_item;
+
+typedef struct{
+	t_cond_s_item *top;
+} t_cond_stack;
+
+void c_stack_init(t_cond_stack *stack);
+void c_stack_destroy(t_cond_stack *stack);
+void c_stack_push(t_cond_stack *stack, int data);
+void c_stack_pop(t_cond_stack *stack);
+int c_stack_top(t_cond_stack *stack);
+
+//random label generator
+int gen_label_id();
+
 int start_parsing();
 int start();
 int scope();
