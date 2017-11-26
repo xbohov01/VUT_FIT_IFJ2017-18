@@ -218,11 +218,6 @@ void eval_expr() {
                 }
                 push_start_term(processing_stack);
                 psa_operation(false);
-                // Expected ';'
-                if (currentToken.token_type != SEM) {
-                    fprintf(stderr, "Expecting ';' after first print expression\n");
-                    error_exit(SYNT_ERR);
-                }
                 // Write output part
                 save_to_temp();
                 if ((processing_stack->top->data.NTerm.type == INTEGER_NT) \
