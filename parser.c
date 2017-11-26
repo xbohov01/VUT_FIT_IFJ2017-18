@@ -124,26 +124,26 @@ void c_stack_init(t_cond_stack *stack){
 }
 
 void c_stack_push(t_cond_stack *stack, int data){
-  t_cond_s_item *tmp_item = malloc(sizeof(t_cond_s_item));
-  if (tmp_item == NULL){
+  t_cond_s_item *tmp = malloc(sizeof(t_cond_s_item));
+  if (tmp == NULL){
     hard_exit(INTERNAL_ERR);
   }
-  tmp_item->data = data;
-  tmp_item->next = s->top;
-  s->top = tmp;
+  tmp->data = data;
+  tmp->next = stack->top;
+  stack->top = tmp;
 }
 
 void c_stack_pop(t_cond_stack *stack){
   t_cond_s_item *tmp;
   if (stack->top != NULL){
-    tmp = s->top;
-    s->top = tmp->next;
+    tmp = stack->top;
+    stack->top = tmp->next;
     free(tmp);
   }
 }
 
 int c_stack_top(t_cond_stack *stack){
-  
+  return stack->top->data;
 }
 
 void c_stack_destroy(t_cond_stack *stack){
@@ -383,6 +383,7 @@ int if_statements(){
 //<statement>	return	<expr>
 int statement(){
   int if_cnt = cond_label;
+  int cond_key;
 
   //expecting one of the above
   switch (currentToken.token_type) {
@@ -500,6 +501,10 @@ int statement(){
       eval_cond_expr(false, cond_label);
       //creates jump to else
 
+      //generate condition code
+      cond_key = gen_label_id();
+      c_stack_push(&if_stack, cond_key);
+
       //get_token();
       CHECKT(THEN_KEY);
       //expecting end of line
@@ -511,7 +516,7 @@ int statement(){
         //return SYNT_ERR;
       }
 
-      printf("JUMP $end$%dif\n", if_cnt);
+      printf("JUMP $end$%dif\n", c_stack_top(&if_stack));
       //else if block
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
@@ -527,24 +532,26 @@ int statement(){
             //return SYNT_ERR;
           }
           //end of conditional statements
-          printf("LABEL $condition%d$end\n", cond_label);
+          printf("LABEL $condition%d$end\n", c_stack_top(&if_stack));
           cond_label++;
         }
       }
       //else block
       if (currentToken.token_type == ELSE_KEY){
-        printf("LABEL $condition%d$end\n", cond_label);
+        printf("LABEL $condition%d$end\n", c_stack_top(&if_stack));
         cond_label++;
         if (if_statements() != SUCCESS){
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
         }
         //end of conditional statements
-        printf("LABEL $condition%d$end\n", cond_label);
+        //printf("LABEL $condition%d$end\n", c_stack_top(&if_stack));
         cond_label++;
       }
 
-      printf("LABEL $end$%dif\n", if_cnt);
+      printf("LABEL $end$%dif\n", c_stack_top(&if_stack));
+
+      c_stack_pop(&if_stack);
 
       //has end
       //check end if
@@ -974,6 +981,7 @@ int start_parsing(){
   int result = SYNT_ERR;
 
   str_init(&params);
+  c_stack_init(&if_stack);
 
   extern T_NT_stack *processing_stack;
   extern T_NT_stack *evaluation_stack;
@@ -993,6 +1001,7 @@ int start_parsing(){
   result = start();
 
   free(params.content);
+  c_stack_destroy(&if_stack);
 
   return result;
 
