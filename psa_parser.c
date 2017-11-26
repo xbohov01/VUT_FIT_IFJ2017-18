@@ -7,12 +7,6 @@
 
 // Feeds non terminal
 Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
-    char x[4][12] = {
-        "INTEGER_NT",
-        "DOUBLE_NT",
-        "STRING_NT",
-        "NONE_NT"
-    };
 
     Data_NTerm *temp_non_term_data = malloc(sizeof(Data_NTerm));
     if (temp_non_term_data == NULL) {
@@ -25,6 +19,54 @@ Data_NTerm *create_non_term(N_T_rules input_rule, N_T_types input_type) {
     return temp_non_term_data;
 }
 
+void control_result_type_conform(int value_type) {
+    switch(value_type) {
+        case 0:
+            switch(processing_stack->top->data.NTerm.type) {
+                case INTEGER_NT:
+                    // Is ok
+                    break;
+                case DOUBLE_NT:
+                    retype_to_even_int();      
+                    break;
+                default:
+                    fprintf(stderr, "Unexpected operand type, for int or float result value\n");
+                    error_exit(TYPE_ERR);
+                    break;
+            }
+            break;
+        case 1:
+            switch(processing_stack->top->data.NTerm.type) {
+                case INTEGER_NT:
+                    retype_stack(false, true);
+                    break;
+                case DOUBLE_NT:
+                    // Is ok
+                    break;
+                default:
+                    fprintf(stderr, "Unexpected operand type, for int or float result value\n");
+                    error_exit(TYPE_ERR);
+                    break;
+            }
+            break;
+        case 2:
+            switch(processing_stack->top->data.NTerm.type) {
+                case STRING_NT:
+                    // Is ok
+                    break;
+                default:
+                    fprintf(stderr, "Unexpected operand type, for string result value\n");
+                    error_exit(TYPE_ERR);
+                    break;
+            }
+            break;
+        default:
+            fprintf(stderr, "Unexpected result variable type %d\n", value_type);
+            error_exit(INTERNAL_ERR);
+            break;
+    }
+    return;
+}
 
 void push_start_term(T_NT_stack *s) {
     Data_Term *temp_data = malloc(sizeof(Data_Term));
@@ -49,7 +91,7 @@ void check_psa_completion() {
 
     if (processing_stack->popped->is_non_term == true) {
         pop_T_NT(processing_stack);
-        if ((processing_stack->popped->is_non_term == true) || (processing_stack->popped->data.Term.token_type != ENDL)) {
+        if ((processing_stack->popped->is_non_term == true) || (get_term_type(&(processing_stack->popped->data.Term)) != END)) {
             fprintf(stderr, "Stack is not free at the end\n");
             error_exit(INTERNAL_ERR);
         }
@@ -66,9 +108,6 @@ void check_psa_completion() {
 void eval_cond_expr(bool is_do_while, int label_num) {
 
     extern T_NT_stack *processing_stack;
-    extern T_NT_stack *evaluation_stack;
-    processing_stack = init_T_NT_stack();
-    evaluation_stack = init_T_NT_stack();
 
     push_start_term(processing_stack);
     psa_operation(true);
@@ -76,8 +115,10 @@ void eval_cond_expr(bool is_do_while, int label_num) {
     cond_jump(is_do_while, label_num);
 
     check_psa_completion();
-    destroy_T_NT_stack(processing_stack);
-    destroy_T_NT_stack(evaluation_stack);
+    if (get_term_type(&(currentToken)) != END) {
+        fprintf(stderr, "Unexpected token instead of end\n");
+        error_exit(INTERNAL_ERR);
+    }
     return;
 }
 
@@ -88,6 +129,8 @@ void eval_expr() {
 
     enum {
         CHECK_START_SYM,
+        PRINT_START,
+        PRINT_CONT,
         VAR_INIT,
         VAR_DEFINITION,
         CALC_PSA,
@@ -95,11 +138,7 @@ void eval_expr() {
         FINISHED_EXPR
     } eval_ex_state;
 
-    extern T_NT_stack *processing_stack;
-    extern T_NT_stack *evaluation_stack;
     hash_tab_symbol_type *result_variable;
-    processing_stack = init_T_NT_stack();
-    evaluation_stack = init_T_NT_stack();
 
     eval_ex_state = CHECK_START_SYM;
 
@@ -125,10 +164,10 @@ void eval_expr() {
                     eval_ex_state = VAR_INIT;
                 }
                 else if (currentToken.token_type == PRINT_KEY) {
-                    eval_ex_state = VAR_INIT;
+                    eval_ex_state = PRINT_START;
                 }
                 else if (currentToken.token_type == SEM) {
-                    eval_ex_state = VAR_INIT;
+                    eval_ex_state = PRINT_CONT;
                 }
                 else {
                     fprintf(stderr, "Bad variable on input of eval_expr\n");
@@ -144,6 +183,48 @@ void eval_expr() {
                 }
                 push_start_term(processing_stack);
                 psa_operation(false);
+                eval_ex_state = END_CHECK;
+                break;
+            case PRINT_START:
+                get_token();
+                // CANT be ended at once
+                if (get_term_type(&currentToken) == END) {
+                    fprintf(stderr, "Expression zero length after print\n");
+                    error_exit(SYNT_ERR);
+                }
+                push_start_term(processing_stack);
+                psa_operation(false);
+                // Expected ';'
+                if (currentToken.token_type != SEM) {
+                    fprintf(stderr, "Expecting ';' after first print expression\n");
+                    error_exit(SYNT_ERR);
+                }
+                // Write output part
+                save_to_temp();
+                if ((processing_stack->top->data.NTerm.type == INTEGER_NT) \
+                    || (processing_stack->top->data.NTerm.type == DOUBLE_NT)) {
+                    // write_space(); // TODO: maybe not needed
+                }
+                write_output();
+                check_psa_completion();
+                eval_ex_state = END_CHECK;
+                break;
+            case PRINT_CONT:
+                get_token();
+                // Can be ended at once
+                if (currentToken.token_type == ENDL) {
+                    eval_ex_state = FINISHED_EXPR;
+                    break;
+                }
+                push_start_term(processing_stack);
+                psa_operation(false);
+                // Write output part
+                save_to_temp();
+                if ((processing_stack->top->data.NTerm.type == INTEGER_NT) \
+                    || (processing_stack->top->data.NTerm.type == DOUBLE_NT)) {
+                    // write_space(); // TODO: maybe not needed
+                }
+                write_output();
                 check_psa_completion();
                 eval_ex_state = END_CHECK;
                 break;
@@ -158,13 +239,15 @@ void eval_expr() {
                 get_token();
                 push_start_term(processing_stack);
                 psa_operation(false);
+                control_result_type_conform(result_variable->value_type);
                 save_result(result_variable->symbol_name);
                 check_psa_completion();
                 eval_ex_state = END_CHECK;
                 break;
             case END_CHECK:
-                if (currentToken.token_type != ENDL) {
+                if (get_term_type(&(currentToken)) != END) {
                     fprintf(stderr, "Unexpected token instead of end\n");
+                    error_exit(SYNT_ERR);
                 }
                 eval_ex_state = FINISHED_EXPR;
                 break;
@@ -173,9 +256,6 @@ void eval_expr() {
                 break;
         }
     }
-
-    destroy_T_NT_stack(processing_stack);
-    destroy_T_NT_stack(evaluation_stack);
     return;
 }
 
@@ -382,7 +462,7 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                     fprintf(stderr, "Unexpected stack end\n");
                     error_exit(INTERNAL_ERR);
                 }
-                else if ((look_ahead->is_non_term == false) && (get_term_type(&look_ahead->data.Term) == END)) {
+                else if ((look_ahead->is_non_term == false) && (get_term_type(&(look_ahead->data.Term)) == END)) {
                     func_state = FIN_FUNC;
                 }
                 else {
@@ -451,24 +531,43 @@ Data_NTerm *arithm_R() {
     extern T_NT_stack *evaluation_stack;
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;
-    Data_NTerm *E;
+    Data_NTerm *E1;
+    Data_NTerm *E2;
     PSA_Term_type arithm_operand;
 
     look_ahead = evaluation_stack->popped;
-    arithm_state = START_ARITHM_PSA;
+    E2 = &(look_ahead->data.NTerm);
 
+    look_ahead = pop_T_NT(evaluation_stack);
+    if ((look_ahead->is_non_term == false) && (look_ahead->data.Term.token_type == ENDL)) {
+        fprintf(stderr, "Expected operand, got nothing\n");
+        error_exit(SYNT_ERR);
+    }
+    else if (look_ahead->is_non_term != false) {
+        fprintf(stderr, "Expected operand, got operand\n");
+        error_exit(SYNT_ERR);
+    }
+    arithm_operand = get_term_type(&(look_ahead->data.Term));
+
+    look_ahead = pop_T_NT(evaluation_stack);
+    if ((look_ahead->is_non_term == false) && (look_ahead->data.Term.token_type == ENDL)) {
+        fprintf(stderr, "Expected operand, got nothing\n");
+        error_exit(SYNT_ERR);
+    }
+    E1 = &(look_ahead->data.NTerm);
+
+    arithm_state = START_ARITHM_PSA;
 
     while (arithm_state != FINISHED_ARITHM_PSA) {
         switch(arithm_state) {
             case START_ARITHM_PSA:
-                E = &(look_ahead->data.NTerm);
-                if (E->type == DOUBLE_NT) {
+                if (E2->type == DOUBLE_NT) {
                     arithm_state = DOUBLE_AR_PSA;
                 }
-                else if (E->type == INTEGER_NT) {
+                else if (E2->type == INTEGER_NT) {
                     arithm_state = INT_AR_PSA;
                 }
-                else if (E->type == STRING_NT) {
+                else if (E2->type == STRING_NT) {
                     arithm_state = STRING_AR_PSA;
                 }
                 else {
@@ -477,10 +576,6 @@ Data_NTerm *arithm_R() {
                 }
                 break;
             case DOUBLE_AR_PSA:
-                look_ahead = pop_T_NT(evaluation_stack);
-                arithm_operand = get_term_type(&(look_ahead->data.Term));
-                look_ahead = pop_T_NT(evaluation_stack);
-                E = &(look_ahead->data.NTerm);
                 switch (arithm_operand) {
                     case ADD:
                     case SUB:
@@ -492,15 +587,15 @@ Data_NTerm *arithm_R() {
                     case GTE:
                     case EQ:
                     case NEQ:
-                        if (E->type == INTEGER_NT) {
+                        if (E1->type == INTEGER_NT) {
                             retype_stack(false, true);
                         }
-                        else if (E->type == DOUBLE_NT) {
+                        else if (E1->type == DOUBLE_NT) {
                             ;
                         }
                         // Unexpected string type
                         else {
-                            fprintf(stderr, "1) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                            fprintf(stderr, "1) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E2->type], oper_types[arithm_operand], op_types[E1->type]);
                             error_exit(TYPE_ERR);
                         }
                         used_rule = create_non_term(map_NT_rule(arithm_operand), DOUBLE_NT);
@@ -512,16 +607,12 @@ Data_NTerm *arithm_R() {
                         error_exit(TYPE_ERR);
                         break;
                     default:
-                        fprintf(stderr, "UNEXPECTED SIGN AFTER PSA\n");
-                        error_exit(INTERNAL_ERR);
+                        fprintf(stderr, "Unexpected operator\n");
+                        error_exit(SYNT_ERR);
                         break;
                 }
                 break;
             case INT_AR_PSA:
-                look_ahead = pop_T_NT(evaluation_stack);
-                arithm_operand = get_term_type(&(look_ahead->data.Term));
-                look_ahead = pop_T_NT(evaluation_stack);
-                E = &(look_ahead->data.NTerm);
                 switch(arithm_operand) {
                     case ADD:
                     case SUB:
@@ -532,16 +623,16 @@ Data_NTerm *arithm_R() {
                     case GTE:
                     case EQ:
                     case NEQ:
-                        if (E->type == INTEGER_NT) {
+                        if (E1->type == INTEGER_NT) {
                             used_rule = create_non_term(map_NT_rule(arithm_operand), INTEGER_NT);
                         }
-                        else if (E->type == DOUBLE_NT) {
+                        else if (E1->type == DOUBLE_NT) {
                             retype_stack(true, true);
                             used_rule = create_non_term(map_NT_rule(arithm_operand), DOUBLE_NT);
                         }
                         // Unexpected string type
                         else {
-                            fprintf(stderr, "2) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                            fprintf(stderr, "2) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E2->type], oper_types[arithm_operand], op_types[E1->type]);
                             error_exit(TYPE_ERR);
                         }
 
@@ -549,16 +640,16 @@ Data_NTerm *arithm_R() {
                         arithm_state = AR_END_PSA;
                         break;
                     case DIV:
-                        if (E->type == INTEGER_NT) {
+                        if (E1->type == INTEGER_NT) {
                             retype_stack(true, true);
                             retype_stack(false, true);
                         }
-                        else if (E->type == DOUBLE_NT) {
-                            retype_stack(false, true);
+                        else if (E1->type == DOUBLE_NT) {
+                            retype_stack(true, true);
                         }
                         // Unexpected string type
                         else {
-                            fprintf(stderr, "3) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                            fprintf(stderr, "3) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E2->type], oper_types[arithm_operand], op_types[E1->type]);
                             error_exit(TYPE_ERR);
                         }
                         used_rule = create_non_term(NT_DIV, DOUBLE_NT);
@@ -567,9 +658,8 @@ Data_NTerm *arithm_R() {
                         arithm_state = AR_END_PSA;
                         break;
                     case IDIV:
-                        E = &(look_ahead->data.NTerm);
-                        if (E->type != INTEGER_NT) {
-                            fprintf(stderr, "Integer division works only with integers, got \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
+                        if (E1->type != INTEGER_NT) {
+                            fprintf(stderr, "Integer division works only with integers, got \"%s\" '%s' \"%s\"\n", op_types[E2->type], oper_types[arithm_operand], op_types[E1->type]);
                             error_exit(TYPE_ERR);
                         }
                         else {
@@ -581,20 +671,12 @@ Data_NTerm *arithm_R() {
                         arithm_state = AR_END_PSA;
                         break;
                     default:
-                        fprintf(stderr, "UNEXPECTED SIGN AFTER PSA\n");
-                        error_exit(INTERNAL_ERR);
+                        fprintf(stderr, "Unexpected operator\n");
+                        error_exit(SYNT_ERR);
                         break;
                 }
                 break;
             case STRING_AR_PSA:
-                look_ahead = pop_T_NT(evaluation_stack);
-                arithm_operand = get_term_type(&(look_ahead->data.Term));
-                look_ahead = pop_T_NT(evaluation_stack);
-                E = &(look_ahead->data.NTerm);
-                if (E->type != STRING_NT) {
-                    fprintf(stderr, "Expected string, got \"%s\" '%s' \"%s\"\n", op_types[E->type], oper_types[arithm_operand], op_types[DOUBLE_AR_PSA]);
-                    error_exit(TYPE_ERR);
-                }
                 switch(arithm_operand) {
                     case ADD:
                     case NEQ:
@@ -603,6 +685,10 @@ Data_NTerm *arithm_R() {
                     case LTE:
                     case GTE:
                     case EQ:
+                        if (E1->type != STRING_NT) {
+                            fprintf(stderr, "Expected string, got \"%s\" '%s' \"%s\"\n", op_types[E2->type], oper_types[arithm_operand], op_types[E1->type]);
+                            error_exit(TYPE_ERR);
+                        }
                         used_rule = create_non_term(map_NT_rule(arithm_operand), STRING_NT);
                         str_arithm(arithm_operand);
                         arithm_state = AR_END_PSA;
@@ -611,12 +697,12 @@ Data_NTerm *arithm_R() {
                     case MUL:
                     case DIV:
                     case IDIV:
-                        fprintf(stderr, "Unexpected string operand '%s'\n", oper_types[arithm_operand]);
+                        fprintf(stderr, "Unexpected string operator '%s'\n", oper_types[arithm_operand]);
                         error_exit(TYPE_ERR);
                         break;
                     default:
-                        fprintf(stderr, "UNEXPECTED SIGN AFTER PSA\n");
-                        error_exit(INTERNAL_ERR);
+                        fprintf(stderr, "Unexpected operator\n");
+                        error_exit(SYNT_ERR);
                         break;
 
                 }
@@ -630,7 +716,6 @@ Data_NTerm *arithm_R() {
                     fprintf(stderr, "Unexpected item after PSA\n"); // Debug
                     error_exit(INTERNAL_ERR);
                 }
-                fprintf(stderr, "switch end for operand '%s'\n",  oper_types[arithm_operand]);
                 break;
             default: // Debug
                 fprintf(stderr, "UNKNOWN STATE ARITHM"); // Debug
@@ -643,10 +728,6 @@ Data_NTerm *arithm_R() {
 }
 
 void reduce_by_rule() {
-
-        // FUNC_PSA,
-        // FUNC_EXTEND_PSA,
-        // FUNC_END_PSA,
 
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;

@@ -115,14 +115,14 @@ void print_item(T_NT_item *act) {
                     if ((found_var = hash_table_search(var_table, act->data.Term.id)) != NULL)
                         fprintf(stderr, "\tName: %s Type: %s\n", act->data.Term.id, N_T_type_names[found_var->value_type]);
                     else {
-                        fprintf(stderr, "\tUnknown variable\n", act->data.Term.id);
+                        fprintf(stderr, "\tUnknown variable %s\n", act->data.Term.id);
                     }
                 }
                 else if (act->data.Term.token_type == FUNCTION) {
                     if ((found_func = hash_table_search(func_table, act->data.Term.id)) != NULL)
                         fprintf(stderr, "\tName: %s Return val: %s\t Params: %s\n", act->data.Term.id, N_T_type_names[found_func->value_type], found_func->param_types);
                     else {
-                        fprintf(stderr, "\tUnknown function\n", act->data.Term.id);
+                        fprintf(stderr, "\tUnknown function %s\n", act->data.Term.id);
                     }
                 }
                 else {

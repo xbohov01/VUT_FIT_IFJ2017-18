@@ -167,15 +167,12 @@ int var_declr(){
 
   //adds type to params and var_table
   if (currentToken.token_type == INTEGER_KEY){
-    addchar('i', &params);
     tmp_var_item->value_type = 0;
     tmp_var_item->value_int = currentToken.value_int;
   } else if (currentToken.token_type == DOUBLE_KEY){
-    addchar('d', &params);
     tmp_var_item->value_type = 1;
     tmp_var_item->value_float = currentToken.value_double;
   } else {
-    addchar('s', &params);
     tmp_var_item->value_type = 2;
     tmp_var_item->value_string = malloc(strlen(currentToken.value_string)+1);
     memcpy(tmp_var_item->value_string, currentToken.value_string, strlen(currentToken.value_string)+1);
@@ -197,6 +194,8 @@ int var_declr(){
     //evaluate expression
     printf("DEFVAR LF@_%s\n", var_id);
     eval_expr();
+    control_result_type_conform(tmp_var_item->value_type); // For correct result variable retyping 
+    check_psa_completion(); // Check that processing stack has only one non term on top and free
     save_result(var_id);
     free(var_id);
   } else {
@@ -405,54 +404,45 @@ int statement(){
 
     case PRINT_KEY :
 
-      eval_expr();
-      save_to_temp();
+      eval_expr(); // WRITE to output is now included
 
-      printf("WRITE GF@$_stack_temp\n");
-
-      //expecting ; or ENDL
-      //TODO add eval expr for the loop part
+      //expecting ;
       while (currentToken.token_type == SEM){
-        get_token();
+        // get_token();
 
-        //eval_expr();
-        //save_to_temp();
-        //printf("WRITE GF@_stack_temp\n");
+        eval_expr(); // WRITE to output is now included
 
+        // //expecting value or identifier or EOL
+        // if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
+        //     && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
+        //       if (currentToken.token_type == ENDL){
+        //         return end_of_lines();
+        //       }
+        //       fprintf(stderr, "Identifier or expression expected\n");
+        //       hard_exit(SYNT_ERR);
+        //       //return SYNT_ERR;
+        //     }
 
-        //expecting value or identifier or EOL
-        if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
-            && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
-              if (currentToken.token_type == ENDL){
-                return end_of_lines();
-              }
-              fprintf(stderr, "Identifier or expression expected\n");
-              hard_exit(SYNT_ERR);
-              //return SYNT_ERR;
-            }
-
-        //tac
-        if (currentToken.token_type == IDENTIFICATOR){
-          tmp_var_item = hash_table_search(var_table, currentToken.id);
-          if (tmp_var_item == NULL){
-            fprintf(stderr, "Syntax error: Variable %s not declared.\n", currentToken.id);
-            hard_exit(UNDEF_ERR);
-          }
-          printf("WRITE LF@_%s\n", currentToken.id);
-        } else if (currentToken.token_type == INTEGER){
-          printf("WRITE int@%d\n", currentToken.value_int);
-        } else if (currentToken.token_type == DOUBLE){
-          printf("WRITE float@%f\n", currentToken.value_double);
-        } else if (currentToken.token_type == STRING){
-          printf("WRITE string@%s\n", currentToken.value_string);
-        }
+        // //tac
+        // if (currentToken.token_type == IDENTIFICATOR){
+        //   tmp_var_item = hash_table_search(var_table, currentToken.id);
+        //   if (tmp_var_item == NULL){
+        //     fprintf(stderr, "Syntax error: Variable %s not declared.\n", currentToken.id);
+        //     hard_exit(UNDEF_ERR);
+        //   }
+        //   printf("WRITE LF@_%s\n", currentToken.id);
+        // } else if (currentToken.token_type == INTEGER){
+        //   printf("WRITE int@%d\n", currentToken.value_int);
+        // } else if (currentToken.token_type == DOUBLE){
+        //   printf("WRITE float@%f\n", currentToken.value_double);
+        // } else if (currentToken.token_type == STRING){
+        //   printf("WRITE string@%s\n", currentToken.value_string);
+        // }
         //has thing to print, move to next token
-        get_token();
+        // get_token();
       }
-      //ENDLs
-      //return end_of_lines();
-      fprintf(stderr, "Syntax error: Expecting ; after expression in Print statement.\n");
-      hard_exit(SYNT_ERR);
+      //expecting ENDLs
+      return end_of_lines();
 
     case IF_KEY :
 
@@ -937,8 +927,8 @@ int start_parsing(){
 
   extern T_NT_stack *processing_stack;
   extern T_NT_stack *evaluation_stack;
-  processing_stack = NULL; // Init psa_parser stacks to NULL for
-  evaluation_stack = NULL; // correct error exit (if needed)
+  processing_stack = init_T_NT_stack();
+  evaluation_stack = init_T_NT_stack();
 
   //get first token
   get_token();

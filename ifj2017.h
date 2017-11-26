@@ -319,16 +319,15 @@ void psa_operation(bool allow_bool);
 void reduce_by_rule();
 void get_reversed_rule();
 
-// TODO: create operations
 Data_NTerm *id_R(hash_tab_symbol_type *var);
 Data_NTerm *function_R(hash_tab_symbol_type *func);
 Data_NTerm *arithm_R();
-
 
 void push_start_term(T_NT_stack *s);
 T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
 void insert_stopper(T_NT_stack *s);
 Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
+void control_result_type_conform(int val_type);
 
 extern Data_Term currentToken;
 T_NT_stack *processing_stack;
@@ -355,11 +354,15 @@ void save_to_temp();
 void push_var_id(char *name);
 void push_const_id(Data_Term *item);
 void retype_stack(bool second_operand, bool int2fl);
+void retype_to_even_int();
 void arithm_stack(PSA_Term_type op);
-void clean_stack_TAC();
 
-//String arithmetics
+// String arithmetics
 void str_arithm(PSA_Term_type op);
+
+// Print operations
+void write_space();
+void write_output();
 
 // Jumps or function calls
 void cond_jump(bool is_while, int num);

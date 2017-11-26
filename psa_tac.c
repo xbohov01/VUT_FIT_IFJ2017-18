@@ -115,6 +115,13 @@ void retype_stack(bool second_operand, bool int2fl) {
     return;
 }
 
+void retype_to_even_int() {
+    printf("# Retype to int with even precedence\n");
+    printf("FLOAT2R2EINTS\n");
+    printf("\n");
+    return;
+}
+
 void arithm_stack(PSA_Term_type op) {
     printf("# Stack arithmetics:\n");
     switch (op) {
@@ -164,14 +171,16 @@ void arithm_stack(PSA_Term_type op) {
     return;
 }
 
+// String operations 
+// ========================================
 void str_arithm(PSA_Term_type op) {
     printf("# String arithmetics\n");
     switch(op) {
         case ADD:
-            printf("POPS GF@_str_temp_2\n");
-            printf("POPS GF@_str_temp_1\n");
-            printf("CONCAT GF@_str_temp_1 GF@_str_temp_1 GF@_str_temp_2\n");
-            printf("PUSHS GF@_str_temp_1\n");
+            printf("POPS GF@$_str_temp_2\n");
+            printf("POPS GF@$_str_temp_1\n");
+            printf("CONCAT GF@$_str_temp_1 GF@$_str_temp_1 GF@$_str_temp_2\n");
+            printf("PUSHS GF@$_str_temp_1\n");
             break;
         case LT:
             printf("LTS\n");
@@ -201,11 +210,15 @@ void str_arithm(PSA_Term_type op) {
     return;
 }
 
-void clean_stack_TAC() {
-    printf("CLEARS\n");
+// Print operations
+// =========================================
+void write_space() {
+    printf("WRITE string@\\032\n");
 }
 
-// =========================================
+void write_output() {
+    printf("WRITE GF@$_stack_temp\n");
+}
 
 // Jumps or function calls
 // =========================================
