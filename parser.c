@@ -33,6 +33,7 @@ void hard_exit(int code){
   }
 
   //TODO destroy all stacks
+  c_stack_destroy(&if_stack);
 
   exit(code);
 }
@@ -124,6 +125,7 @@ void c_stack_init(t_cond_stack *stack){
 }
 
 void c_stack_push(t_cond_stack *stack, int data){
+  fprintf(stderr, "Pushing condition id %d\n", data);
   t_cond_s_item *tmp = malloc(sizeof(t_cond_s_item));
   if (tmp == NULL){
     hard_exit(INTERNAL_ERR);
@@ -136,14 +138,21 @@ void c_stack_push(t_cond_stack *stack, int data){
 void c_stack_pop(t_cond_stack *stack){
   t_cond_s_item *tmp;
   if (stack->top != NULL){
+    fprintf(stderr, "Pop condition stack\n");
     tmp = stack->top;
     stack->top = tmp->next;
     free(tmp);
+  } else {
+    fprintf(stderr, "Nothing left to pop!\n");
   }
 }
 
 int c_stack_top(t_cond_stack *stack){
-  return stack->top->data;
+  if (stack->top != NULL){
+    fprintf(stderr, "Top condition id %d\n", stack->top->data);
+    return stack->top->data;
+  }
+
 }
 
 void c_stack_destroy(t_cond_stack *stack){
@@ -235,7 +244,7 @@ int var_declr(){
     //evaluate expression
     printf("DEFVAR LF@_%s\n", var_id);
     eval_expr();
-    control_result_type_conform(tmp_var_item->value_type); // For correct result variable retyping 
+    control_result_type_conform(tmp_var_item->value_type); // For correct result variable retyping
     check_psa_completion(); // Check that processing stack has only one non term on top and free
     save_result(var_id);
     free(var_id);
@@ -453,35 +462,6 @@ int statement(){
         // get_token();
 
         eval_expr(); // WRITE to output is now included
-
-        // //expecting value or identifier or EOL
-        // if (currentToken.token_type != STRING && currentToken.token_type != INTEGER
-        //     && currentToken.token_type != DOUBLE && currentToken.token_type != IDENTIFICATOR){
-        //       if (currentToken.token_type == ENDL){
-        //         return end_of_lines();
-        //       }
-        //       fprintf(stderr, "Identifier or expression expected\n");
-        //       hard_exit(SYNT_ERR);
-        //       //return SYNT_ERR;
-        //     }
-
-        // //tac
-        // if (currentToken.token_type == IDENTIFICATOR){
-        //   tmp_var_item = hash_table_search(var_table, currentToken.id);
-        //   if (tmp_var_item == NULL){
-        //     fprintf(stderr, "Syntax error: Variable %s not declared.\n", currentToken.id);
-        //     hard_exit(UNDEF_ERR);
-        //   }
-        //   printf("WRITE LF@_%s\n", currentToken.id);
-        // } else if (currentToken.token_type == INTEGER){
-        //   printf("WRITE int@%d\n", currentToken.value_int);
-        // } else if (currentToken.token_type == DOUBLE){
-        //   printf("WRITE float@%f\n", currentToken.value_double);
-        // } else if (currentToken.token_type == STRING){
-        //   printf("WRITE string@%s\n", currentToken.value_string);
-        // }
-        //has thing to print, move to next token
-        // get_token();
       }
       //expecting ENDLs
       return end_of_lines();
@@ -491,12 +471,12 @@ int statement(){
       //has if
       get_token();
 
-      eval_cond_expr(false, cond_label);
-      //creates jump to else
-
       //generate condition code
       cond_key = gen_label_id();
       c_stack_push(&if_stack, cond_key);
+
+      eval_cond_expr(false, cond_key);
+      //creates jump to else
 
       //get_token();
       CHECKT(THEN_KEY);
@@ -509,12 +489,11 @@ int statement(){
         //return SYNT_ERR;
       }
 
-      printf("JUMP $end$%dif\n", c_stack_top(&if_stack));
       //else if block
       if (currentToken.token_type == ELSEIF_KEY){
         while (currentToken.token_type == ELSEIF_KEY){
           //elseif condition
-          eval_cond_expr(false, cond_label);
+          eval_cond_expr(false, cond_key);
 
           //get_token();
           //expecting then
@@ -525,13 +504,11 @@ int statement(){
             //return SYNT_ERR;
           }
           //end of conditional statements
-          printf("LABEL $condition%d$end\n", c_stack_top(&if_stack));
           cond_label++;
         }
       }
       //else block
       if (currentToken.token_type == ELSE_KEY){
-        printf("LABEL $condition%d$end\n", c_stack_top(&if_stack));
         cond_label++;
         if (if_statements() != SUCCESS){
           hard_exit(SYNT_ERR);
@@ -542,9 +519,8 @@ int statement(){
         cond_label++;
       }
 
-      printf("LABEL $end$%dif\n", c_stack_top(&if_stack));
-
       c_stack_pop(&if_stack);
+
 
       //has end
       //check end if
