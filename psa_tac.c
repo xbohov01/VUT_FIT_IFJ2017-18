@@ -247,4 +247,18 @@ void f_call(char *name) {
     printf("\n");
     return;
 }
+
+void built_in_call(char which) {
+    printf("# Built in function call\n");
+    if (which == 'c') {
+        ;
+    }
+}
+
+void define_built_in_func() {
+    return;
+}
+void which_defined(bool add, char which) {
+    return;
+}
 // =========================================

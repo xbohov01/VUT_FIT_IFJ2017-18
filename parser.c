@@ -173,6 +173,10 @@ int end_of_lines(){
 
 }
 
+void check_functions_definition() {
+  return;
+}
+
 //<deklaracie> ->	<deklaracia>	<endline>	<deklaracie>
 //<deklaracia> -> dim	<id>	as	<type>	<varinit>
 //<varinit> -> = <expr>
@@ -219,14 +223,10 @@ int var_declr(){
   //adds type to params and var_table
   if (currentToken.token_type == INTEGER_KEY){
     tmp_var_item->value_type = 0;
-    tmp_var_item->value_int = currentToken.value_int;
   } else if (currentToken.token_type == DOUBLE_KEY){
     tmp_var_item->value_type = 1;
-    tmp_var_item->value_float = currentToken.value_double;
   } else {
     tmp_var_item->value_type = 2;
-    tmp_var_item->value_string = malloc(strlen(currentToken.value_string)+1);
-    memcpy(tmp_var_item->value_string, currentToken.value_string, strlen(currentToken.value_string)+1);
   }
 
   get_token();
@@ -415,18 +415,18 @@ int statement(){
     case DOUBLE :
     case STRING :
     case IDENTIFICATOR:
+      eval_expr();
+      return end_of_lines();
+      break;
     case RETURN_KEY :
       //implicit return handle
-      if (currentToken.token_type == RETURN_KEY){
-        returned = true;
-      }
+      returned = true;
       //resolve expression or function call or return
       eval_expr();
-      // do {
-      //   get_token();
-      // } while(currentToken.token_type != ENDL);
+      printf("POPFRAME\n");
+      printf("RETURN\n\n\n");
       return end_of_lines();
-
+      break;
     case INPUT_KEY :
       get_token();
       //expecting identifier
@@ -494,24 +494,6 @@ int statement(){
       printf("JUMP $end%d$if\n", cond_key);
       printf("LABEL $condition%d$end\n", cond_key);
 
-      //else if block
-      if (currentToken.token_type == ELSEIF_KEY){
-        while (currentToken.token_type == ELSEIF_KEY){
-          //elseif condition
-          eval_cond_expr(false, cond_key);
-
-          //get_token();
-          //expecting then
-          CHECKT(THEN_KEY);
-          //checking statements
-          if (if_statements() != SUCCESS){
-            hard_exit(SYNT_ERR);
-            //return SYNT_ERR;
-          }
-          //end of conditional statements
-          cond_label++;
-        }
-      }
       //else block
       if (currentToken.token_type == ELSE_KEY){
         cond_label++;
@@ -863,48 +845,78 @@ int start(){
   printf("JUMP $$main\n");
 
   //inbuilt function
-  printf("LABEL $substring\n");
-  printf("PUSHFRAME\n\
-DEFVAR LF@int0\n\
-DEFVAR LF@bool0\n\
-DEFVAR LF@bool1\n\
-DEFVAR LF@bool2\n\
-DEFVAR LF@bool3\n\
-DEFVAR LF@strl\n\
-DEFVAR LF@char0\n\
-DEFVAR LF@string0\n\
-\
-STRLEN LF@strl LF@$_arg_0\n\
-\
-LT LF@bool1 LF@_arg_2 int@1\n\
-\
-JUMPIFEQ $$konec0 LF@bool1 bool@TRUE\n\
-\
-EQ LF@bool1 LF@strl int@0\n\
-JUMPIFEQ $$konec0 LF@bool1 bool@TRUE\n\
-\
-LT LF@bool1 LF@_arg_3 int@0\n\
-JUMPIFEQ $$konec1 LF@bool1 bool@TRUE \n\
-\
-LABEL $$cyklus1\n\
-EQ LF@bool0 LF@_arg_2 LF@_arg_2\n\
-LT LF@bool1 LF@_arg_1 LF@strl\n\
-\
-OR LF@bool3 LF@bool0 LF@bool1\n\
-\
-JUMPIFEQ $$cyklus0 LF@bool3 bool@TRUE\n\
-\
-GETCHAR LF@char0 LF@_arg_0 LF@_arg_2\n\
-CONCAT LF@string0 LF@string0 LF@char0\n\
-\
-MUL LF@vysl LF@vysl LF@a\n\
-ADD LF@_arg_2 LF@_arg_2 int@1\n\
-\
-JUMP $$cyklus1\n\
-\
-LABEL $$cyklus0\n\
-\
-LABEL $$konec0\n\n\n");
+  printf("LABEL $_substr\n\
+  PUSHFRAME\n\
+  STRLEN GF@$_str_temp_2 LF@$_arg_0\n\
+  JUMPIFEQ $_assert_zero GF@$_str_temp_2 int@0\n\
+  \n\
+  LT GF@$_str_temp_1 LF@$_arg_1 int@1\n\
+  JUMPIFEQ $_assert_zero GF@$_str_temp_1 bool@true\n\
+  \n\
+  LT GF@$_str_temp_1 LF@$_arg_2 int@0\n\
+  JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true\n\
+  \n\
+  SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1\n\
+  GT GF@$_str_temp_1 LF@$_arg_2 GF@$_str_temp_1\n\
+  JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true\n\
+  MOVE GF@$_stack_temp string@\n\
+  JUMP $_compare_next\n\
+  LABEL $_truncate_N\n\
+  SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1\n\
+  MOVE LF@$_arg_2 GF@$_str_temp_1\n\
+  \n\
+  MOVE GF@$_stack_temp string@\n\
+  LABEL $_compare_next\n\
+  JUMPIFEQ $_all_done LF@$_arg_2 int@0\n\
+  GETCHAR GF@$_str_temp_1 LF@$_arg_0 LF@$_arg_1\n\
+  CONCAT GF@$_stack_temp GF@$_stack_temp GF@$_str_temp_1\n\
+  ADD LF@$_arg_1 LF@$_arg_1 int@1\n\
+  SUB LF@$_arg_2 LF@$_arg_2 int@1\n\
+  JUMP $_compare_next\n\
+  \n\
+  LABEL $_assert_zero\n\
+  MOVE GF@$_stack_temp string@\n\
+  \n\
+  LABEL $_all_done\n\
+  PUSHS GF@$_stack_temp\n\
+  POPFRAME\n\
+  RETURN\n\n");
+
+  printf("LABEL $_length\n\
+  PUSHFRAME\n\
+  STRLEN GF@$_stack_temp LF@$_arg_0\n\
+  PUSHS GF@$_stack_temp\n\
+  POPFRAME\n\
+  RETURN\n\n");
+
+  printf("LABEL $_chr\n\
+  PUSHFRAME\n\
+  INT2CHAR GF@$_stack_temp LF@$_arg_0\n\
+  PUSHS GF@$_stack_temp\n\
+  POPFRAME\n\
+  RETURN\n\n");
+
+  printf("LABEL $_asc\n\
+  PUSHFRAME\n\
+  STRLEN GF@$_stack_temp LF@$_arg_0\n\
+  JUMPIFEQ $_assert_zero_end GF@$_stack_temp int@0\n\
+  \n\
+  SUB GF@$_stack_temp GF@$_stack_temp int@1\n\
+  LT GF@$_str_temp_1 LF@$_arg_1 int@0\n\
+  JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true\n\
+  \n\
+  GT GF@$_str_temp_1 LF@$_arg_1 GF@$_stack_temp\n\
+  JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true\n\
+  \n\
+  STRI2INT GF@$_stack_temp LF@$_arg_0 LF@$_arg_1\n\
+  JUMP $_asc_end\n\
+  \n\
+  LABEL $_assert_zero_end\n\
+  MOVE GF@$_stack_temp int@0\n\
+  LABEL $_asc_end\n\
+  PUSHS GF@$_stack_temp\n\
+  POPFRAME\n\
+  RETURN\n\n");
 
   int result = 0;
 
@@ -961,7 +973,9 @@ int start_parsing(){
 
   //get first token
   get_token();
-
+  if (currentToken.token_type == ENDL) {
+    end_of_lines();
+  }
   //check if empty program
   if (currentToken.token_type == ENDF){
     fprintf(stderr, "Empty file on input\n");
@@ -970,6 +984,9 @@ int start_parsing(){
 
   //begin parsing
   result = start();
+
+  define_built_in_func(); // Will add all of used functions to TAC
+  check_functions_definition(); // Will check if all of functions were defined
 
   free(params.content);
   c_stack_destroy(&if_stack);
@@ -991,21 +1008,25 @@ int main(){
 
   //add built-in functions to symtable
   tmp_func_item = hash_table_insert(func_table, "length");
+  tmp_func_item->is_defined = true;
   tmp_func_item->param_types = malloc(strlen("s")*sizeof(char)+1);
   memcpy(tmp_func_item->param_types, "s", strlen("s")*sizeof(char)+1);
   tmp_func_item->value_type = 0;
 
   tmp_func_item = hash_table_insert(func_table, "substr");
+  tmp_func_item->is_defined = true;
   tmp_func_item->param_types = malloc(strlen("sin")*sizeof(char)+1);
-  memcpy(tmp_func_item->param_types, "sin", strlen("sin")*sizeof(char)+1);
+  memcpy(tmp_func_item->param_types, "sii", strlen("sii")*sizeof(char)+1);
   tmp_func_item->value_type = 2;
 
   tmp_func_item = hash_table_insert(func_table, "asc");
+  tmp_func_item->is_defined = true;
   tmp_func_item->param_types = malloc(strlen("si")*sizeof(char)+1);
   memcpy(tmp_func_item->param_types, "si", strlen("si")*sizeof(char)+1);
   tmp_func_item->value_type = 0;
 
   tmp_func_item = hash_table_insert(func_table, "chr");
+  tmp_func_item->is_defined = true;
   tmp_func_item->param_types = malloc(strlen("i")*sizeof(char)+1);
   memcpy(tmp_func_item->param_types, "i", strlen("i")*sizeof(char)+1);
   tmp_func_item->value_type = 2;

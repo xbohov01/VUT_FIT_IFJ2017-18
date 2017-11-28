@@ -12,8 +12,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <time.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "errors.h"
+
 
 //====ERRORS====
 void hard_exit(int code);
@@ -61,24 +64,20 @@ typedef enum {
 
 	//keywords begin
 	AS_KEY,
-	ASC_KEY,
 	DECLARE_KEY,
 	DIM_KEY,
 	DO_KEY,
 	DOUBLE_KEY,
 	ELSE_KEY,
 	END_KEY,
-	CHR_KEY,
 	FUNCTION_KEY,
 	INPUT_KEY,
 	INTEGER_KEY,
-	LENGTH_KEY,
 	LOOP_KEY,
 	PRINT_KEY,
 	RETURN_KEY,
 	SCOPE_KEY,
 	STRING_KEY,
-	SUBSTR_KEY,
 	THEN_KEY,
 	WHILE_KEY,
 	AND_KEY,
@@ -147,7 +146,9 @@ typedef struct {
 	char *id;
 } tToken;
 
-FILE* file;
+// Timeout 
+struct timeval timer;
+fd_set rfds;
 
 //buffer for identifiers
 tString buffer;
@@ -159,6 +160,7 @@ int esc;
 void free_sources();
 int start_scanner();
 void get_token();
+char fgetc_extended();
 
 //====PSA_STACK====
 
@@ -282,19 +284,12 @@ typedef struct hash_tab_symbol hash_tab_symbol_type;
 struct hash_tab_symbol {
 	hash_tab_symbol_type *next_symbol;
 
-	bool is_function;  // false = variable     true = function
 	bool is_defined;
 
 	int value_type;  // 0 = integer     1 = float     2 = string
 
-	int value_int;
-	float value_float;
-	char *value_string;
-
 	char *param_types;
-	//int num_parameters;
-	//int *type_parameters; // pole ukazatelov na int, budu tam tipy premennych
-	char symbol_name[];	    // meno funkcie / premennej
+	char symbol_name[];	    // jmeno funkcie / premennej
 
 };
 
@@ -319,6 +314,7 @@ void eval_cond_expr(bool is_do_while, int label_num);
 void psa_operation(bool allow_bool);
 void reduce_by_rule();
 void get_reversed_rule();
+void check_psa_completion();
 
 Data_NTerm *id_R(hash_tab_symbol_type *var);
 Data_NTerm *function_R(hash_tab_symbol_type *func);
@@ -333,10 +329,6 @@ void control_result_type_conform(int val_type);
 extern Data_Term currentToken;
 T_NT_stack *processing_stack;
 T_NT_stack *evaluation_stack;
-
-// TODO: to be deleted
-// For test, simulate rule usage and shows order
-N_T_rules *right_order;
 
 // =======PSA_TAC========
 
@@ -369,7 +361,9 @@ void write_output();
 void cond_jump(bool is_while, int num);
 void push_arg(int arg_num);
 void f_call(char *name);
-// =========================================
+void built_in_call(char built_in_name);
+void define_built_in_func();
+void which_defined(bool add, char which);
 
 //====PARSER====
 tToken currentToken;
@@ -390,6 +384,7 @@ void c_stack_destroy(t_cond_stack *stack);
 void c_stack_push(t_cond_stack *stack, int data);
 void c_stack_pop(t_cond_stack *stack);
 int c_stack_top(t_cond_stack *stack);
+void check_functions_definition(); // TODO
 
 //random label generator
 int gen_label_id();

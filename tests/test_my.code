@@ -1,15 +1,36 @@
-scope   
-    Dim a As Integer
-    DIM vysl AS INTEGER
+'scope   
+'    Dim a As Integer
+'    DIM vysl AS INTEGER
+'
+'    PrinT !"Zadejte a vetsi nez 42";
+'    InpuT A
+'    IF a <= 42 then
+'        print !"To je drzost, rek jsem 42. Koncim, uz mne to nebavi."
+'    else
+'        Vysl = 1
+'        a = (A - 1) * 15 \ 15 + vysl
+'        vysl = a + vysl + vysl
+'        print vysl; !"\n"
+'    end if
+'end scope
 
-    PrinT !"Zadejte a vetsi nez 42";
-    InpuT A
-    IF a <= 42 then
-        print !"To je drzost, rek jsem 42. Koncim, uz mne to nebavi."
-    else
-        Vysl = 1
-        a = (A - 1) * 15 \ 15 + vysl
-        vysl = a + vysl + vysl
-        print vysl; !"\n"
-    end if
+ 
+' multiple functions call
+function ComplexIntFunc(par1 as string, par2 as double) as integer
+    print par1;
+    print par2;
+    return par2 * 10e1 / 0.39 + 7.74 - par2
+end function
+
+function ComplexDblFunc(par1 as double, par2 as integer, par3 as integer) as double
+    return 2 * 8 / 74 * (par1 + par2) + 12 + 54 * 0.78e2 / (12e-2 / par3) + 124 / (0 - par3)
+end function
+
+function ComplexStrFunc(par1 as string, par2 as string) as string
+    return !"\n" + par1 + !"  ---   "+ par2 + !"\n"
+end function
+
+scope
+    dim complexFuncCallExpr as integer = 40 + 15/8 + ComplexIntFunc(ComplexStrFunc(ComplexStrFunc(!"1", !"2"), !"str"), ComplexDblFunc(15, ComplexIntFunc(!"jedna", 15.1), 16))
+    print !"\nResult is "; complexFuncCallExpr;
 end scope

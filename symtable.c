@@ -38,7 +38,6 @@ unsigned int hash_function(const char *str, unsigned hashTable_size) {
 	const unsigned char *p;
 	for(p=(const unsigned char*)str; *p!='\0'; p++)
 		h = 65599*h + *p;
-	//printf("%d\n", h % hashTable_size);
 	return h % hashTable_size;
 }
 
@@ -82,7 +81,10 @@ hash_tab_symbol_type *hash_table_search(hash_table_type *hash_table, char *entry
 {
     if (hash_table == NULL || entry_key == NULL)
     {
-    	fprintf(stderr,"Hash_table: Invalid key.\n");
+    	fprintf(stderr,"Hash_table: Invalid hash table.\n");
+    	return NULL;
+    }
+    else if (entry_key == NULL) {
     	return NULL;
     }
 

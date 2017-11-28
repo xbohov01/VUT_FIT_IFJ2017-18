@@ -14,15 +14,26 @@ void free_sources() //funkcia uvolnuje pouzite zdroje
 
 }
 
+char fgetc_extended() {
+
+    FD_ZERO(&rfds);
+    FD_SET(0, &rfds);
+
+	// Timer init
+	timer.tv_sec = 1;
+	timer.tv_usec = 0;
+
+    if (select(1, &rfds, NULL, NULL, &timer) == 1)
+        return fgetc(stdin);
+    else
+        return EOF;
+}
+
 T_token_type get_key() //funkcia zistuje ci retazec znakov v bufferi je klucove slovo
 {
 	if (strcmp(buffer.content, "as") == 0)
 	{
 		return AS_KEY;
-	}
-	else if (strcmp(buffer.content, "asc") == 0)
-	{
-		return ASC_KEY;
 	}
 	else if (strcmp(buffer.content, "declare") == 0)
 	{
@@ -48,10 +59,6 @@ T_token_type get_key() //funkcia zistuje ci retazec znakov v bufferi je klucove 
 	{
 		return END_KEY;
 	}
-	else if (strcmp(buffer.content, "chr") == 0)
-	{
-		return CHR_KEY;
-	}
 	else if (strcmp(buffer.content, "function") == 0)
 	{
 		return FUNCTION_KEY;
@@ -67,10 +74,6 @@ T_token_type get_key() //funkcia zistuje ci retazec znakov v bufferi je klucove 
 	else if (strcmp(buffer.content, "integer") == 0)
 	{
 		return INTEGER_KEY;
-	}
-	else if (strcmp(buffer.content, "length") == 0)
-	{
-		return LENGTH_KEY;
 	}
 	else if (strcmp(buffer.content, "loop") == 0)
 	{
@@ -91,10 +94,6 @@ T_token_type get_key() //funkcia zistuje ci retazec znakov v bufferi je klucove 
 	else if (strcmp(buffer.content, "string") == 0)
 	{
 		return STRING_KEY;
-	}
-	else if (strcmp(buffer.content, "substr") == 0)
-	{
-		return SUBSTR_KEY;
 	}
 	else if (strcmp(buffer.content, "then") == 0)
 	{
@@ -119,7 +118,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 
 	while (currentToken.token_type == UNDEFINED)
 	{
-		n_char = fgetc(stdin); //nacitanie znaku
+		n_char = fgetc_extended(stdin); //nacitanie znaku
 
 		switch (token_state)
 		{
@@ -282,11 +281,14 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			if (n_char == '/')
 			{
 				token_state = BEGIN;
+			} else if (n_char == EOF){
+				fprintf(stderr, "Unexpected end of file\n");
+				hard_exit(LEX_ERR);
 			}
 			break;
 
 			case POS_LIN_COMMENT:
-			if (n_char == '\n')
+			if ((n_char == '\n') || (n_char == EOF)) // Could be EOF also
 			{
 				ungetc(n_char, stdin);
 				token_state = BEGIN;
@@ -375,7 +377,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					ungetc(n_char, stdin);
 					for (int i_e = 0; i_e <= 2; i_e++)
 					{
-						n_char = fgetc(stdin);
+						n_char = fgetc_extended(stdin);
 						if (isdigit(n_char))
 						{
 							addchar(n_char, &buffer);

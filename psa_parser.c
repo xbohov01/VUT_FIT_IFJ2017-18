@@ -148,6 +148,7 @@ void eval_expr() {
                 if (currentToken.token_type == IDENTIFICATOR) {
                     result_variable = hash_table_search(var_table, currentToken.id);
                     if (result_variable == NULL) {
+                        fprintf(stderr, "Variable %s was not declared\n", currentToken.id);
                         error_exit(UNDEF_ERR);
                     }
                     // <CHECK_START_SYM> -> 'id'
@@ -218,6 +219,11 @@ void eval_expr() {
                 }
                 push_start_term(processing_stack);
                 psa_operation(false);
+                // Expected ';'
+                if (currentToken.token_type != SEM) {
+                    fprintf(stderr, "Expecting ';' after first print expression\n");
+                    error_exit(SYNT_ERR);
+                }
                 // Write output part
                 save_to_temp();
                 if ((processing_stack->top->data.NTerm.type == INTEGER_NT) \
@@ -347,16 +353,16 @@ Data_NTerm *id_R(hash_tab_symbol_type *found_var) {
             used_rule = create_non_term(NT_ID, found_var->value_type);
             break;
         default:
-            fprintf(stderr, "UNEXPECTED TOKEN AFTER PSA");
-            error_exit(INTERNAL_ERR);
+            fprintf(stderr, "Expected id or constant");
+            error_exit(SEM_ERR);
     }
 
     look_ahead = pop_T_NT(evaluation_stack);
     T = &(look_ahead->data.Term);
 
-    if (get_term_type(T) != END) {
-        fprintf(stderr, "UNEXPECTED ITEM AFTER PSA\n"); // Debug
-        error_exit(INTERNAL_ERR);
+    if ((look_ahead->is_non_term == true) || (get_term_type(T) != END)) {
+        fprintf(stderr, "Unexpected item after id\n"); // Debug
+        error_exit(SYNT_ERR);
     }
 
     return used_rule;
@@ -375,6 +381,7 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
     } func_state;
 
     int arg_pos = 0;
+    int arg = 0;
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;
 
@@ -391,6 +398,10 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                 }
                 // '('
                 look_ahead = pop_T_NT(evaluation_stack);
+                if ((look_ahead == NULL) || (look_ahead->is_non_term == true) || (look_ahead->data.Term.token_type != PAR_L)) {
+                    fprintf(stderr, "Expected '(' after function call\n");
+                    error_exit(TYPE_ERR);
+                }
                 create_frame();
 
                 if (arg_pos == 0) {
@@ -413,38 +424,92 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                 func_state = CALL_FUNC;
                 break;
             case ONE_ARG:
+                arg_pos--;
                 // E
                 look_ahead = pop_T_NT(evaluation_stack);
                 if (look_ahead->is_non_term == false) {
-                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos-1);
+                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos);
                     error_exit(TYPE_ERR);
                 }
-                else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos-1])) {
-                    fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos-1);
-                    error_exit(TYPE_ERR);
+                switch (map_arg_type(func->param_types[arg])) {
+                    case INTEGER_NT:
+                        if (look_ahead->data.NTerm.type == DOUBLE_NT) {
+                            retype_to_even_int();
+                        }
+                        else if (look_ahead->data.NTerm.type == STRING_NT) {
+                            fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                            error_exit(TYPE_ERR);
+                        }
+                        break;
+                    case DOUBLE_NT:
+                        if (look_ahead->data.NTerm.type == INTEGER_NT) {
+                            retype_stack(false, true);
+                        }
+                        else if (look_ahead->data.NTerm.type == STRING_NT) {
+                            fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                            error_exit(TYPE_ERR);
+                        }
+                        break;
+                    case STRING_NT:
+                        if (look_ahead->data.NTerm.type != STRING_NT) {
+                            fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                            error_exit(TYPE_ERR);
+                        }
+                        break;
+                    default:
+                        fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                        error_exit(TYPE_ERR);
                 }
-                push_arg(--arg_pos);
+                arg++;
+                push_arg(arg_pos);
                 func_state = ZERO_ARG;
                 break;
             case MORE_ARGS:
+                arg_pos--;
                 // E
                 look_ahead = pop_T_NT(evaluation_stack);
                 if (look_ahead->is_non_term == false) {
-                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos-1);
+                    fprintf(stderr, "Function %s got no argument on position %d\n", func->symbol_name, arg_pos);
                     error_exit(TYPE_ERR);
                 }
-                else if (look_ahead->data.NTerm.type != map_arg_type(func->param_types[arg_pos-1])) {
-                    fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos-1);
-                    error_exit(TYPE_ERR);
+                switch (map_arg_type(func->param_types[arg])) {
+                    case INTEGER_NT:
+                        if (look_ahead->data.NTerm.type == DOUBLE_NT) {
+                            retype_to_even_int();
+                        }
+                        else if (look_ahead->data.NTerm.type == STRING_NT) {
+                            fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                            error_exit(TYPE_ERR);
+                        }
+                        break;
+                    case DOUBLE_NT:
+                        if (look_ahead->data.NTerm.type == INTEGER_NT) {
+                            retype_stack(false, true);
+                        }
+                        else if (look_ahead->data.NTerm.type == STRING_NT) {
+                            fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                            error_exit(TYPE_ERR);
+                        }
+                        break;
+                    case STRING_NT:
+                        if (look_ahead->data.NTerm.type != STRING_NT) {
+                            fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                            error_exit(TYPE_ERR);
+                        }
+                        break;
+                    default:
+                        fprintf(stderr, "Function %s, bad argument type on position %d\n", func->symbol_name, arg_pos);
+                        error_exit(TYPE_ERR);
+                        break;
                 }
                 // ','
                 look_ahead = pop_T_NT(evaluation_stack);
-                if ((look_ahead->is_non_term == false) && (get_term_type(&(look_ahead->data.Term)) == CM)) {
-                    fprintf(stderr, "Expected ','\n");
+                if ((look_ahead->is_non_term == true) || (get_term_type(&(look_ahead->data.Term)) != CM)) {
+                    fprintf(stderr, "Expected ',' and %d argument \n", arg);
                     error_exit(TYPE_ERR);
                 }
-
-                push_arg(--arg_pos);
+                arg++;
+                push_arg(arg_pos);
                 if (arg_pos > 1) {
                     func_state = MORE_ARGS;
                 }
@@ -458,16 +523,16 @@ Data_NTerm *function_R(hash_tab_symbol_type *func) {
                 break;
             case END_CHECK:
                 look_ahead = pop_T_NT(evaluation_stack);
-                if (look_ahead == NULL) {
-                    fprintf(stderr, "Unexpected stack end\n");
-                    error_exit(INTERNAL_ERR);
-                }
-                else if ((look_ahead->is_non_term == false) && (get_term_type(&(look_ahead->data.Term)) == END)) {
+                if ((look_ahead->is_non_term == false) && (get_term_type(&(look_ahead->data.Term)) == END)) {
                     func_state = FIN_FUNC;
                 }
+                else if (look_ahead->is_non_term == true) {
+                    fprintf(stderr, "Unexpected argument after function call\n");
+                    error_exit(TYPE_ERR);
+                }
                 else {
-                    fprintf(stderr, "Unexpected non terminal after psa\n"); // Debug
-                    error_exit(INTERNAL_ERR);
+                    fprintf(stderr, "Unexpected item after function call\n");
+                    error_exit(SYNT_ERR);
                 }
                 break;
             default:
@@ -539,12 +604,8 @@ Data_NTerm *arithm_R() {
     E2 = &(look_ahead->data.NTerm);
 
     look_ahead = pop_T_NT(evaluation_stack);
-    if ((look_ahead->is_non_term == false) && (look_ahead->data.Term.token_type == ENDL)) {
-        fprintf(stderr, "Expected operand, got nothing\n");
-        error_exit(SYNT_ERR);
-    }
-    else if (look_ahead->is_non_term != false) {
-        fprintf(stderr, "Expected operand, got operand\n");
+    if (look_ahead->is_non_term == true) {
+        fprintf(stderr, "Expected operator\n");
         error_exit(SYNT_ERR);
     }
     arithm_operand = get_term_type(&(look_ahead->data.Term));
@@ -713,8 +774,8 @@ Data_NTerm *arithm_R() {
                     arithm_state = FINISHED_ARITHM_PSA;
                 }
                 else {
-                    fprintf(stderr, "Unexpected item after PSA\n"); // Debug
-                    error_exit(INTERNAL_ERR);
+                    fprintf(stderr, "Unexpected item after arithmetics\n"); // Debug
+                    error_exit(SYNT_ERR);
                 }
                 break;
             default: // Debug
@@ -732,34 +793,17 @@ void reduce_by_rule() {
     T_NT_item *look_ahead;
     Data_NTerm *used_rule;
     Data_Term *T;
-    hash_tab_symbol_type *found_var;
-    hash_tab_symbol_type *found_func;
-
-    extern T_NT_stack *evaluation_stack;
 
     push_start_term(evaluation_stack);
     get_reversed_rule();
     look_ahead = pop_T_NT(evaluation_stack);
-    T = &(look_ahead->data.Term);
 
     if (look_ahead->is_non_term == true) {
         used_rule = arithm_R();
     }
     else {
-        if (get_term_type(T) == ID) {
-            if (T->token_type == IDENTIFICATOR) {
-                found_var = hash_table_search(var_table, T->id);
-                used_rule = id_R(found_var);
-            }
-            else {
-                used_rule = id_R(NULL);
-            }
-        }
-        else if (get_term_type(T) == FNC) {
-            found_func = hash_table_search(func_table, T->id);
-            used_rule = function_R(found_func);
-        }
-        else if (get_term_type(T) == PL) {
+        T = &(look_ahead->data.Term);
+        if (get_term_type(T) == PL) {
             // E
             look_ahead = pop_T_NT(evaluation_stack);
             used_rule = create_non_term(look_ahead->data.NTerm.rule, look_ahead->data.NTerm.type);
@@ -771,11 +815,23 @@ void reduce_by_rule() {
             look_ahead = pop_T_NT(evaluation_stack);
 
         }
+        else if (get_term_type(T) == ID) {
+            if (T->token_type == IDENTIFICATOR) {
+                used_rule = id_R(hash_table_search(var_table, T->id));
+            }
+            else {
+                used_rule = id_R(NULL);
+            }
+        }
+        else if (T->token_type == FUNCTION) {
+            used_rule = function_R(hash_table_search(func_table, T->id));
+        }
         else {
-            fprintf(stderr, "Unexpected token after PSA\n");
-            error_exit(INTERNAL_ERR); // Debug
+            fprintf(stderr, "Unexpected token\n");
+            error_exit(SYNT_ERR); // Debug
         }
     }
+
     push_T_NT(processing_stack, NULL, used_rule);
     free(used_rule);
 
@@ -809,8 +865,6 @@ void psa_operation(bool allow_bool) {
     PSA_Term_type index_stack_top;
     PSA_Term_type index_input;
     Data_Term first_term_data;
-    hash_tab_symbol_type *found_func;
-    hash_tab_symbol_type *found_var;
     char what_to_do;
     bool use_push;
     bool psa_finished;
@@ -822,26 +876,14 @@ void psa_operation(bool allow_bool) {
         index_stack_top = get_term_type(&first_term_data);
         index_input = get_term_type(&currentToken);
 
-        if ((index_input == ID) && (currentToken.token_type == IDENTIFICATOR)) {
-            found_func = hash_table_search(func_table, currentToken.id);
-            found_var = hash_table_search(var_table, currentToken.id);
-            if (found_var != NULL) {
-                if (found_func != NULL) {
-                    fprintf(stderr, "Function %s redefinition by variable\n", found_func->symbol_name);
-                    error_exit(UNDEF_ERR);
-                }
-            }
-            else if (found_func != NULL) {
-                if (found_var != NULL) {
-                    fprintf(stderr, "Variable %s redefinition by function\n", found_var->symbol_name);
+        if (currentToken.token_type == IDENTIFICATOR) {
+            if (hash_table_search(var_table, currentToken.id) == NULL) {
+                if (hash_table_search(func_table, currentToken.id) == NULL) {
+                    fprintf(stderr, "Variable '%s' was not declared\n", currentToken.id);
                     error_exit(UNDEF_ERR);
                 }
                 index_input = FNC;
                 currentToken.token_type = FUNCTION;
-            }
-            else {
-                fprintf(stderr, "Variable was not declared\n");
-                error_exit(UNDEF_ERR);
             }
         }
 
@@ -868,6 +910,20 @@ void psa_operation(bool allow_bool) {
         switch(what_to_do) {
             // Insert stopper before first terminal and push currentToken to stack
             case '<':
+                if (allow_bool == true) {
+                    switch(index_input) {
+                            case LT:
+                            case GT:
+                            case LTE:
+                            case GTE:
+                            case EQ:
+                            case NEQ:
+                                allow_bool = false;
+                                break;
+                            default:
+                                break;
+                    }
+                }
                 insert_stopper(processing_stack);
                 push_T_NT(processing_stack, &currentToken, NULL);
                 get_token();
@@ -881,7 +937,18 @@ void psa_operation(bool allow_bool) {
             // --------------------End semantic control-----------------------
             // Syntax error
             case '#':
-                error_exit(SYNT_ERR);
+                if ((index_stack_top == ID) && (index_input == PAR_L)) {
+                    fprintf(stderr, "Variable used as function\n");
+                    error_exit(UNDEF_ERR);
+                }
+                else if ((index_stack_top == FNC) && (index_input != PAR_L)) {
+                    fprintf(stderr, "Function used as variable\n"); 
+                    error_exit(UNDEF_ERR);
+                }
+                else {
+                    fprintf(stderr, "Psa syntax error.\n");
+                    error_exit(SYNT_ERR);
+                }
                 break;
             // Only push
             case '=':
@@ -889,10 +956,11 @@ void psa_operation(bool allow_bool) {
                 get_token();
                 break;
             case '\0':
-                if ((index_input == END) && (index_stack_top == END)) {
+                if (allow_bool == false) {
                     psa_finished = true;
                 }
                 else {
+                    fprintf(stderr, "End error.\n");
                     error_exit(SYNT_ERR);
                 }
                 break;
