@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <sys/time.h>
+#include <time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "errors.h"
@@ -336,7 +337,8 @@ T_NT_stack *evaluation_stack;
 void init_TAC_stack();
 void create_frame();
 void init_var(N_T_types type, char* name);
-void create_label(char *name);
+void start_program();
+void end_scope();
 
 // Answer handlers
 void save_result(char *res_name);
@@ -361,9 +363,8 @@ void write_output();
 void cond_jump(bool is_while, int num);
 void push_arg(int arg_num);
 void f_call(char *name);
-void built_in_call(char built_in_name);
 void define_built_in_func();
-void which_defined(bool add, char which);
+bool *add_build_in(char which, bool only_return);
 
 //====PARSER====
 tToken currentToken;
@@ -384,7 +385,6 @@ void c_stack_destroy(t_cond_stack *stack);
 void c_stack_push(t_cond_stack *stack, int data);
 void c_stack_pop(t_cond_stack *stack);
 int c_stack_top(t_cond_stack *stack);
-void check_functions_definition(); // TODO
 
 //random label generator
 int gen_label_id();
