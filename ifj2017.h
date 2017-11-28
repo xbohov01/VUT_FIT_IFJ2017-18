@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "errors.h"
+#include <time.h>
 
 
 //====ERRORS====
@@ -146,7 +147,7 @@ typedef struct {
 	char *id;
 } tToken;
 
-// Timeout 
+// Timeout
 struct timeval timer;
 fd_set rfds;
 
