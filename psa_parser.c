@@ -27,7 +27,7 @@ void control_result_type_conform(int value_type) {
                     // Is ok
                     break;
                 case DOUBLE_NT:
-                    retype_to_even_int();      
+                    retype_to_even_int();
                     break;
                 default:
                     fprintf(stderr, "Unexpected operand type, for int or float result value\n");

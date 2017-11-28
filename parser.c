@@ -9,11 +9,9 @@
 #include "parser_test.h"
 #endif
 
-int cond_label = 0;
 int while_cnt = 0;
 bool returned = false;
 //condition label format
-//printf("LABEL $condition%d$end\n", cond_label);
 
 //terminates all resources and program for error handling
 void hard_exit(int code){
@@ -394,7 +392,6 @@ int if_statements(){
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
 int statement(){
-  int if_cnt = cond_label;
   int cond_key;
   int while_key;
 
@@ -496,14 +493,12 @@ int statement(){
 
       //else block
       if (currentToken.token_type == ELSE_KEY){
-        cond_label++;
         if (if_statements() != SUCCESS){
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
         }
         //end of conditional statements
         //printf("LABEL $condition%d$end\n", c_stack_top(&if_stack));
-        cond_label++;
       }
 
       printf("LABEL $end%d$if\n", cond_key);
@@ -1015,7 +1010,7 @@ int main(){
 
   tmp_func_item = hash_table_insert(func_table, "substr");
   tmp_func_item->is_defined = true;
-  tmp_func_item->param_types = malloc(strlen("sin")*sizeof(char)+1);
+  tmp_func_item->param_types = malloc(strlen("sii")*sizeof(char)+1);
   memcpy(tmp_func_item->param_types, "sii", strlen("sii")*sizeof(char)+1);
   tmp_func_item->value_type = 2;
 
