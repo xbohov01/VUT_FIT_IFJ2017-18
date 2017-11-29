@@ -211,7 +211,11 @@ int var_declr(){
 
   //insert into variable table
   tmp_var_item = hash_table_insert(var_table, var_id);
-
+  if (tmp_var_item == NULL) {
+    fprintf(stderr, "Inser hash table failed\n");
+    error_exit(INTERNAL_ERR);
+  }
+  
   tmp_var_item->param_types = NULL;
 
   //adds type to params and var_table
@@ -355,12 +359,14 @@ int fnc_arglist(){
 }
 
 //<statement> ->	if	<expr>	then	<endline>	<thenstats>	else	<endline>	<elsestats>	end 	if
-int if_statements(){
+int if_statements(hash_tab_symbol_type *tmp_func_item){
+  // Function should return something in all cases
+  returned = false;
   //last was ENDL so need to get next
   get_token();
   while (currentToken.token_type != END_KEY && currentToken.token_type != ELSE_KEY
         && currentToken.token_type != ELSEIF_KEY && currentToken.token_type != LOOP_KEY){
-    if (statement() == SYNT_ERR){
+    if (statement(tmp_func_item) == SYNT_ERR){
       fprintf(stderr, "Error in conditional statement\n");
       hard_exit(SYNT_ERR);
     }
@@ -372,7 +378,6 @@ int if_statements(){
   return SUCCESS;
 }
 
-//<statement>	<expr>
 //<statement>	<id>	='	<expr>
 //<statement>	input	<id>
 //<statement>	print	<id>	;	<print_list>
@@ -380,7 +385,7 @@ int if_statements(){
 //<statement>	do	while	<expr>	<endline>	<teloprogramu>	loop
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
-int statement(){
+int statement(hash_tab_symbol_type *tmp_func_item){
   int cond_key;
   int while_key;
 
@@ -397,9 +402,6 @@ int statement(){
       }
       return end_of_lines();
 
-    case INTEGER :
-    case DOUBLE :
-    case STRING :
     case IDENTIFICATOR:
       eval_expr();
       return end_of_lines();
@@ -408,9 +410,7 @@ int statement(){
       //implicit return handle
       returned = true;
       //resolve expression or function call or return
-      eval_expr();
-      printf("POPFRAME\n");
-      printf("RETURN\n\n\n");
+      eval_return_expr(tmp_func_item);
       return end_of_lines();
       break;
     case INPUT_KEY :
@@ -472,7 +472,7 @@ int statement(){
       get_token();
       CHECKT(ENDL);
       //if block
-      if (if_statements() != SUCCESS){
+      if (if_statements(tmp_func_item) != SUCCESS){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
@@ -482,7 +482,7 @@ int statement(){
 
       //else block
       if (currentToken.token_type == ELSE_KEY){
-        if (if_statements() != SUCCESS){
+        if (if_statements(tmp_func_item) != SUCCESS){
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
         }
@@ -518,7 +518,7 @@ int statement(){
       CHECKT(ENDL);
 
       //while block
-      if (if_statements() != SUCCESS){
+      if (if_statements(tmp_func_item) != SUCCESS){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
@@ -539,11 +539,11 @@ int statement(){
 
 //<fncstats>	<statement>	<endline>	<fncstats>
 //<fncstats>	epsilon
-int fnc_stats(){
+int fnc_stats(hash_tab_symbol_type *tmp_func_item){
   //expecting statements inside a function or end of function
   get_token();
   while (currentToken.token_type != END_KEY){
-    if (statement() != SUCCESS){
+    if (statement(tmp_func_item) != SUCCESS){
       fprintf(stderr, "Invalid statement inside function\n");
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
@@ -663,6 +663,9 @@ int functions(){
     }
     if (params.len != 0){
       tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
+      if (tmp_func_item->param_types == NULL) {
+	error_exit(INTERNAL_ERR);
+      }
       addchar('\0', &params);
       memcpy(tmp_func_item->param_types, params.content, strlen(params.content)+1);
     } else {
@@ -706,12 +709,13 @@ int functions(){
     hard_exit(SYNT_ERR);
     //return SYNT_ERR;
   } else {
-    if (fnc_stats() != SUCCESS){
+    if (fnc_stats(tmp_func_item) != SUCCESS){
       hard_exit(SYNT_ERR);
     }
 
     //implicit return is required
     if (returned == false){
+      printf("# Implicit return\n");
       switch (tmp_func_item->value_type) {
         case 0 :
           printf("PUSHS int@0\n");
@@ -723,6 +727,8 @@ int functions(){
           printf("PUSHS string@\n");
           break;
       }
+      printf("POPFRAME\n");
+      printf("RETURN\n\n\n");
     }
     //has end expecting function
     get_token();
@@ -731,9 +737,6 @@ int functions(){
 
     free(identifier);
 
-    //tac
-    printf("POPFRAME\n");
-    printf("RETURN\n\n\n");
 
     //destroy variable table
     hash_table_destroy(var_table);
@@ -793,7 +796,7 @@ int scope(){
         break;
       default :
         //expecting statement
-        if (statement() != SUCCESS){
+        if (statement(NULL) != SUCCESS){
           fprintf(stderr, "Invalid statement\n");
           hard_exit(SYNT_ERR);
         }
@@ -854,10 +857,7 @@ int start_parsing(){
   c_stack_init(&if_stack);
   c_stack_init(&while_stack);
 
-  extern T_NT_stack *processing_stack;
-  extern T_NT_stack *evaluation_stack;
   processing_stack = init_T_NT_stack();
-  evaluation_stack = init_T_NT_stack();
 
   //get first token
   get_token();
@@ -888,6 +888,9 @@ int main(){
 
   //init symtables
   func_table = sym_tab_init(64);
+  if (func_table == NULL) {
+    error_exit(INTERNAL_ERR);
+  }
 
   //start scanner
   start_scanner();

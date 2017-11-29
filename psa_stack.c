@@ -64,41 +64,6 @@ PSA_Term_type get_term_type(Data_Term *in_term) {
     }
 }
 
-N_T_rules map_NT_rule(PSA_Term_type in_psa_term) {
-    switch(in_psa_term) {
-        case ADD:
-            return NT_ADD;
-        case MUL:
-            return NT_MUL;
-        case SUB:
-            return NT_SUB;
-        case DIV:
-            return NT_DIV;
-        case IDIV:
-            return NT_IDIV;
-        case ID:
-            return NT_ID;
-        case FNC:
-            return NT_FN;
-        case LT:
-            return NT_LT;
-        case GT:
-            return NT_GT;
-        case LTE:
-            return NT_LTE;
-        case GTE:
-            return NT_GTE;
-        case EQ:
-            return NT_EQ;
-        case NEQ:
-            return NT_NEQ;
-        default:
-            fprintf(stderr, "Bad map value for map_NT_rule\n");
-            error_exit(INTERNAL_ERR);
-            return NT_NEQ;
-    }
-}
-
 N_T_types map_NT_type(T_token_type in_token_type) {
     switch(in_token_type) {
         case INTEGER:
@@ -110,7 +75,7 @@ N_T_types map_NT_type(T_token_type in_token_type) {
         default:
             fprintf(stderr, "Bad input token type for N_T_rules map\n");
             error_exit(INTERNAL_ERR);
-            return NONE_NT;
+            return STOPPER;
     }
 }
 
@@ -125,7 +90,7 @@ N_T_types map_arg_type(char arg_type) {
         default:
             fprintf(stderr, "Bad argument type\n");
             error_exit(INTERNAL_ERR);
-            return NONE_NT;
+            return STOPPER;
     }
 }
 // =======================
@@ -190,7 +155,7 @@ void copy_term(Data_Term *from, Data_Term *to) {
     to->token_type = input_type;
 }
 
-T_NT_item *push_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term) {
+T_NT_item *push_T(T_NT_stack *s, Data_Term *in_term) {
     T_NT_item *new_top = malloc(sizeof(T_NT_item));
     if (new_top == NULL) {
         error_exit(INTERNAL_ERR);
@@ -198,14 +163,29 @@ T_NT_item *push_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term)
 
     new_top->next_T_NT = s->top;
 
-    if (in_non_term == NULL && in_term != NULL) {
+    if (in_term != NULL) {
         new_top->is_non_term = false;
         copy_term(in_term, &(new_top->data.Term));
     }
-    else if (in_term == NULL && in_non_term != NULL) {
+    else {
+        error_exit(INTERNAL_ERR);
+    }
+
+    s->top = new_top;
+    return new_top;
+}
+
+T_NT_item *push_NT(T_NT_stack *s, T_NT_item *in_non_term) {
+    T_NT_item *new_top = malloc(sizeof(T_NT_item));
+    if (new_top == NULL) {
+        error_exit(INTERNAL_ERR);
+    }
+
+    new_top->next_T_NT = s->top;
+
+    if (in_non_term != NULL) {
         new_top->is_non_term = true;
-        new_top->data.NTerm.rule = in_non_term->rule;
-        new_top->data.NTerm.type = in_non_term->type;
+        new_top->data.NT_type = in_non_term->data.NT_type;
     }
     else {
         error_exit(INTERNAL_ERR);
@@ -262,7 +242,7 @@ bool active_T_NT(T_NT_stack *s) {
     return s->active != NULL;
 }
 
-T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term) {
+T_NT_item* insert_after_NT(T_NT_stack *s, T_NT_item *in_non_term) {
     if (s->active == NULL) {
         return NULL;
     }
@@ -273,13 +253,9 @@ T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_n
     }
 
     item_after->next_T_NT = s->active->next_T_NT;
-    if (in_non_term == NULL && in_term != NULL) {
-        item_after->is_non_term = false;
-        copy_term(in_term, &(item_after->data.Term));
-    }
-    else if (in_term == NULL && in_non_term != NULL) {
+    if (in_non_term != NULL) {
         item_after->is_non_term = true;
-        item_after->data.NTerm.rule = in_non_term->rule;
+        item_after->data.NT_type = in_non_term->data.NT_type;
     }
     else {
         error_exit(INTERNAL_ERR);
@@ -291,15 +267,10 @@ T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_n
 
 // TODO: extend this function
 void error_exit(int code) {
-    extern T_NT_stack *processing_stack;
-    extern T_NT_stack *evaluation_stack;
     printf("\n");
     free_sources();
     if (processing_stack != NULL) {
         destroy_T_NT_stack(processing_stack);
-    }
-    if (evaluation_stack != NULL) {
-        destroy_T_NT_stack(evaluation_stack);
     }
     fprintf(stderr, "Result: %d\n", code);
     exit(code);

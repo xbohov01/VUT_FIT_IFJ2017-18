@@ -249,6 +249,14 @@ void push_arg(int arg_num) {
     return;
 }
 
+void return_f(char *name) {
+    printf("# Returning from '%s'\n", name);
+    printf("POPFRAME\n");
+    printf("RETURN\n");
+    printf("\n");
+    return;
+}
+
 void f_call(char *name) {
     printf("# Calling %s\n", name);
     printf("CALL $_%s\n", name);
