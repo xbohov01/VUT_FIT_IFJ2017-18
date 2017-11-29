@@ -1,0 +1,18 @@
+scope
+  dim a as integer
+  dim b as integer
+  dim c as integer
+
+  a = 1
+  b = 2
+  c = 3
+
+  c = c
+  b = 1
+  a = 4
+
+  c = c - b - a + 1
+  
+  print c;
+
+end scope
