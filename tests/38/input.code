@@ -1,0 +1,9 @@
+function fun(b as integer) as integer
+	return b * b 
+end function
+
+scope
+	dim a as integer
+	a = 5
+	print fun(a);
+end scope

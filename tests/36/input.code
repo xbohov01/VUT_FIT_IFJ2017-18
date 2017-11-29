@@ -1,0 +1,9 @@
+function fun() as integer
+	return 15+15+12
+end function
+
+scope
+	dim a as integer
+	a = fun()
+	print a;
+end scope

@@ -1,0 +1,16 @@
+
+function fun(a as integer) as integer
+
+	return a * 2
+
+end function
+
+
+SCOPE
+
+	dim a as integer
+	a = fun(fun(fun(2)))
+	print a;
+
+
+END SCOPE

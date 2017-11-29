@@ -1,0 +1,7 @@
+function fun(b as integer) as integer
+	return b * b 
+end function
+
+scope
+	print fun(5);
+end scope
