@@ -1,0 +1,27 @@
+scope
+  dim a as integer
+  dim b as double
+  dim c as integer
+  dim d as string
+  dim e as string
+  dim f as integer
+  dim g as double
+  dim h as integer
+  dim i as integer
+  dim j as integer
+  dim k as integer
+  dim l as integer
+  dim m as integer
+  dim n as integer
+  dim o as integer
+  dim p as integer
+  dim r as integer
+  dim s as integer
+  dim t as integer
+  dim v as integer
+  dim q as integer
+  dim x as integer
+  dim y as integer
+  dim w as integer
+  dim z as integer
+END SCOPE

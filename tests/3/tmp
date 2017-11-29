@@ -1,0 +1,159 @@
+.IFJcode17
+JUMP $$main
+LABEL $_substr
+  PUSHFRAME
+  STRLEN GF@$_str_temp_2 LF@$_arg_0
+  JUMPIFEQ $_assert_zero GF@$_str_temp_2 int@0
+  
+  LT GF@$_str_temp_1 LF@$_arg_1 int@1
+  JUMPIFEQ $_assert_zero GF@$_str_temp_1 bool@true
+  
+  LT GF@$_str_temp_1 LF@$_arg_2 int@0
+  JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true
+  
+  SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1
+  GT GF@$_str_temp_1 LF@$_arg_2 GF@$_str_temp_1
+  JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true
+  MOVE GF@$_stack_temp string@
+  JUMP $_compare_next
+  LABEL $_truncate_N
+  SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1
+  MOVE LF@$_arg_2 GF@$_str_temp_1
+  
+  MOVE GF@$_stack_temp string@
+  LABEL $_compare_next
+  JUMPIFEQ $_all_done LF@$_arg_2 int@0
+  GETCHAR GF@$_str_temp_1 LF@$_arg_0 LF@$_arg_1
+  CONCAT GF@$_stack_temp GF@$_stack_temp GF@$_str_temp_1
+  ADD LF@$_arg_1 LF@$_arg_1 int@1
+  SUB LF@$_arg_2 LF@$_arg_2 int@1
+  JUMP $_compare_next
+  
+  LABEL $_assert_zero
+  MOVE GF@$_stack_temp string@
+  
+  LABEL $_all_done
+  PUSHS GF@$_stack_temp
+  POPFRAME
+  RETURN
+
+LABEL $_length
+  PUSHFRAME
+  STRLEN GF@$_stack_temp LF@$_arg_0
+  PUSHS GF@$_stack_temp
+  POPFRAME
+  RETURN
+
+LABEL $_chr
+  PUSHFRAME
+  INT2CHAR GF@$_stack_temp LF@$_arg_0
+  PUSHS GF@$_stack_temp
+  POPFRAME
+  RETURN
+
+LABEL $_asc
+  PUSHFRAME
+  STRLEN GF@$_stack_temp LF@$_arg_0
+  JUMPIFEQ $_assert_zero_end GF@$_stack_temp int@0
+  
+  SUB GF@$_stack_temp GF@$_stack_temp int@1
+  LT GF@$_str_temp_1 LF@$_arg_1 int@0
+  JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true
+  
+  GT GF@$_str_temp_1 LF@$_arg_1 GF@$_stack_temp
+  JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true
+  
+  STRI2INT GF@$_stack_temp LF@$_arg_0 LF@$_arg_1
+  JUMP $_asc_end
+  
+  LABEL $_assert_zero_end
+  MOVE GF@$_stack_temp int@0
+  LABEL $_asc_end
+  PUSHS GF@$_stack_temp
+  POPFRAME
+  RETURN
+
+LABEL $$main
+CREATEFRAME
+PUSHFRAME
+DEFVAR GF@$_stack_temp
+DEFVAR GF@$_str_temp_1
+DEFVAR GF@$_str_temp_2
+DEFVAR LF@_a
+# Var a init
+MOVE LF@_a int@0
+DEFVAR LF@_b
+# Var b init
+MOVE LF@_b float@0.0
+DEFVAR LF@_c
+# Var c init
+MOVE LF@_c int@0
+DEFVAR LF@_d
+# Var d init
+MOVE LF@_d string@
+DEFVAR LF@_e
+# Var e init
+MOVE LF@_e string@
+DEFVAR LF@_f
+# Var f init
+MOVE LF@_f int@0
+DEFVAR LF@_g
+# Var g init
+MOVE LF@_g float@0.0
+DEFVAR LF@_h
+# Var h init
+MOVE LF@_h int@0
+DEFVAR LF@_i
+# Var i init
+MOVE LF@_i int@0
+DEFVAR LF@_j
+# Var j init
+MOVE LF@_j int@0
+DEFVAR LF@_k
+# Var k init
+MOVE LF@_k int@0
+DEFVAR LF@_l
+# Var l init
+MOVE LF@_l int@0
+DEFVAR LF@_m
+# Var m init
+MOVE LF@_m int@0
+DEFVAR LF@_n
+# Var n init
+MOVE LF@_n int@0
+DEFVAR LF@_o
+# Var o init
+MOVE LF@_o int@0
+DEFVAR LF@_p
+# Var p init
+MOVE LF@_p int@0
+DEFVAR LF@_r
+# Var r init
+MOVE LF@_r int@0
+DEFVAR LF@_s
+# Var s init
+MOVE LF@_s int@0
+DEFVAR LF@_t
+# Var t init
+MOVE LF@_t int@0
+DEFVAR LF@_v
+# Var v init
+MOVE LF@_v int@0
+DEFVAR LF@_q
+# Var q init
+MOVE LF@_q int@0
+DEFVAR LF@_x
+# Var x init
+MOVE LF@_x int@0
+DEFVAR LF@_y
+# Var y init
+MOVE LF@_y int@0
+DEFVAR LF@_w
+# Var w init
+MOVE LF@_w int@0
+DEFVAR LF@_z
+# Var z init
+MOVE LF@_z int@0
+POPFRAME
+
+# RESULT 0

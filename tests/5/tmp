@@ -1,0 +1,94 @@
+.IFJcode17
+JUMP $$main
+LABEL $_substr
+  PUSHFRAME
+  STRLEN GF@$_str_temp_2 LF@$_arg_0
+  JUMPIFEQ $_assert_zero GF@$_str_temp_2 int@0
+  
+  LT GF@$_str_temp_1 LF@$_arg_1 int@1
+  JUMPIFEQ $_assert_zero GF@$_str_temp_1 bool@true
+  
+  LT GF@$_str_temp_1 LF@$_arg_2 int@0
+  JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true
+  
+  SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1
+  GT GF@$_str_temp_1 LF@$_arg_2 GF@$_str_temp_1
+  JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true
+  MOVE GF@$_stack_temp string@
+  JUMP $_compare_next
+  LABEL $_truncate_N
+  SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1
+  MOVE LF@$_arg_2 GF@$_str_temp_1
+  
+  MOVE GF@$_stack_temp string@
+  LABEL $_compare_next
+  JUMPIFEQ $_all_done LF@$_arg_2 int@0
+  GETCHAR GF@$_str_temp_1 LF@$_arg_0 LF@$_arg_1
+  CONCAT GF@$_stack_temp GF@$_stack_temp GF@$_str_temp_1
+  ADD LF@$_arg_1 LF@$_arg_1 int@1
+  SUB LF@$_arg_2 LF@$_arg_2 int@1
+  JUMP $_compare_next
+  
+  LABEL $_assert_zero
+  MOVE GF@$_stack_temp string@
+  
+  LABEL $_all_done
+  PUSHS GF@$_stack_temp
+  POPFRAME
+  RETURN
+
+LABEL $_length
+  PUSHFRAME
+  STRLEN GF@$_stack_temp LF@$_arg_0
+  PUSHS GF@$_stack_temp
+  POPFRAME
+  RETURN
+
+LABEL $_chr
+  PUSHFRAME
+  INT2CHAR GF@$_stack_temp LF@$_arg_0
+  PUSHS GF@$_stack_temp
+  POPFRAME
+  RETURN
+
+LABEL $_asc
+  PUSHFRAME
+  STRLEN GF@$_stack_temp LF@$_arg_0
+  JUMPIFEQ $_assert_zero_end GF@$_stack_temp int@0
+  
+  SUB GF@$_stack_temp GF@$_stack_temp int@1
+  LT GF@$_str_temp_1 LF@$_arg_1 int@0
+  JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true
+  
+  GT GF@$_str_temp_1 LF@$_arg_1 GF@$_stack_temp
+  JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true
+  
+  STRI2INT GF@$_stack_temp LF@$_arg_0 LF@$_arg_1
+  JUMP $_asc_end
+  
+  LABEL $_assert_zero_end
+  MOVE GF@$_stack_temp int@0
+  LABEL $_asc_end
+  PUSHS GF@$_stack_temp
+  POPFRAME
+  RETURN
+
+LABEL $$main
+CREATEFRAME
+PUSHFRAME
+DEFVAR GF@$_stack_temp
+DEFVAR GF@$_str_temp_1
+DEFVAR GF@$_str_temp_2
+DEFVAR LF@_a
+# Var a init
+MOVE LF@_a string@
+WRITE string@?\032
+READ LF@_a STRING
+PUSHS LF@_a
+# Saving to temp for print statement
+POPS GF@$_stack_temp
+
+WRITE GF@$_stack_temp
+POPFRAME
+
+# RESULT 0
