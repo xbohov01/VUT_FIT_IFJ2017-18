@@ -114,7 +114,6 @@ void synt_error_print(int given, int expected){
 
 //stack and condition operations
 //returns randomly generated label id
-//TODO maybe rework into a pseudo-hash function
 int gen_label_id(){
   return rand();
 }
@@ -150,7 +149,7 @@ int c_stack_top(t_cond_stack *stack){
   if (stack->top != NULL){
     fprintf(stderr, "Top condition id %d\n", stack->top->data);
     return stack->top->data;
-  } 
+  }
   else {
     fprintf(stderr, "Cant access NULL stack->top\n");
     hard_exit(INTERNAL_ERR);
@@ -166,8 +165,6 @@ void c_stack_destroy(t_cond_stack *stack){
 
 
 int end_of_lines(){
-  //get_token();
-  //CHECKT(ENDL);
   while (currentToken.token_type == ENDL){
     get_token();
   }
@@ -214,7 +211,6 @@ int var_declr(){
 
   //insert into variable table
   tmp_var_item = hash_table_insert(var_table, var_id);
-  //TODO check for correct insert
 
   tmp_var_item->param_types = NULL;
 
@@ -239,7 +235,6 @@ int var_declr(){
     free(var_id);
     return end_of_lines();
   } else if (currentToken.token_type == EQ_O){
-    //free(var_id);
     //evaluate expression
     printf("DEFVAR LF@_%s\n", var_id);
     eval_expr();
@@ -251,7 +246,6 @@ int var_declr(){
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
     free(var_id);
     hard_exit(SYNT_ERR);
-    //return SYNT_ERR;
   }
 
   return SUCCESS;
@@ -336,8 +330,6 @@ int fnc_arglist(){
   }
   //some arguments
   while (currentToken.token_type != PAR_R){
-    //one argument
-    //get_token();
     //expecting identifier
     CHECKT(IDENTIFICATOR);
     if (fnc_arg(arg_pos++) != SUCCESS){
@@ -345,7 +337,6 @@ int fnc_arglist(){
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
     }
-    //get_token();
     //expecting PAR_R or a comma
     if (currentToken.token_type == PAR_R){
       arg_pos = 0;
@@ -356,7 +347,6 @@ int fnc_arglist(){
     } else {
       fprintf(stderr, "Invalid parameter2\n");
       hard_exit(SYNT_ERR);
-      //return SYNT_ERR;
     }
   }
 
@@ -373,7 +363,6 @@ int if_statements(){
     if (statement() == SYNT_ERR){
       fprintf(stderr, "Error in conditional statement\n");
       hard_exit(SYNT_ERR);
-      //return SYNT_ERR;
     }
 
   }
@@ -542,7 +531,6 @@ int statement(){
     default :
       fprintf(stderr, "Syntax error in statement\n");
       hard_exit(SYNT_ERR);
-      //return SYNT_ERR;
   }
 
   return SUCCESS;
@@ -602,9 +590,6 @@ int functions(){
     //tac
     printf("LABEL $_%s\n", identifier);
     printf("PUSHFRAME\n");
-
-    //return value room
-    //printf("DEFVAR LF@$_RETVAL\n");
   }
 
   get_token();
@@ -623,7 +608,6 @@ int functions(){
     if (currentToken.token_type != STRING_KEY && currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY){
       fprintf(stderr, "Invalid return type\n");
       hard_exit(SYNT_ERR);
-      //return SYNT_ERR;
     }
     //set return type
     if (currentToken.token_type == INTEGER_KEY){
@@ -649,7 +633,6 @@ int functions(){
       if (currentToken.token_type != STRING_KEY && currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY){
         fprintf(stderr, "Invalid type\n");
         hard_exit(SYNT_ERR);
-        //return SYNT_ERR;
       }
 
       //set return type
@@ -665,7 +648,6 @@ int functions(){
   } else {
     fprintf(stderr, "Syntax error in function declaration/definition. Expecting ')' or variables, %d was given.\n", currentToken.token_type);
     hard_exit(SYNT_ERR);
-    //return SYNT_ERR;
   }
 
   //check if function is in symtable
@@ -681,13 +663,10 @@ int functions(){
     }
     if (params.len != 0){
       tmp_func_item->param_types = malloc(sizeof(char)*params.len+1);
-      //TODO add malloc check
       addchar('\0', &params);
       memcpy(tmp_func_item->param_types, params.content, strlen(params.content)+1);
-      //printf("after copy param_types %s\n", tmp_func_item->param_types);
     } else {
       tmp_func_item->param_types = NULL;
-      //addchar('\0', &params);
     }
   } else {
     if (tmp_func_item->is_defined == true){
@@ -766,7 +745,6 @@ int functions(){
 }
 
 int scope(){
-  //int result = SYNT_ERR;
   get_token();
   CHECKT(ENDL);
   get_token();
@@ -788,7 +766,6 @@ int scope(){
         //ready for global variable
         if (var_declr() != SUCCESS){
           hard_exit(SYNT_ERR);
-          //return SYNT_ERR;
         }
         //return var_declr();
         continue;
@@ -803,8 +780,6 @@ int scope(){
         //could have empty line
         end_of_lines();
         CHECKT(ENDF);
-
-        //hash_table_destroy(var_table);
 
         return SUCCESS;
 
@@ -821,7 +796,6 @@ int scope(){
         if (statement() != SUCCESS){
           fprintf(stderr, "Invalid statement\n");
           hard_exit(SYNT_ERR);
-          //return SYNT_ERR;
         }
         continue;
     }
@@ -835,7 +809,7 @@ int scope(){
 int start(){
 
   start_program();
-  
+
   int result = 0;
 
   while (result != SYNT_ERR){
@@ -845,9 +819,6 @@ int start(){
       case DECLARE_KEY:
         //'declare' keyword
         result = functions();
-        //tac
-        //printf("POPFRAME\n");
-        //printf("RETURN\n");
         continue;
 
       case SCOPE_KEY:
@@ -917,7 +888,6 @@ int main(){
 
   //init symtables
   func_table = sym_tab_init(64);
-  //TODO check for correct init
 
   //start scanner
   start_scanner();
