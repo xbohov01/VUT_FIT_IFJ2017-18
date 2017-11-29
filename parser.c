@@ -123,7 +123,6 @@ void c_stack_init(t_cond_stack *stack){
 }
 
 void c_stack_push(t_cond_stack *stack, int data){
-  fprintf(stderr, "Pushing condition id %d\n", data);
   t_cond_s_item *tmp = malloc(sizeof(t_cond_s_item));
   if (tmp == NULL){
     hard_exit(INTERNAL_ERR);
@@ -136,12 +135,12 @@ void c_stack_push(t_cond_stack *stack, int data){
 void c_stack_pop(t_cond_stack *stack){
   t_cond_s_item *tmp;
   if (stack->top != NULL){
-    fprintf(stderr, "Pop condition stack\n");
     tmp = stack->top;
     stack->top = tmp->next;
     free(tmp);
   } else {
     fprintf(stderr, "Nothing left to pop!\n");
+    error_exit(INTERNAL_ERR);
   }
 }
 
