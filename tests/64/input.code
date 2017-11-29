@@ -1,0 +1,18 @@
+' single scope without any statements
+
+
+
+	SCOPE
+
+
+	dim a as integer = 5
+	dim b as string  = !"ahoj"
+
+	a = a + b
+
+
+
+
+
+
+	END SCOPE

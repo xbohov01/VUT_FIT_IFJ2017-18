@@ -1,0 +1,15 @@
+' single scope without any statements
+
+
+
+	SCOPE
+
+
+	dim a as integer = 5
+	dim a as integer = 5
+
+
+
+
+
+	END SCOPE

@@ -1,0 +1,9 @@
+function foo(b as string) as integer
+	return 42
+end function
+
+scope
+	dim a as integer = 5
+	a = foo(a)
+	print a;
+end scope
