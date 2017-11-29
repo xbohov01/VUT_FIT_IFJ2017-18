@@ -1,0 +1,12 @@
+' single scope without any statements
+
+
+
+	SCOPE
+
+
+	dim a as double = .e45
+
+
+
+	END SCOPE
