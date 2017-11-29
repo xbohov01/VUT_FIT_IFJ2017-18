@@ -150,12 +150,8 @@ int c_stack_top(t_cond_stack *stack){
   if (stack->top != NULL){
     fprintf(stderr, "Top condition id %d\n", stack->top->data);
     return stack->top->data;
-  } 
-  else {
-    fprintf(stderr, "Cant access NULL stack->top\n");
-    hard_exit(INTERNAL_ERR);
-    return 0;
   }
+
 }
 
 void c_stack_destroy(t_cond_stack *stack){
@@ -173,6 +169,10 @@ int end_of_lines(){
   }
   return SUCCESS;
 
+}
+
+void check_functions_definition() {
+  return;
 }
 
 //<deklaracie> ->	<deklaracia>	<endline>	<deklaracie>
@@ -815,7 +815,7 @@ int scope(){
       case RETURN_KEY :
         fprintf(stderr, "Syntax error: Return outside of function.\n");
         hard_exit(SYNT_ERR);
-        break;
+
       default :
         //expecting statement
         if (statement() != SUCCESS){
@@ -834,8 +834,85 @@ int scope(){
 //<s> -> <funkcie> <scope>
 int start(){
 
-  start_program();
-  
+  //header
+  printf(".IFJcode17\n");
+  //jump to main
+  printf("JUMP $$main\n");
+
+  //inbuilt function
+  printf("LABEL $_substr\n\
+  PUSHFRAME\n\
+  STRLEN GF@$_str_temp_2 LF@$_arg_0\n\
+  JUMPIFEQ $_assert_zero GF@$_str_temp_2 int@0\n\
+  \n\
+  LT GF@$_str_temp_1 LF@$_arg_1 int@1\n\
+  JUMPIFEQ $_assert_zero GF@$_str_temp_1 bool@true\n\
+  \n\
+  LT GF@$_str_temp_1 LF@$_arg_2 int@0\n\
+  JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true\n\
+  \n\
+  SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1\n\
+  GT GF@$_str_temp_1 LF@$_arg_2 GF@$_str_temp_1\n\
+  JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true\n\
+  MOVE GF@$_stack_temp string@\n\
+  JUMP $_compare_next\n\
+  LABEL $_truncate_N\n\
+  SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1\n\
+  MOVE LF@$_arg_2 GF@$_str_temp_1\n\
+  \n\
+  MOVE GF@$_stack_temp string@\n\
+  LABEL $_compare_next\n\
+  JUMPIFEQ $_all_done LF@$_arg_2 int@0\n\
+  GETCHAR GF@$_str_temp_1 LF@$_arg_0 LF@$_arg_1\n\
+  CONCAT GF@$_stack_temp GF@$_stack_temp GF@$_str_temp_1\n\
+  ADD LF@$_arg_1 LF@$_arg_1 int@1\n\
+  SUB LF@$_arg_2 LF@$_arg_2 int@1\n\
+  JUMP $_compare_next\n\
+  \n\
+  LABEL $_assert_zero\n\
+  MOVE GF@$_stack_temp string@\n\
+  \n\
+  LABEL $_all_done\n\
+  PUSHS GF@$_stack_temp\n\
+  POPFRAME\n\
+  RETURN\n\n");
+
+  printf("LABEL $_length\n\
+  PUSHFRAME\n\
+  STRLEN GF@$_stack_temp LF@$_arg_0\n\
+  PUSHS GF@$_stack_temp\n\
+  POPFRAME\n\
+  RETURN\n\n");
+
+  printf("LABEL $_chr\n\
+  PUSHFRAME\n\
+  INT2CHAR GF@$_stack_temp LF@$_arg_0\n\
+  PUSHS GF@$_stack_temp\n\
+  POPFRAME\n\
+  RETURN\n\n");
+
+  printf("LABEL $_asc\n\
+  PUSHFRAME\n\
+  STRLEN GF@$_stack_temp LF@$_arg_0\n\
+  JUMPIFEQ $_assert_zero_end GF@$_stack_temp int@0\n\
+  \n\
+  SUB GF@$_stack_temp GF@$_stack_temp int@1\n\
+  LT GF@$_str_temp_1 LF@$_arg_1 int@0\n\
+  JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true\n\
+  \n\
+  GT GF@$_str_temp_1 LF@$_arg_1 GF@$_stack_temp\n\
+  JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true\n\
+  \n\
+  STRI2INT GF@$_stack_temp LF@$_arg_0 LF@$_arg_1\n\
+  JUMP $_asc_end\n\
+  \n\
+  LABEL $_assert_zero_end\n\
+  MOVE GF@$_stack_temp int@0\n\
+  LABEL $_asc_end\n\
+  PUSHS GF@$_stack_temp\n\
+  POPFRAME\n\
+  RETURN\n\n");
+
   int result = 0;
 
   while (result != SYNT_ERR){
@@ -853,7 +930,8 @@ int start(){
       case SCOPE_KEY:
         //'scope' keyword
         result = scope();
-        end_scope();
+        //tac
+        printf("POPFRAME\n");
         hash_table_destroy(var_table);
         break;
       case ENDF:
@@ -903,6 +981,7 @@ int start_parsing(){
   result = start();
 
   define_built_in_func(); // Will add all of used functions to TAC
+  check_functions_definition(); // Will check if all of functions were defined
 
   free(params.content);
   c_stack_destroy(&if_stack);

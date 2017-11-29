@@ -42,17 +42,9 @@ void init_var(N_T_types type, char* name) {
     return;
 }
 
-void start_program() {
-    // header
-    printf(".IFJcode17\n");
-    printf("JUMP $$main\n");
-    printf("\n");
-}
-
-void end_scope() {
-    printf("POPFRAME\n");
-    printf("JUMP $_end_program\n");
-    printf("\n");
+void create_label(char *name) {
+    printf("LABEL %s\n", name);
+    return;
 }
 
 // =========================================
@@ -252,146 +244,21 @@ void push_arg(int arg_num) {
 void f_call(char *name) {
     printf("# Calling %s\n", name);
     printf("CALL $_%s\n", name);
-    if (strcmp(name, "chr") == 0) {
-        add_build_in('C', false);
-    }
-    else if (strcmp(name, "asc") == 0) {
-        add_build_in('A', false);
-    }
-    else if (strcmp(name, "substr") == 0) {
-        add_build_in('S', false);
-    }
-    else if (strcmp(name, "length") == 0) {
-        add_build_in('L', false);
-    }
     printf("\n");
     return;
+}
+
+void built_in_call(char which) {
+    printf("# Built in function call\n");
+    if (which == 'c') {
+        ;
+    }
 }
 
 void define_built_in_func() {
-    if (add_build_in(0, true)[0] == true) {
-        //inbuilt function
-        printf(
-            "LABEL $_length\n"
-            "PUSHFRAME\n"
-            "STRLEN GF@$_stack_temp LF@$_arg_0\n"
-            "PUSHS GF@$_stack_temp\n"
-            "POPFRAME\n"
-            "RETURN\n\n"
-            );
-    }
-    if (add_build_in(0, true)[1] == true) {
-        // SUBSTRING function
-        printf(
-            "LABEL $_substr\n"
-            "PUSHFRAME\n"
-            "STRLEN GF@$_str_temp_2 LF@$_arg_0\n"
-            "JUMPIFEQ $_assert_zero GF@$_str_temp_2 int@0\n"
-            "\n"
-            "LT GF@$_str_temp_1 LF@$_arg_1 int@1\n"
-            "JUMPIFEQ $_assert_zero GF@$_str_temp_1 bool@true\n"
-            "\n"
-            "LT GF@$_str_temp_1 LF@$_arg_2 int@0\n"
-            "JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true\n"
-            "\n"
-            "SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1\n"
-            "GT GF@$_str_temp_1 LF@$_arg_2 GF@$_str_temp_1\n"
-            "JUMPIFEQ $_truncate_N GF@$_str_temp_1 bool@true\n"
-            "JUMP $_cycle_start\n"
-            "LABEL $_truncate_N\n"
-            "SUB GF@$_str_temp_1 GF@$_str_temp_2 LF@$_arg_1\n"
-            "ADD GF@$_str_temp_1 GF@$_str_temp_1 int@1\n"
-            "MOVE LF@$_arg_2 GF@$_str_temp_1\n"
-            "\n"
-            "LABEL $_cycle_start\n"
-            "SUB LF@$_arg_1 LF@$_arg_1 int@1\n"
-            "MOVE GF@$_stack_temp string@\n"
-            "LABEL $_compare_next\n"
-            "JUMPIFEQ $_all_done LF@$_arg_2 int@0\n"
-            "GETCHAR GF@$_str_temp_1 LF@$_arg_0 LF@$_arg_1\n"
-            "CONCAT GF@$_stack_temp GF@$_stack_temp GF@$_str_temp_1\n"
-            "ADD LF@$_arg_1 LF@$_arg_1 int@1\n"
-            "SUB LF@$_arg_2 LF@$_arg_2 int@1\n"
-            "JUMP $_compare_next\n"
-            "\n"
-            "LABEL $_assert_zero\n"
-            "MOVE GF@$_stack_temp string@\n"
-            "\n"
-            "LABEL $_all_done\n"
-            "PUSHS GF@$_stack_temp\n"
-            "POPFRAME\n"
-            "RETURN\n\n"
-            );
-    }
-    if (add_build_in(0, true)[2] == true) {
-        // ASC function
-        printf(
-            "LABEL $_asc\n"
-            "PUSHFRAME\n"
-            "STRLEN GF@$_stack_temp LF@$_arg_0\n"
-            "JUMPIFEQ $_assert_zero_end GF@$_stack_temp int@0\n"
-            "\n"
-            "SUB GF@$_stack_temp GF@$_stack_temp int@1\n"
-            "LT GF@$_str_temp_1 LF@$_arg_1 int@0\n"
-            "JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true\n"
-            "\n"
-            "GT GF@$_str_temp_1 LF@$_arg_1 GF@$_stack_temp\n"
-            "JUMPIFEQ $_assert_zero_end GF@$_str_temp_1 bool@true\n"
-            "\n"
-            "STRI2INT GF@$_stack_temp LF@$_arg_0 LF@$_arg_1\n"
-            "JUMP $_asc_end\n"
-            "\n"
-            "LABEL $_assert_zero_end\n"
-            "MOVE GF@$_stack_temp int@0\n"
-            "LABEL $_asc_end\n"
-            "PUSHS GF@$_stack_temp\n"
-            "POPFRAME\n"
-            "RETURN\n\n"
-            );
-    }
-    if (add_build_in(0, true)[3] == true) {
-        // CHR function
-        printf(
-            "LABEL $_chr\n"
-            "PUSHFRAME\n"
-            "INT2CHAR GF@$_stack_temp LF@$_arg_0\n"
-            "PUSHS GF@$_stack_temp\n"
-            "POPFRAME\n"
-            "RETURN\n\n"
-            );
-    }
-
-    // All finished
-    printf("LABEL $_end_program\n");
-    printf("\n");
     return;
 }
-
-bool *add_build_in(char which, bool only_return) {
-    static bool builtin_calls[4] = {0, 0, 0, 0};
-                              //  L  S  A  C
-    if (only_return == true) {
-        return builtin_calls;
-    }
-    else {
-        switch(which) {
-            case 'L':
-                builtin_calls[0] = true;
-                break;
-            case 'S':
-                builtin_calls[1] = true;
-                break;
-            case 'A':
-                builtin_calls[2] = true;
-                break;
-            case 'C':
-                builtin_calls[3] = true;
-                break;
-            default:
-                fprintf(stderr, "Unknown built-in call\n");
-                error_exit(INTERNAL_ERR);
-        }
-        return builtin_calls;
-    }
+void which_defined(bool add, char which) {
+    return;
 }
 // =========================================

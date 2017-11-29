@@ -937,11 +937,11 @@ void psa_operation(bool allow_bool) {
             // --------------------End semantic control-----------------------
             // Syntax error
             case '#':
-                if ((index_stack_top == ID) && (index_input == PL)) {
+                if ((index_stack_top == ID) && (index_input == PAR_L)) {
                     fprintf(stderr, "Variable used as function\n");
                     error_exit(UNDEF_ERR);
                 }
-                else if ((index_stack_top == FNC) && (index_input != PL)) {
+                else if ((index_stack_top == FNC) && (index_input != PAR_L)) {
                     fprintf(stderr, "Function used as variable\n"); 
                     error_exit(UNDEF_ERR);
                 }
