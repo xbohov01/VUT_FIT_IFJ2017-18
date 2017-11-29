@@ -47,24 +47,6 @@ void ps(T_NT_stack *s) {
 
 void print_item(T_NT_item *act) {
 
-    static char non_term_rule_names[15][10] = {
-        "NT_ADD",  // 1: E -> E + E
-        "NT_SUB",  // 2: E -> E - E
-        "NT_MUL",  // 3: E -> E * E
-        "NT_DIV",  // 4: E -> E / E
-        "NT_IDIV", // 5: E -> E \ E
-        "NT_PAR",  // 6: E -> (E)
-        "NT_ID",   // 7: E -> id
-        "NT_FN",   // 8: E -> id(eps/E/E,...E)
-        "NT_LT",  //  9: E -> E <  E
-        "NT_GT",  // 10: E -> E >  E
-        "NT_LTE", // 11: E -> E <= E
-        "NT_GTE", // 12: E -> E >= E
-        "NT_EQ",  // 13: E -> E =  E
-        "NT_NEQ", // 14: E -> E <> E
-        "STOPPER" // '<'
-    };
-
     static char term_type_names[18][10] = {
         "+",    // "ADD",
         "*",    // "MUL",
@@ -89,14 +71,14 @@ void print_item(T_NT_item *act) {
         "INTEGER_NT",
         "DOUBLE_NT",
         "STRING_NT",
-        "NONE_NT"
+        "STOPPER"
     };
 
     hash_tab_symbol_type *found_func;
     hash_tab_symbol_type *found_var;
 
     if (act->is_non_term) {
-        fprintf(stderr, "Non-term rule: %s\ttype: %s\n", non_term_rule_names[act->data.NTerm.rule], N_T_type_names[act->data.NTerm.type]);
+        fprintf(stderr, "Non-term type: %s\n", N_T_type_names[act->data.NT_type]);
     }
     else {
         switch(act->data.Term.token_type) {

@@ -383,7 +383,7 @@ int if_statements(){
   return SUCCESS;
 }
 
-//<statement>	<expr>
+//<statement>	<expr> TODO: delete this
 //<statement>	<id>	='	<expr>
 //<statement>	input	<id>
 //<statement>	print	<id>	;	<print_list>
@@ -408,9 +408,9 @@ int statement(){
       }
       return end_of_lines();
 
-    case INTEGER :
-    case DOUBLE :
-    case STRING :
+    // case INTEGER :
+    // case DOUBLE :
+    // case STRING :
     case IDENTIFICATOR:
       eval_expr();
       return end_of_lines();
@@ -420,6 +420,7 @@ int statement(){
       returned = true;
       //resolve expression or function call or return
       eval_expr();
+      check_psa_completion();
       printf("POPFRAME\n");
       printf("RETURN\n\n\n");
       return end_of_lines();
@@ -883,10 +884,7 @@ int start_parsing(){
   c_stack_init(&if_stack);
   c_stack_init(&while_stack);
 
-  extern T_NT_stack *processing_stack;
-  extern T_NT_stack *evaluation_stack;
   processing_stack = init_T_NT_stack();
-  evaluation_stack = init_T_NT_stack();
 
   //get first token
   get_token();

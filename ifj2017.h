@@ -165,35 +165,12 @@ char fgetc_extended();
 
 //====PSA_STACK====
 
-// Possible types for non_terminals
-// Used after rule application
-typedef enum non_term_rules {
-    NT_ADD = 0,  // 1: E -> E + E
-    NT_SUB,  // 2: E -> E - E
-    NT_MUL,  // 3: E -> E * E
-    NT_DIV,  // 4: E -> E / E
-    NT_IDIV, // 5: E -> E \ E
-
-    NT_PAR,  // 6: E -> (E)
-
-    NT_ID,   // 7: E -> id
-    NT_FN,   // 8: E -> id(eps/E/E,...E)
-
-    NT_LT, 	//  9: E -> E <  E
-    NT_GT, 	// 10: E -> E >  E
-    NT_LTE,	// 11: E -> E <= E
-    NT_GTE,	// 12: E -> E >= E
-    NT_EQ, 	// 13: E -> E =  E
-    NT_NEQ,	// 14: E -> E <> E
-
-    STOPPER // '<'
-} N_T_rules;
 
 typedef enum {
     INTEGER_NT = 0,
     DOUBLE_NT,
     STRING_NT,
-    NONE_NT
+    STOPPER
 } N_T_types;
 
 typedef enum psa_term_type {
@@ -230,19 +207,12 @@ typedef struct t_nt_stack {
     struct t_nt_item *popped;
 } T_NT_stack;
 
-// Non_terminal itself
-typedef struct data_non_term
-{
-    N_T_rules rule;
-    N_T_types type;
-} Data_NTerm; // Non-terminal data
-
 // Style conversion of tToken structure
 typedef tToken Data_Term;
 
 // Data types of stack items
 typedef union t_nt_data{
-    Data_NTerm NTerm;
+    N_T_types NT_type;
     Data_Term Term;
 } T_NT_Data;
 
@@ -258,21 +228,21 @@ typedef struct t_nt_item {
 
 void error_exit(int code);
 PSA_Term_type get_term_type(Data_Term *in_term);
-N_T_rules map_NT_rule(PSA_Term_type in_psa_term);
 N_T_types map_NT_type(T_token_type in_token_type);
 N_T_types map_arg_type(char arg_type);
 
 T_NT_stack *init_T_NT_stack();
 void clear_stack(T_NT_stack *s);
 void destroy_T_NT_stack(T_NT_stack *s);
-T_NT_item *push_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
-T_NT_item *pop_T_NT(T_NT_stack *s); // Returns item for easy search
+T_NT_item *push_T(T_NT_stack *s, Data_Term *in_term);
+T_NT_item *push_NT(T_NT_stack *s, T_NT_item *in_non_term);
+T_NT_item *pop_T_NT(T_NT_stack *s);
 
 // Extended stack operations
 T_NT_item *set_first_T_NT(T_NT_stack *s);
 T_NT_item *set_next_T_NT(T_NT_stack *s);
 bool active_T_NT(T_NT_stack *s);
-T_NT_item* insert_after_T_NT(T_NT_stack *s, Data_Term *in_term, Data_NTerm *in_non_term);
+T_NT_item* insert_after_NT(T_NT_stack *s, T_NT_item *in_non_term);
 
 // =========PSA_STACK_TESTS===========
 void ps(T_NT_stack *T_NT_s); // Print stack for debug
@@ -314,20 +284,20 @@ void eval_expr();
 void eval_cond_expr(bool is_do_while, int label_num);
 void psa_operation(bool allow_bool);
 void reduce_by_rule();
-void get_reversed_rule();
+Data_Term *get_item_before_stopper();
 void check_psa_completion();
 
-Data_NTerm *id_R(hash_tab_symbol_type *var);
-Data_NTerm *function_R(hash_tab_symbol_type *func);
-Data_NTerm *arithm_R();
+T_NT_item *id_R(hash_tab_symbol_type *var);
+T_NT_item *function_R(hash_tab_symbol_type *func);
+T_NT_item *arithm_R();
+T_NT_item *parenthesis_R();
 
 void push_start_term(T_NT_stack *s);
 T_NT_item *find_first_term(T_NT_stack *s, bool *is_first);
 void insert_stopper(T_NT_stack *s);
-Data_NTerm *create_non_term(N_T_rules in_rule, N_T_types in_type);
+T_NT_item *create_non_term(N_T_types in_type);
 void control_result_type_conform(int val_type);
 
-extern Data_Term currentToken;
 T_NT_stack *processing_stack;
 T_NT_stack *evaluation_stack;
 
