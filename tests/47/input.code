@@ -1,0 +1,7 @@
+function (b as integer, c as integer) as integer
+	return !"ahoj"
+end function
+
+scope
+	print fun(4,5);
+end scope
