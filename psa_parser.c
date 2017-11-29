@@ -124,6 +124,26 @@ void eval_cond_expr(bool is_do_while, int label_num) {
     return;
 }
 
+
+void eval_return_expr(hash_tab_symbol_type *func) {
+    // set expr_start
+    get_token();
+    if (get_term_type(&(currentToken)) == END) {
+        fprintf(stderr, "Function can't return void\n");
+        error_exit(SYNT_ERR);
+    }
+    push_start_term(processing_stack);
+    psa_operation(false);
+    control_result_type_conform(func->value_type);
+    check_psa_completion();
+    if (currentToken.token_type != ENDL) {
+        fprintf(stderr, "Unexpected item after return\n");
+        error_exit(SYNT_ERR);
+    }
+
+    return_f(func->symbol_name);
+    return;
+}
 // <expr> -> <CHECK_START_SYM> <VAR_INIT>
 // <expr> -> <CHECK_START_SYM> <VAR_DEFINITION>
 // <expr> -> <CHECK_START_SYM> <FUNC_CALL>
@@ -160,10 +180,6 @@ void eval_expr() {
                 }
                 else if (currentToken.token_type == EQ_O) {
                 // <CHECK_START_SYM> -> '='
-                    eval_ex_state = VAR_INIT;
-                }
-                else if (currentToken.token_type == RETURN_KEY) {
-                // <CHECK_START_SYM> -> RETURN KEY
                     eval_ex_state = VAR_INIT;
                 }
                 else if (currentToken.token_type == PRINT_KEY) {
@@ -401,10 +417,6 @@ T_NT_item *function_R(hash_tab_symbol_type *func) {
                 look_ahead = pop_T_NT(processing_stack);
                 if ((look_ahead == NULL) || (look_ahead->is_non_term == true) || (look_ahead->data.Term.token_type != PAR_L)) {
                     fprintf(stderr, "Expected '(' after function name\n");
-                    error_exit(SYNT_ERR);
-                }
-                else if (look_ahead->is_non_term != false) {
-                    fprintf(stderr, "Unexpected argument while calling '%s' on position %d\n", func->symbol_name, arg_pos);
                     error_exit(TYPE_ERR);
                 }
                 func_state = CALL_FUNC;
@@ -588,13 +600,6 @@ T_NT_item *arithm_R() {
         FINISHED_ARITHM_PSA
     } arithm_state;
 
-    static char op_types[4][8] = {
-        "integer",
-        "float",
-        "string",
-        "none"
-    };
-
     static char oper_types[12][3] = {
         "+",
         "*",
@@ -627,8 +632,8 @@ T_NT_item *arithm_R() {
     arithm_operand = get_term_type(&(look_ahead->data.Term));
 
     look_ahead = pop_T_NT(processing_stack);
-    if (look_ahead->is_non_term == false) {
-        fprintf(stderr, "Expected operand, got nothing\n");
+    if (look_ahead->is_non_term == false || look_ahead->data.NT_type == STOPPER) {
+        fprintf(stderr, "Expected operand.\n");
         error_exit(SYNT_ERR);
     }
     E1 = &(look_ahead->data);
@@ -672,7 +677,7 @@ T_NT_item *arithm_R() {
                         }
                         // Unexpected string type
                         else {
-                            fprintf(stderr, "1) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E2->NT_type], oper_types[arithm_operand], op_types[E1->NT_type]);
+                            fprintf(stderr, "1) Unexpected arithmetic operand '%s'\n", oper_types[arithm_operand]);
                             error_exit(TYPE_ERR);
                         }
                         non_term = create_non_term(DOUBLE_NT);
@@ -709,7 +714,7 @@ T_NT_item *arithm_R() {
                         }
                         // Unexpected string type
                         else {
-                            fprintf(stderr, "2) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E2->NT_type], oper_types[arithm_operand], op_types[E1->NT_type]);
+                            fprintf(stderr, "2) Unexpected arithmetic operand '%s'\n", oper_types[arithm_operand]);
                             error_exit(TYPE_ERR);
                         }
 
@@ -726,7 +731,7 @@ T_NT_item *arithm_R() {
                         }
                         // Unexpected string type
                         else {
-                            fprintf(stderr, "3) Unexpected arithmetic operand \"%s\" '%s' \"%s\"\n", op_types[E2->NT_type], oper_types[arithm_operand], op_types[E1->NT_type]);
+                            fprintf(stderr, "3) Unexpected arithmetic operand '%s'\n", oper_types[arithm_operand]);
                             error_exit(TYPE_ERR);
                         }
                         non_term = create_non_term(DOUBLE_NT);
@@ -736,7 +741,7 @@ T_NT_item *arithm_R() {
                         break;
                     case IDIV:
                         if (E1->NT_type != INTEGER_NT) {
-                            fprintf(stderr, "Integer division works only with integers, got \"%s\" '%s' \"%s\"\n", op_types[E2->NT_type], oper_types[arithm_operand], op_types[E1->NT_type]);
+                            fprintf(stderr, "Integer division works only with integers\n");
                             error_exit(TYPE_ERR);
                         }
                         else {
@@ -763,7 +768,7 @@ T_NT_item *arithm_R() {
                     case GTE:
                     case EQ:
                         if (E1->NT_type != STRING_NT) {
-                            fprintf(stderr, "Expected string, got \"%s\" '%s' \"%s\"\n", op_types[E2->NT_type], oper_types[arithm_operand], op_types[E1->NT_type]);
+                            fprintf(stderr, "Expected string\n");
                             error_exit(TYPE_ERR);
                         }
                         non_term = create_non_term(STRING_NT);
@@ -823,8 +828,12 @@ void reduce_by_rule() {
             if (get_term_type(func_or_left_p) == FNC) {
                 non_term = function_R(hash_table_search(func_table, func_or_left_p->id));
             }
-            else if (get_term_type(T) == PL) {
+            else if (get_term_type(func_or_left_p) == PL) {
                 non_term = parenthesis_R();
+            }
+            else {
+                fprintf(stderr, "Unknown token before stopper\n");
+                error_exit(INTERNAL_ERR);
             }
         }
         else if (get_term_type(T) == ID) {
@@ -969,7 +978,7 @@ void psa_operation(bool allow_bool) {
                     psa_finished = true;
                 }
                 else {
-                    fprintf(stderr, "End error.\n");
+                    fprintf(stderr, "Expected boolean expression\n");
                     error_exit(SYNT_ERR);
                 }
                 break;

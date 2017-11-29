@@ -281,6 +281,7 @@ void hash_table_destroy(hash_table_type *hash_table);
 
 //====PSA===
 void eval_expr();
+void eval_return_expr(hash_tab_symbol_type *func);
 void eval_cond_expr(bool is_do_while, int label_num);
 void psa_operation(bool allow_bool);
 void reduce_by_rule();
@@ -332,6 +333,7 @@ void write_output();
 // Jumps or function calls
 void cond_jump(bool is_while, int num);
 void push_arg(int arg_num);
+void return_f(char *name);
 void f_call(char *name);
 void define_built_in_func();
 bool *add_build_in(char which, bool only_return);
@@ -362,13 +364,15 @@ int gen_label_id();
 int start_parsing();
 int start();
 int scope();
+int functions();
 int end_of_lines();
 int var_declr();
 int fnc_arg(int pos);
 int fnc_arglist();
-int fnc_stats();
-int if_statements();
-int statement();
+int fnc_stats(hash_tab_symbol_type *func);
+int if_statements(hash_tab_symbol_type *func);
+int statement(hash_tab_symbol_type *func); // func is not NULL only when 
+										   // is inside of function definition
 
 tString params;
 t_cond_stack if_stack;

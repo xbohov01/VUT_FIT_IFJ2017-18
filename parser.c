@@ -214,8 +214,11 @@ int var_declr(){
 
   //insert into variable table
   tmp_var_item = hash_table_insert(var_table, var_id);
-  //TODO check for correct insert
-
+  if (tmp_var_item == NULL) {
+    fprintf(stderr, "Inser hash table failed\n");
+    error_exit(INTERNAL_ERR);
+  }
+  
   tmp_var_item->param_types = NULL;
 
   //adds type to params and var_table
@@ -365,12 +368,14 @@ int fnc_arglist(){
 }
 
 //<statement> ->	if	<expr>	then	<endline>	<thenstats>	else	<endline>	<elsestats>	end 	if
-int if_statements(){
+int if_statements(hash_tab_symbol_type *tmp_func_item){
+  // Function should return something in all cases
+  returned = false;
   //last was ENDL so need to get next
   get_token();
   while (currentToken.token_type != END_KEY && currentToken.token_type != ELSE_KEY
         && currentToken.token_type != ELSEIF_KEY && currentToken.token_type != LOOP_KEY){
-    if (statement() == SYNT_ERR){
+    if (statement(tmp_func_item) == SYNT_ERR){
       fprintf(stderr, "Error in conditional statement\n");
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
@@ -383,7 +388,6 @@ int if_statements(){
   return SUCCESS;
 }
 
-//<statement>	<expr> TODO: delete this
 //<statement>	<id>	='	<expr>
 //<statement>	input	<id>
 //<statement>	print	<id>	;	<print_list>
@@ -391,7 +395,7 @@ int if_statements(){
 //<statement>	do	while	<expr>	<endline>	<teloprogramu>	loop
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
-int statement(){
+int statement(hash_tab_symbol_type *tmp_func_item){
   int cond_key;
   int while_key;
 
@@ -408,9 +412,6 @@ int statement(){
       }
       return end_of_lines();
 
-    // case INTEGER :
-    // case DOUBLE :
-    // case STRING :
     case IDENTIFICATOR:
       eval_expr();
       return end_of_lines();
@@ -419,10 +420,7 @@ int statement(){
       //implicit return handle
       returned = true;
       //resolve expression or function call or return
-      eval_expr();
-      check_psa_completion();
-      printf("POPFRAME\n");
-      printf("RETURN\n\n\n");
+      eval_return_expr(tmp_func_item);
       return end_of_lines();
       break;
     case INPUT_KEY :
@@ -484,7 +482,7 @@ int statement(){
       get_token();
       CHECKT(ENDL);
       //if block
-      if (if_statements() != SUCCESS){
+      if (if_statements(tmp_func_item) != SUCCESS){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
@@ -494,7 +492,7 @@ int statement(){
 
       //else block
       if (currentToken.token_type == ELSE_KEY){
-        if (if_statements() != SUCCESS){
+        if (if_statements(tmp_func_item) != SUCCESS){
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
         }
@@ -530,7 +528,7 @@ int statement(){
       CHECKT(ENDL);
 
       //while block
-      if (if_statements() != SUCCESS){
+      if (if_statements(tmp_func_item) != SUCCESS){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
@@ -552,11 +550,11 @@ int statement(){
 
 //<fncstats>	<statement>	<endline>	<fncstats>
 //<fncstats>	epsilon
-int fnc_stats(){
+int fnc_stats(hash_tab_symbol_type *tmp_func_item){
   //expecting statements inside a function or end of function
   get_token();
   while (currentToken.token_type != END_KEY){
-    if (statement() != SUCCESS){
+    if (statement(tmp_func_item) != SUCCESS){
       fprintf(stderr, "Invalid statement inside function\n");
       hard_exit(SYNT_ERR);
       //return SYNT_ERR;
@@ -728,12 +726,13 @@ int functions(){
     hard_exit(SYNT_ERR);
     //return SYNT_ERR;
   } else {
-    if (fnc_stats() != SUCCESS){
+    if (fnc_stats(tmp_func_item) != SUCCESS){
       hard_exit(SYNT_ERR);
     }
 
     //implicit return is required
     if (returned == false){
+      printf("# Implicit return\n");
       switch (tmp_func_item->value_type) {
         case 0 :
           printf("PUSHS int@0\n");
@@ -753,7 +752,6 @@ int functions(){
 
     free(identifier);
 
-    //tac
     printf("POPFRAME\n");
     printf("RETURN\n\n\n");
 
@@ -819,7 +817,7 @@ int scope(){
         break;
       default :
         //expecting statement
-        if (statement() != SUCCESS){
+        if (statement(NULL) != SUCCESS){
           fprintf(stderr, "Invalid statement\n");
           hard_exit(SYNT_ERR);
           //return SYNT_ERR;
