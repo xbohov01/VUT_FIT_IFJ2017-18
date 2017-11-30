@@ -123,7 +123,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 		switch (token_state)
 		{
 			case BEGIN:
-				if (n_char == ' ')
+				if (isspace(n_char) && (n_char != '\n'))
 				{
 					continue;
 				}
@@ -213,8 +213,10 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					delstr(&buffer);
 					addchar(n_char, &buffer);
 					token_state = ID_OR_KEY;
-				} else if (n_char == '@' || n_char == '&' || n_char == '.'){
-				 hard_exit(LEX_ERR);
+				} else {
+					currentToken.token_type = ERROR;
+					fprintf(stderr, "error char %x\n", n_char);
+					hard_exit(LEX_ERR);
 				}
 
 				break;
