@@ -8,10 +8,6 @@
 void free_sources() //funkcia uvolnuje pouzite zdroje
 {
 	free(buffer.content);
-	// if (file != NULL){
-	// 		fclose(file);
-	// }
-
 }
 
 char fgetc_extended() {
@@ -220,7 +216,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				} else {
 					currentToken.token_type = ERROR;
 					fprintf(stderr, "error char %x\n", n_char);
-					hard_exit(LEX_ERR);
+					error_exit(LEX_ERR);
 				}
 
 				break;
@@ -279,7 +275,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				token_state = POS_BL_END_COMMENT;
 			} else if (n_char == EOF){
 				fprintf(stderr, "Unexpected end of file\n");
-				hard_exit(LEX_ERR);
+				error_exit(LEX_ERR);
 			}
 			break;
 
@@ -289,7 +285,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 				token_state = BEGIN;
 			} else if (n_char == EOF){
 				fprintf(stderr, "Unexpected end of file\n");
-				hard_exit(LEX_ERR);
+				error_exit(LEX_ERR);
 			}
 			break;
 
@@ -310,7 +306,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			{
 				fprintf(stderr, "Invalid character on input -> %c\n", n_char);
 				currentToken.token_type = ERROR;
-				hard_exit(LEX_ERR);
+				error_exit(LEX_ERR);
 			}
 			break;
 
@@ -343,7 +339,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				currentToken.token_type = ERROR;
-				hard_exit(LEX_ERR);
+				error_exit(LEX_ERR);
 			}
 			break;
 
@@ -392,7 +388,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 						else
 						{
 							currentToken.token_type = ERROR;
-							hard_exit(LEX_ERR);
+							error_exit(LEX_ERR);
 						}
 					}
 					if ((esc >= 1) && (esc <= 255))
@@ -403,13 +399,13 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 					{
 						currentToken.token_type = ERROR;
 						fprintf(stderr, "Invalid character -> %c | Current buffer -> %s\n", n_char, buffer.content);
-						hard_exit(LEX_ERR);
+						error_exit(LEX_ERR);
 					}
 				}
 				else
 				{
 					currentToken.token_type = ERROR;
-					hard_exit(LEX_ERR);
+					error_exit(LEX_ERR);
 				}
 			}
 			break;
@@ -447,7 +443,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				currentToken.token_type = ERROR;
-				hard_exit(LEX_ERR);
+				error_exit(LEX_ERR);
 			}
 			break;
 
@@ -474,7 +470,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 			else
 			{
 				currentToken.token_type = ERROR;
-				hard_exit(LEX_ERR);
+				error_exit(LEX_ERR);
 			}
 			break;
 
@@ -518,7 +514,7 @@ void get_token() //hlavna funkcia sluziaca na ziskanie tokenu
 
 			default:
 				currentToken.token_type = ERROR;
-				hard_exit(LEX_ERR);
+				error_exit(LEX_ERR);
 			break;
 
 		}
@@ -530,7 +526,7 @@ int start_scanner()
 
 	if (str_init(&buffer) != SUCCESS)
 	{
-		hard_exit(INTERNAL_ERR);
+		error_exit(INTERNAL_ERR);
 	}
 
 	currentToken.id = malloc(1);

@@ -64,7 +64,6 @@ hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbo
 
 
 	strcpy(new_symbol->symbol_name, symbol_name);
-	//newSymbol->symbolType = st_undefined;
 	
 	unsigned key = hash_function(symbol_name, hash_table->table_size);
 	new_symbol->next_symbol = hash_table->list_items[key];

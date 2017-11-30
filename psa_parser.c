@@ -979,7 +979,7 @@ void psa_operation(bool allow_bool) {
                 }
                 else {
                     fprintf(stderr, "Expected boolean expression\n");
-                    error_exit(SYNT_ERR);
+                    error_exit(TYPE_ERR);
                 }
                 break;
             default:

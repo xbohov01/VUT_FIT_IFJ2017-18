@@ -14,11 +14,14 @@ bool returned = false;
 //condition label format
 
 //terminates all resources and program for error handling
-void hard_exit(int code){
-  fprintf(stderr, "HARD EXIT\n");
+void error_exit(int code){
   //free resources
   free_sources();
 
+  if (processing_stack != NULL) {
+    destroy_T_NT_stack(processing_stack);
+  }
+  
   free(currentToken.id);
   free(currentToken.value_string);
   free(params.content);
@@ -104,7 +107,7 @@ void synt_error_print(int given, int expected){
 #define CHECKT(expected){ \
   if (currentToken.token_type != expected){ \
     synt_error_print(currentToken.token_type, expected);  \
-    hard_exit(SYNT_ERR); \
+    error_exit(SYNT_ERR); \
   } \
 }
 
@@ -136,7 +139,7 @@ int var_declr(){
   if (currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY && currentToken.token_type != STRING_KEY){
     fprintf(stderr, "Syntax error: expecting variable type in variable declaration.\n");
     free(var_id);
-    hard_exit(SYNT_ERR);
+    error_exit(SYNT_ERR);
   }
 
   //check for redeclaration
@@ -144,13 +147,13 @@ int var_declr(){
   if (tmp_var_item != NULL){
     fprintf(stderr, "Syntax error: Variable %s previously declared.\n", var_id);
     free(var_id);
-    hard_exit(UNDEF_ERR);
+    error_exit(UNDEF_ERR);
   }
   //check if function with same name exists
   if(hash_table_search(func_table, var_id) != NULL){
     fprintf(stderr, "Syntax error: Function with name %s previously declared.\n", var_id);
     free(var_id);
-    hard_exit(UNDEF_ERR);
+    error_exit(UNDEF_ERR);
   }
 
   //insert into variable table
@@ -193,7 +196,7 @@ int var_declr(){
   } else {
     fprintf(stderr, "Syntax error: invalid sequence in variable declaration.\n");
     free(var_id);
-    hard_exit(SYNT_ERR);
+    error_exit(SYNT_ERR);
   }
 
   return SUCCESS;
@@ -215,20 +218,20 @@ int fnc_arg(int pos){
   //expecting type
   if (currentToken.token_type != STRING_KEY && currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY){
     fprintf(stderr, "Invalid param type\n");
-    hard_exit(SYNT_ERR);
+    error_exit(SYNT_ERR);
     //return SYNT_ERR;
   } else {
     //check for redefinition
     tmp_var_item = hash_table_search(var_table, var_id);
     if (tmp_var_item != NULL){
       fprintf(stderr, "Syntax error: Variable %s was previously declared.\n", var_id);
-      hard_exit(UNDEF_ERR);
+      error_exit(UNDEF_ERR);
     }
     //check for parameter and function name collisions
     tmp_func_item = hash_table_search(func_table, var_id);
     if (tmp_func_item != NULL){
       fprintf(stderr, "Syntax error: Function %s was previously declared.\n", var_id);
-      hard_exit(UNDEF_ERR);
+      error_exit(UNDEF_ERR);
     }
 
     //add variable to var_table
@@ -282,7 +285,7 @@ int fnc_arglist(){
     CHECKT(IDENTIFICATOR);
     if (fnc_arg(arg_pos++) != SUCCESS){
       fprintf(stderr, "Invalid parameter1\n");
-      hard_exit(SYNT_ERR);
+      error_exit(SYNT_ERR);
       //return SYNT_ERR;
     }
     //expecting PAR_R or a comma
@@ -294,7 +297,7 @@ int fnc_arglist(){
       continue;
     } else {
       fprintf(stderr, "Invalid parameter2\n");
-      hard_exit(SYNT_ERR);
+      error_exit(SYNT_ERR);
     }
   }
 
@@ -312,7 +315,7 @@ int if_statements(hash_tab_symbol_type *tmp_func_item){
         && currentToken.token_type != ELSEIF_KEY && currentToken.token_type != LOOP_KEY){
     if (statement(tmp_func_item) == SYNT_ERR){
       fprintf(stderr, "Error in conditional statement\n");
-      hard_exit(SYNT_ERR);
+      error_exit(SYNT_ERR);
     }
 
   }
@@ -345,7 +348,7 @@ int statement(hash_tab_symbol_type *tmp_func_item){
     case DIM_KEY :
       //is variable declaration
       if (var_declr() != SUCCESS){
-        hard_exit(SYNT_ERR);
+        error_exit(SYNT_ERR);
       }
       return end_of_lines();
 
@@ -372,7 +375,7 @@ int statement(hash_tab_symbol_type *tmp_func_item){
       tmp_var_item = hash_table_search(var_table, currentToken.id);
       if (tmp_var_item == NULL){
         fprintf(stderr, "Syntax error: Variable %s doesn't exist in this context.\n", currentToken.id);
-        hard_exit(UNDEF_ERR);
+        error_exit(UNDEF_ERR);
       }
 
       char* types[3] = {
@@ -416,7 +419,7 @@ int statement(hash_tab_symbol_type *tmp_func_item){
       CHECKT(ENDL);
       //if block
       if (if_statements(tmp_func_item) != SUCCESS){
-        hard_exit(SYNT_ERR);
+        error_exit(SYNT_ERR);
       }
 
       printf("JUMP $if_end_%d\n", if_cond_end);
@@ -435,7 +438,7 @@ int statement(hash_tab_symbol_type *tmp_func_item){
           CHECKT(ENDL); 
           //if block
           if (if_statements(tmp_func_item) != SUCCESS){
-            hard_exit(SYNT_ERR);
+            error_exit(SYNT_ERR);
           }
           printf("JUMP $if_end_%d\n", if_cond_end);
           printf("LABEL $if_%d_%d\n", if_cond_end, if_cond_next++);
@@ -445,7 +448,7 @@ int statement(hash_tab_symbol_type *tmp_func_item){
       //else block
       if (currentToken.token_type == ELSE_KEY){
         if (if_statements(tmp_func_item) != SUCCESS){
-          hard_exit(SYNT_ERR);
+          error_exit(SYNT_ERR);
         }
       }
       else {
@@ -479,7 +482,7 @@ int statement(hash_tab_symbol_type *tmp_func_item){
 
       //while block
       if (if_statements(tmp_func_item) != SUCCESS){
-        hard_exit(SYNT_ERR);
+        error_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
       printf("JUMP $repeat_while_%d\n", while_cnt);
@@ -490,7 +493,7 @@ int statement(hash_tab_symbol_type *tmp_func_item){
 
     default :
       fprintf(stderr, "Syntax error in statement\n");
-      hard_exit(SYNT_ERR);
+      error_exit(SYNT_ERR);
   }
 
   return SUCCESS;
@@ -505,7 +508,7 @@ int fnc_stats(hash_tab_symbol_type *tmp_func_item){
   while (currentToken.token_type != END_KEY){
     if (statement(tmp_func_item) != SUCCESS){
       fprintf(stderr, "Invalid statement inside function\n");
-      hard_exit(SYNT_ERR);
+      error_exit(SYNT_ERR);
       //return SYNT_ERR;
     }
   }
@@ -567,7 +570,7 @@ int functions(){
     //expecting type
     if (currentToken.token_type != STRING_KEY && currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY){
       fprintf(stderr, "Invalid return type\n");
-      hard_exit(SYNT_ERR);
+      error_exit(SYNT_ERR);
     }
     //set return type
     if (currentToken.token_type == INTEGER_KEY){
@@ -581,7 +584,7 @@ int functions(){
   } else if (currentToken.token_type == IDENTIFICATOR){
     //expecting argument declaration
     if (fnc_arglist() != SUCCESS){
-      hard_exit(SYNT_ERR);
+      error_exit(SYNT_ERR);
       //return SYNT_ERR;
     } else {
       //checking for return type
@@ -592,7 +595,7 @@ int functions(){
       //expecting type
       if (currentToken.token_type != STRING_KEY && currentToken.token_type != INTEGER_KEY && currentToken.token_type != DOUBLE_KEY){
         fprintf(stderr, "Invalid type\n");
-        hard_exit(SYNT_ERR);
+        error_exit(SYNT_ERR);
       }
 
       //set return type
@@ -607,7 +610,7 @@ int functions(){
     }
   } else {
     fprintf(stderr, "Syntax error in function declaration/definition. Expecting ')' or variables, %d was given.\n", currentToken.token_type);
-    hard_exit(SYNT_ERR);
+    error_exit(SYNT_ERR);
   }
 
   //check if function is in symtable
@@ -635,17 +638,17 @@ int functions(){
     if (tmp_func_item->is_defined == true){
       fprintf(stderr, "Syntax error: Function %s is already defined\n", identifier);
       free(identifier);
-      hard_exit(UNDEF_ERR);
+      error_exit(UNDEF_ERR);
     }
     if (tmp_func_item->value_type != return_type){
       fprintf(stderr, "Syntax error: Invalid fuction return type\n");
       free(identifier);
-      hard_exit(UNDEF_ERR);
+      error_exit(UNDEF_ERR);
     }
     if (params.len != 0){
       if (strcmp(tmp_func_item->param_types, params.content) != 0){
         fprintf(stderr, "Function definition is different from declaration.\n");
-        hard_exit(UNDEF_ERR);
+        error_exit(UNDEF_ERR);
       }
     }
   }
@@ -666,11 +669,11 @@ int functions(){
   //if function is also defined
   //expecting ENDL(s) before next statement
   if (end_of_lines() != SUCCESS){
-    hard_exit(SYNT_ERR);
+    error_exit(SYNT_ERR);
     //return SYNT_ERR;
   } else {
     if (fnc_stats(tmp_func_item) != SUCCESS){
-      hard_exit(SYNT_ERR);
+      error_exit(SYNT_ERR);
     }
 
     //implicit return is required
@@ -728,7 +731,7 @@ int scope(){
         //is variable declaration
         //ready for global variable
         if (var_declr() != SUCCESS){
-          hard_exit(SYNT_ERR);
+          error_exit(SYNT_ERR);
         }
         continue;
 
@@ -751,13 +754,13 @@ int scope(){
 
       case RETURN_KEY :
         fprintf(stderr, "Syntax error: Return outside of function.\n");
-        hard_exit(SYNT_ERR);
+        error_exit(SYNT_ERR);
         break;
       default :
         //expecting statement
         if (statement(NULL) != SUCCESS){
           fprintf(stderr, "Invalid statement\n");
-          hard_exit(SYNT_ERR);
+          error_exit(SYNT_ERR);
         }
         continue;
     }
@@ -824,7 +827,7 @@ int start_parsing(){
   //check if empty program
   if (currentToken.token_type == ENDF){
     fprintf(stderr, "Empty file on input\n");
-    hard_exit(SYNT_ERR);
+    error_exit(SYNT_ERR);
   }
 
   //begin parsing

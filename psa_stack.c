@@ -266,16 +266,5 @@ T_NT_item* insert_after_NT(T_NT_stack *s, T_NT_item *in_non_term) {
     return item_after;
 }
 
-// TODO: extend this function
-void error_exit(int code) {
-    printf("\n");
-    free_sources();
-    if (processing_stack != NULL) {
-        destroy_T_NT_stack(processing_stack);
-    }
-    fprintf(stderr, "Result: %d\n", code);
-    exit(code);
-}
-
 // =======================
 // End stack operations

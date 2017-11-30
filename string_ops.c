@@ -12,7 +12,7 @@ int addchar(char n_char, tString *str) //funkcia pridava znak do string
 		str->content = realloc(str->content, str->len + BUFFERSIZE); // zvacsenie alokovaneho priestoru
 		if (str->content == NULL)
 		{
-			hard_exit(INTERNAL_ERR);
+			error_exit(INTERNAL_ERR);
 			return INTERNAL_ERR;
 		}
 		str->size = str->size + BUFFERSIZE;
