@@ -283,7 +283,7 @@ void hash_table_destroy(hash_table_type *hash_table);
 //====PSA===
 void eval_expr();
 void eval_return_expr(hash_tab_symbol_type *func);
-void eval_cond_expr(bool is_do_while, int label_num);
+void eval_cond_expr(bool is_do_while, int context, int end_block);
 void psa_operation(bool allow_bool);
 void reduce_by_rule();
 Data_Term *get_item_before_stopper();
@@ -332,7 +332,7 @@ void write_space();
 void write_output();
 
 // Jumps or function calls
-void cond_jump(bool is_while, int num);
+void cond_jump(bool is_while, int context, int next);
 void push_arg(int arg_num);
 void return_f(char *name);
 void f_call(char *name);
@@ -342,25 +342,6 @@ bool *add_build_in(char which, bool only_return);
 //====PARSER====
 tToken currentToken;
 bool func_definition;
-
-//stack for nested conditions
-typedef struct stack_item{
-	int data;
-	struct stack_item *next;
-} t_cond_s_item;
-
-typedef struct{
-	t_cond_s_item *top;
-} t_cond_stack;
-
-void c_stack_init(t_cond_stack *stack);
-void c_stack_destroy(t_cond_stack *stack);
-void c_stack_push(t_cond_stack *stack, int data);
-void c_stack_pop(t_cond_stack *stack);
-int c_stack_top(t_cond_stack *stack);
-
-//random label generator
-int gen_label_id();
 
 int start_parsing();
 int start();
@@ -376,7 +357,5 @@ int statement(hash_tab_symbol_type *func); // func is not NULL only when
 										   // is inside of function definition
 
 tString params;
-t_cond_stack if_stack;
-t_cond_stack while_stack;
 
 //====SCANNER====

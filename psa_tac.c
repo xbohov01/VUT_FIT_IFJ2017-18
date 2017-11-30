@@ -230,13 +230,13 @@ void write_output() {
 
 // Jumps or function calls
 // =========================================
-void cond_jump(bool is_while, int num) {
+void cond_jump(bool is_while, int context, int next) {
     printf("# Condition evaluation\n");
     printf("PUSHS bool@true\n");
     if (is_while) {
-        printf("JUMPIFNEQS $end$while%d$label\n", num);
+        printf("JUMPIFNEQS $end_while_%d\n", next);
     } else {
-        printf("JUMPIFNEQS $condition%d$end\n", num);
+        printf("JUMPIFNEQS $if_%d_%d\n", context, next);
     }
     printf("\n");
 }

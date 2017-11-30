@@ -30,10 +30,6 @@ void hard_exit(int code){
     hash_table_destroy(var_table);
   }
 
-  //TODO destroy all stacks
-  c_stack_destroy(&if_stack);
-  c_stack_destroy(&while_stack);
-
   exit(code);
 }
 
@@ -111,57 +107,6 @@ void synt_error_print(int given, int expected){
     hard_exit(SYNT_ERR); \
   } \
 }
-
-//stack and condition operations
-//returns randomly generated label id
-int gen_label_id(){
-  return rand();
-}
-
-void c_stack_init(t_cond_stack *stack){
-  stack->top = NULL;
-}
-
-void c_stack_push(t_cond_stack *stack, int data){
-  t_cond_s_item *tmp = malloc(sizeof(t_cond_s_item));
-  if (tmp == NULL){
-    hard_exit(INTERNAL_ERR);
-  }
-  tmp->data = data;
-  tmp->next = stack->top;
-  stack->top = tmp;
-}
-
-void c_stack_pop(t_cond_stack *stack){
-  t_cond_s_item *tmp;
-  if (stack->top != NULL){
-    tmp = stack->top;
-    stack->top = tmp->next;
-    free(tmp);
-  } else {
-    fprintf(stderr, "Nothing left to pop!\n");
-    error_exit(INTERNAL_ERR);
-  }
-}
-
-int c_stack_top(t_cond_stack *stack){
-  if (stack->top != NULL){
-    fprintf(stderr, "Top condition id %d\n", stack->top->data);
-    return stack->top->data;
-  }
-  else {
-    fprintf(stderr, "Cant access NULL stack->top\n");
-    hard_exit(INTERNAL_ERR);
-    return 0;
-  }
-}
-
-void c_stack_destroy(t_cond_stack *stack){
-  while (stack->top != NULL){
-    c_stack_pop(stack);
-  }
-}
-
 
 int end_of_lines(){
   while (currentToken.token_type == ENDL){
@@ -385,8 +330,11 @@ int if_statements(hash_tab_symbol_type *tmp_func_item){
 //<statement>	<id>	='	<id>	(	<args>	)
 //<statement>	return	<expr>
 int statement(hash_tab_symbol_type *tmp_func_item){
-  int cond_key;
-  int while_key;
+  static int if_context = 0;
+  static int while_context = 0;
+  int while_cnt;
+  int if_cond_end;
+  int if_cond_next;
 
   //expecting one of the above
   switch (currentToken.token_type) {
@@ -454,18 +402,14 @@ int statement(hash_tab_symbol_type *tmp_func_item){
       return end_of_lines();
 
     case IF_KEY :
+      if_cond_end = if_context;
+      if_context++;
+      if_cond_next = 1;
 
-      //has if
       get_token();
+      //creates jump to next condition inside of one if group
+      eval_cond_expr(false, if_cond_end, if_cond_next);
 
-      //generate condition code
-      cond_key = gen_label_id();
-      c_stack_push(&if_stack, cond_key);
-
-      eval_cond_expr(false, cond_key);
-      //creates jump to else
-
-      //get_token();
       CHECKT(THEN_KEY);
       //expecting end of line
       get_token();
@@ -473,31 +417,49 @@ int statement(hash_tab_symbol_type *tmp_func_item){
       //if block
       if (if_statements(tmp_func_item) != SUCCESS){
         hard_exit(SYNT_ERR);
-        //return SYNT_ERR;
       }
 
-      printf("JUMP $end%d$if\n", cond_key);
-      printf("LABEL $condition%d$end\n", cond_key);
+      printf("JUMP $if_end_%d\n", if_cond_end);
+      printf("LABEL $if_%d_%d\n", if_cond_end, if_cond_next++);
+
+      // else if block
+      if (currentToken.token_type == ELSEIF_KEY){
+        while (currentToken.token_type == ELSEIF_KEY) {
+
+          get_token();
+          //creates jump to next condition inside of one if group
+          eval_cond_expr(false, if_cond_end, if_cond_next);
+
+          CHECKT(THEN_KEY);
+          get_token();
+          CHECKT(ENDL); 
+          //if block
+          if (if_statements(tmp_func_item) != SUCCESS){
+            hard_exit(SYNT_ERR);
+          }
+          printf("JUMP $if_end_%d\n", if_cond_end);
+          printf("LABEL $if_%d_%d\n", if_cond_end, if_cond_next++);
+        }
+      }
 
       //else block
       if (currentToken.token_type == ELSE_KEY){
         if (if_statements(tmp_func_item) != SUCCESS){
           hard_exit(SYNT_ERR);
-          //return SYNT_ERR;
         }
-        //end of conditional statements
-        //printf("LABEL $condition%d$end\n", c_stack_top(&if_stack));
       }
-
-      printf("LABEL $end%d$if\n", cond_key);
-
-      c_stack_pop(&if_stack);
-
+      else {
+        if (returned == true) {
+          returned = false;
+        }
+      }
 
       //has end
       //check end if
       CHECKT(IF_KEY);
       get_token();
+
+      printf("LABEL $if_end_%d\n", if_cond_end);
 
       return SUCCESS;
 
@@ -507,11 +469,10 @@ int statement(hash_tab_symbol_type *tmp_func_item){
       //expecting while
       CHECKT(WHILE_KEY);
       get_token();
-      while_key = gen_label_id();
-      c_stack_push(&while_stack, while_key);
 
-      printf("LABEL $while%d$label\n", while_key);
-      eval_cond_expr(true, while_key);
+      while_cnt = while_context++;
+      printf("LABEL $repeat_while_%d\n", while_cnt);
+      eval_cond_expr(true, 0, while_cnt);
 
       //expecting ENDL after expr
       CHECKT(ENDL);
@@ -521,8 +482,8 @@ int statement(hash_tab_symbol_type *tmp_func_item){
         hard_exit(SYNT_ERR);
         //return SYNT_ERR;
       }
-      printf("JUMP $while%d$label\n", while_key);
-      printf("LABEL $end$while%d$label\n", while_key);
+      printf("JUMP $repeat_while_%d\n", while_cnt);
+      printf("LABEL $end_while_%d\n", while_cnt);
       while_cnt++;
 
       return SUCCESS;
@@ -769,7 +730,6 @@ int scope(){
         if (var_declr() != SUCCESS){
           hard_exit(SYNT_ERR);
         }
-        //return var_declr();
         continue;
 
       case END_KEY :
@@ -853,8 +813,6 @@ int start_parsing(){
   int result = SYNT_ERR;
 
   str_init(&params);
-  c_stack_init(&if_stack);
-  c_stack_init(&while_stack);
 
   processing_stack = init_T_NT_stack();
 
@@ -875,8 +833,6 @@ int start_parsing(){
   define_built_in_func(); // Will add all of used functions to TAC
 
   free(params.content);
-  c_stack_destroy(&if_stack);
-  c_stack_destroy(&while_stack);
 
   return result;
 

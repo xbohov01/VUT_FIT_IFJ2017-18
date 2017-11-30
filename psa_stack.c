@@ -56,6 +56,7 @@ PSA_Term_type get_term_type(Data_Term *in_term) {
         case ENDL:
         case SEM:
         case THEN_KEY:
+        case ELSEIF_KEY:
             return END;
         default:
             fprintf(stderr, "Bad terminal type for psa map %d\n", in_term->token_type);

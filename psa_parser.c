@@ -107,14 +107,14 @@ void check_psa_completion() {
 // <cond_expr> -> <expr> <cond_expr_2>
 // <cond_expr2> -> eps
 // <cond_expr_2> -> <rel> <expr>
-void eval_cond_expr(bool is_do_while, int label_num) {
+void eval_cond_expr(bool is_do_while, int context, int end_block) {
 
     extern T_NT_stack *processing_stack;
 
     push_start_term(processing_stack);
     psa_operation(true);
 
-    cond_jump(is_do_while, label_num);
+    cond_jump(is_do_while, context, end_block);
 
     check_psa_completion();
     if (get_term_type(&(currentToken)) != END) {
@@ -231,7 +231,7 @@ void eval_expr() {
             case PRINT_CONT:
                 get_token();
                 // Can be ended at once
-                if (currentToken.token_type == ENDL) {
+                if (get_term_type(&currentToken) == END) {
                     eval_ex_state = FINISHED_EXPR;
                     break;
                 }

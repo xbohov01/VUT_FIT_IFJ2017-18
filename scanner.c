@@ -55,6 +55,10 @@ T_token_type get_key() //funkcia zistuje ci retazec znakov v bufferi je klucove 
 	{
 		return ELSE_KEY;
 	}
+	else if (strcmp(buffer.content, "elseif") == 0) 
+	{
+		return ELSEIF_KEY;
+	}
 	else if (strcmp(buffer.content, "end") == 0)
 	{
 		return END_KEY;
