@@ -11,3 +11,8 @@ ifj2017: $(OBJ)
 
 clean:
 	rm -f *.o ifj2017
+
+.PHONY:test
+
+test:
+	./tests/tttest
