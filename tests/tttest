@@ -1,0 +1,115 @@
+#!/bin/bash
+cesta=2
+
+
+chmod +x ic17int
+
+echo "
+
+
+
+
+
+****************************************************************
+
+      IFJ2017 tests
+
+
+"
+
+echo "      Exit code       Output"
+echo ""
+
+good_code=1
+
+
+i=1
+while [  $i -lt 68 ]; do
+
+	cesta=$i
+
+
+	./ifj2017 < ./tests/$cesta/input.code > ./tests/$cesta/tmp 
+	echo $? > ./tests/$cesta/ex_code
+
+	./ic17int ./tests/$cesta/tmp < ./tests/$cesta/parameters > ./tests/$cesta/output
+
+
+
+	code_ex=$(head -n 1 ./tests/$cesta/ex_code)
+	code_template=$(head -n 1 ./tests/$cesta/ex_code_templ)
+
+
+
+	diff ./tests/$cesta/output ./tests/$cesta/template > ./tests/$cesta/diff
+	echo -n "$i.      "
+
+	if [[ $i -lt 10 ]]; then
+		echo -n " "
+	fi
+
+	#echo $code_template
+	#echo $code_ex
+	#
+	#
+	if [ $code_template = $code_ex ];
+	then
+		tput setaf 2;echo -n "[OK]          ";tput sgr0;
+		let good_code=good_code+1
+		if [[ $code_template != "0" ]]; then
+			tput setaf 3;echo "[--]";tput sgr0;
+		else
+			if [ -s ./tests/$cesta/diff ];
+			  then
+				tput setaf 1;echo "[NO]";tput sgr0;
+			  else
+				tput setaf 2;echo "[OK]";tput sgr0;
+			fi
+		fi
+	else
+		tput setaf 1;echo -n "[NO]          ";tput sgr0;
+		if [ -s diff ];
+		  then
+			tput setaf 1;echo "[NO]";tput sgr0;
+		  else
+			tput setaf 2;echo "[OK]";tput sgr0;
+		fi
+	fi
+
+
+if [[  0 > 2 ]]; then
+	echo -ne '.....                     (33%)\r'
+	sleep 0.05
+	echo -ne '.............             (66%)\r'
+	sleep 0.05
+	echo -ne '.......................  (100%)\r'
+	echo -ne '\n'
+fi
+
+
+
+  let i=i+1 
+done
+
+
+echo -n "
+
+
+RESULT:    "
+vys=$(( $good_code/ i));
+echo -n $vys
+
+
+echo "scale=2 ; $good_code / $i"  | bc
+
+
+
+
+echo "
+
+
+
+
+
+****************************************************************"
+
