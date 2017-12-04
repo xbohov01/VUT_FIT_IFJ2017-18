@@ -1,4 +1,4 @@
-/*
+/*  Prekladac jazyka IFJ2017
 **  PSA symtable stack operations
 **  Author: Danil Grigorev, xgrigo02
 **          Samuel Bohovic, xbohov01

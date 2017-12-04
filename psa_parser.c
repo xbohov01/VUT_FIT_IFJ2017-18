@@ -1,5 +1,6 @@
 /*
-** Precedense syntax parser implementation
+** Prekladac jazyka IFJ2017
+** Precedence syntax parser implementation
 ** Author: Danil Grigorev, xgrigo02
 */
 
@@ -960,7 +961,7 @@ void psa_operation(bool allow_bool) {
                     error_exit(UNDEF_ERR);
                 }
                 else if ((index_stack_top == FNC) && (index_input != PL)) {
-                    fprintf(stderr, "Function '%s' used as variable\n", first_term_data.id); 
+                    fprintf(stderr, "Function '%s' used as variable\n", first_term_data.id);
                     error_exit(UNDEF_ERR);
                 }
                 else {

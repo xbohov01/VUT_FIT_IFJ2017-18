@@ -1,5 +1,5 @@
 	/****scanner.c****/
-//ifj2017
+//Prekladac jazyka IFJ2017
 //xberes01
 //xbohov01
 
@@ -51,7 +51,7 @@ T_token_type get_key() //funkcia zistuje ci retazec znakov v bufferi je klucove 
 	{
 		return ELSE_KEY;
 	}
-	else if (strcmp(buffer.content, "elseif") == 0) 
+	else if (strcmp(buffer.content, "elseif") == 0)
 	{
 		return ELSEIF_KEY;
 	}

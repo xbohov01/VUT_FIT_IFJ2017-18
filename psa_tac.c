@@ -1,4 +1,5 @@
 /*
+** Prekladac jazyka IFJ2017
 ** PSA TAC commands
 ** Author: Danil Grigorev, xgrigo02
 */
@@ -179,7 +180,7 @@ void arithm_stack(PSA_Term_type op) {
     return;
 }
 
-// String operations 
+// String operations
 // ========================================
 void str_arithm(PSA_Term_type op) {
     printf("# String arithmetics\n");

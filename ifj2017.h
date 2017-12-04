@@ -1,4 +1,5 @@
 /**** ifj2017.h ****/
+//Prekladac jazyka IFJ2017
 //Global header file//
 //xbohov01
 //xgrigo02
@@ -353,7 +354,7 @@ int fnc_arg(int pos);
 int fnc_arglist();
 int fnc_stats(hash_tab_symbol_type *func);
 int if_statements(hash_tab_symbol_type *func);
-int statement(hash_tab_symbol_type *func); // func is not NULL only when 
+int statement(hash_tab_symbol_type *func); // func is not NULL only when
 										   // is inside of function definition
 
 tString params;

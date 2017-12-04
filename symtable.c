@@ -1,3 +1,8 @@
+//Prekladac jazyka IFJ2017
+//xkosti07
+//xbohov01
+//xgrigo02
+
 #include "ifj2017.h"
 
 //Inicializuje hashovaciu tabulku, alokuje miesto
@@ -64,7 +69,7 @@ hash_tab_symbol_type *hash_table_insert(hash_table_type *hash_table, char *symbo
 
 
 	strcpy(new_symbol->symbol_name, symbol_name);
-	
+
 	unsigned key = hash_function(symbol_name, hash_table->table_size);
 	new_symbol->next_symbol = hash_table->list_items[key];
 	hash_table->list_items[key] = new_symbol;

@@ -1,3 +1,4 @@
+//Prekladac jazyka IFJ2017
 /****parser.c****/
 //xbohov01
 //xkosti07
@@ -21,7 +22,7 @@ void error_exit(int code){
   if (processing_stack != NULL) {
     destroy_T_NT_stack(processing_stack);
   }
-  
+
   free(currentToken.id);
   free(currentToken.value_string);
   free(params.content);
@@ -162,7 +163,7 @@ int var_declr(){
     fprintf(stderr, "Inser hash table failed\n");
     error_exit(INTERNAL_ERR);
   }
-  
+
   tmp_var_item->param_types = NULL;
 
   //adds type to params and var_table
@@ -435,7 +436,7 @@ int statement(hash_tab_symbol_type *tmp_func_item){
 
           CHECKT(THEN_KEY);
           get_token();
-          CHECKT(ENDL); 
+          CHECKT(ENDL);
           //if block
           if (if_statements(tmp_func_item) != SUCCESS){
             error_exit(SYNT_ERR);
